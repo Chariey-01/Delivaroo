@@ -13,8 +13,4 @@ def create_app(config_name="development"):
     jwt.init_app(app)
     cors.init_app(app)
 
-    # Blueprints will be registered here as resources are built
-    # e.g. from app.resources.parcel import parcel_bp
-    #      app.register_blueprint(parcel_bp)
-
     return app
