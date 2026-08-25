@@ -25,9 +25,42 @@ htmlcov/
 instance/
 
 # IDE / editor files
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+backend/.venv/
+
+# Environment variables
+.env
+*.env
+!.env.example
+.env.local
+
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+frontend/dist/
+
+# IDE
 .vscode/
 .idea/
 
 # OS files
 .DS_Store
+Thumbs.db
 Thumbs.db
