@@ -94,3 +94,10 @@ class Parcel(db.Model):
         nullable=False,
         server_default=db.func.now(),
     )
+
+    status_history = db.relationship(
+        "StatusHistory",
+        back_populates="parcel",
+        cascade="all, delete-orphan",
+        order_by="StatusHistory.created_at",
+    )
