@@ -1,16 +1,20 @@
 from flask import Flask
 
-from app.config import config_map
-from app.extensions import db, migrate, jwt, cors
+from app.config import Config
+from app.extensions import jwt,migrate,db
+from app import models 
 
+def create_app(config_class=Config):
+  # create and configure the flask application
 
-def create_app(config_name="development"):
-    app = Flask(__name__)
-    app.config.from_object(config_map[config_name])
+  app = Flask(__name__)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-    jwt.init_app(app)
-    cors.init_app(app)
+  app.config.from_object(config_class)
 
-    return app
+  config_class.validate()
+
+  db.init_app(app)
+  migrate.init_app(app,db)
+  jwt.init_app(app)
+
+  return app

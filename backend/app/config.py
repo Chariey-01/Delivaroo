@@ -1,41 +1,33 @@
 import os
-from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-change-me")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    """Base application configuration."""
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        "postgresql+psycopg2://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_dev",
-    )
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # {Incase during forking a dev forgets to have this values or a .env}
+    @ classmethod
+    def validate(cls):
+        # Validate required environment variables.
+        required = {
+            "SECRET_KEY": cls.SECRET_KEY,
+            "JWT_SECRET_KEY": cls.JWT_SECRET_KEY,
+            "SQLALCHEMY_DATABASE_URI": cls.SQLALCHEMY_DATABASE_URI,
+        }
 
-class DevelopmentConfig(Config):
-    DEBUG = True
+        missing = [name for name , value in required.items() if not value]
 
+        if missing:
+            raise RuntimeError(
+                f"Missing Requred Environment variables:{','.join(missing)}"
+            )
 
-class TestingConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "TEST_DATABASE_URL",
-        "postgresql+psycopg2://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test",
-    )
-
-
-class ProductionConfig(Config):
-    DEBUG = False
-
-
-config_map = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "production": ProductionConfig,
-    "default": DevelopmentConfig,
-}
