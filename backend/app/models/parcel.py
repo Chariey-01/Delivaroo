@@ -77,6 +77,13 @@ class Parcel(db.Model):
         server_default=db.func.now(),
     )
 
+    status_history = db.relationship(
+        "StatusHistory",
+        back_populates="parcel",
+        cascade="all, delete-orphan",
+        order_by="StatusHistory.created_at",
+    )
+
     def to_dict(self):
         return {
             "id": str(self.id),
