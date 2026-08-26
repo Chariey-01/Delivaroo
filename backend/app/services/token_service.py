@@ -32,8 +32,8 @@ def create_refresh_token(user_id):
     return raw_token
 
 
-def revoke_refresh_token(raw_token: str) -> None:
-    """Revoke a refresh token."""
+def get_valid_refresh_token(raw_token: str):
+    """Return a valid, non-expired, non-revoked refresh token."""
 
     token_hash = _hash_token(raw_token)
 
@@ -43,6 +43,22 @@ def revoke_refresh_token(raw_token: str) -> None:
         .first()
     )
 
-    if refresh_token and refresh_token.revoked_at is None:
-        refresh_token.revoked_at = datetime.now(timezone.utc)
-        db.session.commit()
+    if not refresh_token:
+        raise ValueError("Invalid refresh token")
+
+    if refresh_token.revoked_at is not None:
+        raise ValueError("Refresh token has been revoked")
+
+    if refresh_token.expires_at <= datetime.now(timezone.utc):
+        raise ValueError("Refresh token has expired")
+
+    return refresh_token
+
+
+def revoke_refresh_token(raw_token: str) -> None:
+    """Revoke a refresh token."""
+
+    refresh_token = get_valid_refresh_token(raw_token)
+
+    refresh_token.revoked_at = datetime.now(timezone.utc)
+    db.session.commit()
