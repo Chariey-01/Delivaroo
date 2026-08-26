@@ -27,6 +27,9 @@ class StatusHistory(db.Model):
         default=lambda: datetime.now(timezone.utc),
     )
 
+    parcel = db.relationship("Parcel", back_populates="status_history")
+    changed_by_user = db.relationship("User", foreign_keys=[changed_by])
+
     def to_dict(self):
         return {
             "id": str(self.id),
