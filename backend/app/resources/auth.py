@@ -2,7 +2,10 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token
 from app.models.user import User
-from app.services.token_service import get_valid_refresh_token
+from app.services.token_service import (
+    get_valid_refresh_token,
+    revoke_refresh_token,
+)
 
 from app.services.auth_service import (
     register_user,
@@ -117,4 +120,25 @@ class RefreshResource(Resource):
         except ValueError as error:
             return {"message": str(error)}, 401
                 
-        
+class LogoutResource(Resource):
+    def post(self):
+        data = request.get_json()
+
+        if not data:
+            return {"message": "Request body is required"}, 400
+
+        refresh_token = data.get("refresh_token")
+
+        if not refresh_token:
+            return {"message": "Refresh token is required"}, 400
+
+        try:
+            revoke_refresh_token(refresh_token)
+
+            return {
+                "message": "Logout successful"
+            }, 200
+
+        except ValueError as error:
+            return {"message": str(error)}, 401
+                

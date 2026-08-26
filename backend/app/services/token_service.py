@@ -61,4 +61,4 @@ def revoke_refresh_token(raw_token: str) -> None:
     refresh_token = get_valid_refresh_token(raw_token)
 
     refresh_token.revoked_at = datetime.now(timezone.utc)
-    db.session.commit()
+    db.session.commit()   
