@@ -68,4 +68,4 @@ jobs:
         run: pytest
 
       - name: Verify Python compilation
-        run: python -m compileall app
+        run: python3 -m compileall app
