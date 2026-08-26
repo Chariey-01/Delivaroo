@@ -12,7 +12,7 @@ on:
 
 jobs:
   frontend:
-    name: Frontend Build
+    name: Frontend Tests and Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -33,11 +33,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run frontend tests
+        run: npm test -- --runInBand
+
       - name: Build frontend
         run: npm run build
 
   backend:
-    name: Backend Setup
+    name: Backend Tests and Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -58,6 +61,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Run backend tests
+        run: pytest
+
       - name: Verify Python compilation
         run: python -m compileall app
-
