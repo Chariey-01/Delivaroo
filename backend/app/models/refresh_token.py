@@ -19,9 +19,8 @@ class RefreshToken(db.Model):
     )
 
     token_hash = db.Column(
-        db.String(500),
+        db.String(255),
         nullable=False,
-        unique=True,
     )
 
     expires_at = db.Column(
@@ -31,9 +30,7 @@ class RefreshToken(db.Model):
 
     revoked_at = db.Column(
         db.DateTime,
-        db.Boolean,
-        nullable=False,
-        default=False,
+        nullable=True,
     )
 
     created_at = db.Column(
