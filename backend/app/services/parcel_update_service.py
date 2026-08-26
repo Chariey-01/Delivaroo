@@ -74,7 +74,7 @@ def update_parcel_destination(parcel, requester_id, new_address, new_latitude, n
         parcel.distance = distance_km
         parcel.duration = estimate_duration_minutes(distance_km)
 
-        weight_category = WeightCategory.query.get(parcel.weight_category_id)
+        weight_category = db.session.get(WeightCategory, parcel.weight_category_id)
         if weight_category:
             base_price = float(weight_category.base_price)
             price_per_km = float(weight_category.price_per_km)
