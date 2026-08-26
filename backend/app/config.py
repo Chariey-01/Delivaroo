@@ -25,7 +25,10 @@ class Config:
             "SQLALCHEMY_DATABASE_URI": cls.SQLALCHEMY_DATABASE_URI,
         }
 
-        missing = [name for name, value in required.items() if not value]
+        missing = [
+            name for name, value in required.items()
+            if not value
+        ]
 
         if missing:
             raise RuntimeError(
