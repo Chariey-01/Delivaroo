@@ -11,7 +11,7 @@ from app.services.parcel_cancel_service import (
 
 class ParcelCancelResource(Resource):
     @jwt_required()
-    def patch(self, parcel_id):
+    def delete(self, parcel_id):
         parcel = Parcel.query.get(parcel_id)
         if not parcel:
             return {"message": "Parcel not found"}, 404

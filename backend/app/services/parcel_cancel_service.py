@@ -11,16 +11,20 @@ class NotParcelOwnerError(Exception):
 
 
 class ParcelNotCancellableError(Exception):
-    """Raised when the parcel is already delivered or already cancelled."""
+    """Raised when the parcel is already delivered and cannot be cancelled."""
 
 
 def cancel_parcel(parcel, requester_id):
     """
-    Cancels a parcel if the requester owns it and the parcel is not
-    already delivered or already cancelled.
+    Cancels a parcel if the requester owns it and the parcel has not
+    already been delivered.
 
-    Records the cancellation in StatusHistory via record_status_change().
-    Commits the transaction.
+    Cancelling an already-cancelled parcel is idempotent: it succeeds
+    and returns the parcel unchanged, without creating a duplicate
+    StatusHistory row.
+
+    Records the cancellation in StatusHistory via record_status_change()
+    for the first cancellation. Commits the transaction.
     """
     if isinstance(requester_id, str):
         requester_id = uuid.UUID(requester_id)
@@ -32,7 +36,7 @@ def cancel_parcel(parcel, requester_id):
         raise ParcelNotCancellableError("Cannot cancel a parcel that has already been delivered")
 
     if parcel.status == "CANCELLED":
-        raise ParcelNotCancellableError("Parcel is already cancelled")
+        return parcel
 
     try:
         record_status_change(
