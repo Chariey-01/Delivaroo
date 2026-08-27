@@ -29,11 +29,12 @@ export default function PlaceSearch({
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
 
+  // Below the threshold the list is simply not shown — derived rather than cleared in
+  // an effect, which would be a cascading render for something already known here.
+  const visible = query.trim().length >= 3 ? results : [];
+
   useEffect(() => {
-    if (query.trim().length < 3) {
-      setResults([]);
-      return undefined;
-    }
+    if (query.trim().length < 3) return undefined;
 
     const controller = new AbortController();
     const timer = setTimeout(async () => {
@@ -85,16 +86,16 @@ export default function PlaceSearch({
   };
 
   const onKeyDown = (event) => {
-    if (!open || !results.length) return;
+    if (!open || !visible.length) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      setActive((index) => (index + 1) % results.length);
+      setActive((index) => (index + 1) % visible.length);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setActive((index) => (index - 1 + results.length) % results.length);
+      setActive((index) => (index - 1 + visible.length) % visible.length);
     } else if (event.key === 'Enter' && active >= 0) {
       event.preventDefault();
-      choose(results[active]);
+      choose(visible[active]);
     } else if (event.key === 'Escape') {
       setOpen(false);
     }
@@ -199,7 +200,7 @@ export default function PlaceSearch({
         </p>
       )}
 
-      {open && results.length > 0 && (
+      {open && visible.length > 0 && (
         <ul
           id={listId}
           role="listbox"
@@ -220,7 +221,7 @@ export default function PlaceSearch({
             overflowY: 'auto',
           }}
         >
-          {results.map((prediction, index) => (
+          {visible.map((prediction, index) => (
             <li key={prediction.id} id={`${listId}-${index}`} role="option" aria-selected={index === active}>
               <button
                 type="button"
