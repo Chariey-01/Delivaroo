@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('smoke: the app stands up', () => {
   test('App mounts with its own store and router, without crashing', () => {
     render(<App />);
-    expect(screen.getByText('DELIVAROO')).toBeInTheDocument();
+    expect(screen.getByText('Delivaroo')).toBeInTheDocument();
   });
 
   test('the store is wired with every reducer the app reads', () => {
