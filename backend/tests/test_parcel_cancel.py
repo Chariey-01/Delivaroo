@@ -63,7 +63,7 @@ def test_failed_cancel_does_not_create_audit_row(db_session, sample_parcel, othe
     assert len(entries) == 0
 
 
-# --- Terminal-state rejection ---
+# --- Delivered rejection ---
 
 def test_delivered_parcel_cannot_be_cancelled(db_session, sample_parcel, sample_user):
     sample_parcel.status = "DELIVERED"
@@ -75,14 +75,6 @@ def test_delivered_parcel_cannot_be_cancelled(db_session, sample_parcel, sample_
     assert sample_parcel.status == "DELIVERED"
 
 
-def test_already_cancelled_parcel_cannot_be_cancelled_again(db_session, sample_parcel, sample_user):
-    sample_parcel.status = "CANCELLED"
-    db_session.commit()
-
-    with pytest.raises(ParcelNotCancellableError):
-        cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
-
-
 def test_delivered_rejection_does_not_create_audit_row(db_session, sample_parcel, sample_user):
     sample_parcel.status = "DELIVERED"
     db_session.commit()
@@ -90,5 +82,19 @@ def test_delivered_rejection_does_not_create_audit_row(db_session, sample_parcel
     with pytest.raises(ParcelNotCancellableError):
         cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
 
+    entries = StatusHistory.query.filter_by(parcel_id=sample_parcel.id).all()
+    assert len(entries) == 0
+
+
+# --- Idempotent re-cancel ---
+
+def test_cancelling_already_cancelled_parcel_is_idempotent(db_session, sample_parcel, sample_user):
+    sample_parcel.status = "CANCELLED"
+    db_session.commit()
+
+    result = cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
+
+    assert result.status == "CANCELLED"
+    # No duplicate audit row should be created for the no-op cancel
     entries = StatusHistory.query.filter_by(parcel_id=sample_parcel.id).all()
     assert len(entries) == 0
