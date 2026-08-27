@@ -1,9 +1,15 @@
 import { render, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { makeStore } from '../../src/store';
 import { AppRoutes } from '../../src/App';
 import { setTokens } from '../../src/lib/tokenStorage';
+
+let seen = null;
+function Probe() {
+  seen = useLocation();
+  return null;
+}
 
 test('debug expired token', async () => {
   setTokens({ access: 'expired' });
@@ -15,7 +21,7 @@ test('debug expired token', async () => {
   render(
     <Provider store={store}>
       <MemoryRouter initialEntries={['/dashboard']}>
-        <AppRoutes />
+        <><Probe /><AppRoutes /></>
       </MemoryRouter>
     </Provider>,
   );
@@ -27,4 +33,5 @@ test('debug expired token', async () => {
   console.log('BODY LEN:', document.body.innerHTML.length);
   console.log('HAS main:', document.body.innerHTML.includes('<main'));
   console.log('H1:', [...document.querySelectorAll('h1')].map(h=>h.textContent));
+  console.log('LOCATION:', JSON.stringify(seen));
 });
