@@ -4,7 +4,7 @@
 // "is this feature correct?". They are the checks to run first after a merge, because
 // when one of them fails, nothing else is worth reading.
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import App from '../../App';
 import { clearTokens } from '../../lib/tokenStorage';
 import { mockApi, renderApp, signedOutState } from '../testUtils';
@@ -48,8 +48,11 @@ describe('smoke: navigation reflects the session', () => {
   test('signed out, the nav offers sign in and sign up', async () => {
     renderApp({ preloadedState: signedOutState });
 
-    expect(await screen.findByRole('link', { name: /sign in/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
+    // Scoped to the nav: the landing page carries its own sign-in call to action.
+    const nav = within(await screen.findByRole('navigation'));
+
+    expect(nav.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
+    expect(nav.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
   });
 });
