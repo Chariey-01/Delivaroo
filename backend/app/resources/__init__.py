@@ -5,6 +5,7 @@ from app.resources.auth import (
     ResetPasswordResource,
     LoginResource,
     LogoutResource,
+    MeResource,
     RefreshResource,
     RegisterResource,
 )
@@ -19,4 +20,4 @@ def init_resources(app):
     api.add_resource(LogoutResource, "/auth/logout")
     api.add_resource(ForgotPasswordResource, "/auth/forgot-password")
     api.add_resource(ResetPasswordResource, "/auth/reset-password")
-    
+    api.add_resource(MeResource, "/auth/me")
