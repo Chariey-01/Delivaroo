@@ -31,7 +31,12 @@ export const control = {
     height: '52px',
     padding: '0 16px',
     borderRadius: radius.field,
-    border: '1.5px solid rgba(17,17,17,.14)',
+    // Longhand, not the `border` shorthand: the focus and invalid states below
+    // override borderColor alone, and React warns when a shorthand and one of its
+    // longhands are mixed across renders.
+    borderWidth: '1.5px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(17,17,17,.14)',
     background: color.white,
     fontFamily: font.body,
     fontSize: '16px',
