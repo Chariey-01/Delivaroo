@@ -26,5 +26,12 @@ if (!global.ResizeObserver) {
   };
 }
 
+// Testing Library gives an async query one second to settle. That is a tight budget
+// for a full-app render — store, router, guards and a session round trip — inside a
+// jsdom worker competing with several others, and it produced an occasional failure
+// on assertions that were logically correct. Widening the budget removes the flake
+// without weakening anything: a query that will never settle still fails, just later.
+require('@testing-library/dom').configure({ asyncUtilTimeout: 5000 });
+
 // Each test owns its own fetch stubbing; this just guarantees the global exists.
 if (!global.fetch) global.fetch = () => Promise.reject(new Error('fetch not stubbed'));
