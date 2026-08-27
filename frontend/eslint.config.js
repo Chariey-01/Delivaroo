@@ -26,16 +26,17 @@ export default defineConfig([
       globals: { ...globals.browser, ...globals.jest, ...globals.node },
     },
   },
-  // Config files and CommonJS mocks execute in Node.
+  // CommonJS: the Jest/Babel configs and the .cjs mocks.
   {
-    files: ['*.config.js', '*.cjs', '**/*.cjs'],
+    files: ['**/*.cjs'],
     languageOptions: {
       globals: { ...globals.node },
       sourceType: 'commonjs',
     },
   },
+  // ESM config files that still run in Node (vite.config.js reads process.env).
   {
-    files: ['vite.config.js', 'eslint.config.js'],
+    files: ['*.config.js'],
     languageOptions: { globals: { ...globals.node } },
   },
 ])
