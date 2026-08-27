@@ -6,4 +6,13 @@ from app.models.status_history import StatusHistory
 from app.models.password_reset_token import PasswordResetToken
 from app.models.audit_log import AuditLog
 
-__all__ = ["User", "WeightCategory", "Parcel","RefreshToken", "PasswordResetToken","StatusHistory", "AuditLog"]
+__all__ = [
+    "User",
+    "WeightCategory",
+    "Parcel",
+    "RefreshToken",
+    "PasswordResetToken",
+    "StatusHistory",
+    "AuditLog"
+]
+
