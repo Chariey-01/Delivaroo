@@ -10,6 +10,8 @@ export const color = {
   white: '#FFFFFF',
   orange: '#F5911E',
   orangeDeep: '#C4700F',
+  // The kite in the logo only — the UI accent above is a separate, softer orange.
+  brand: '#FF5000',
   danger: '#B3261E',
   success: '#1E7B4F',
 };
