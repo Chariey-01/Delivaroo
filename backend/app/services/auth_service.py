@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token
 from app.extensions import db
 from app.models.user import User
 from app.utils.security import hash_password, verify_password
+from app.services.token_service import create_refresh_token
 
 
 def register_user(email: str, password: str) -> User:
@@ -42,4 +43,10 @@ def authenticate_user(email: str, password: str) -> str:
         },
     )
 
-    return access_token
+    refresh_token = create_refresh_token(user.id)
+
+    return {
+        "user": user,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+    }
