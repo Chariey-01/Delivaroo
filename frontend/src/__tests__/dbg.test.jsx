@@ -33,5 +33,7 @@ test('debug expired token', async () => {
   console.log('BODY LEN:', document.body.innerHTML.length);
   console.log('HAS main:', document.body.innerHTML.includes('<main'));
   console.log('H1:', [...document.querySelectorAll('h1')].map(h=>h.textContent));
-  console.log('LOCATION:', JSON.stringify(seen));
+  console.log('LOCATION:', seen.pathname);
+  console.log('HAS spinner:', document.body.textContent.includes('Checking'));
+  console.log('TEXT:', JSON.stringify(document.body.textContent));
 });
