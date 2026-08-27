@@ -12,6 +12,11 @@ from app.services.auth_service import (
     authenticate_user,
 )
 
+from app.services.password_reset_service import (
+    create_password_reset_token,
+    reset_password,
+)
+
 
 class RegisterResource(Resource):
     def post(self):
@@ -141,4 +146,70 @@ class LogoutResource(Resource):
 
         except ValueError as error:
             return {"message": str(error)}, 401
+
+class ForgotPasswordResource(Resource):
+    def post(self):
+        data = request.get_json()
+
+        if not data:
+            return {"message": "Request body is required"}, 400
+
+        email = data.get("email")
+
+        if not email:
+            return {"message": "Email is required"}, 400
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            return {
+                "message": "If the email exists, a password reset link will be sent"
+            }, 200
+
+        if not user.is_active:
+            return {
+                "message": "If the email exists, a password reset link will be sent"
+            }, 200
+
+        reset_token = create_password_reset_token(user)
+
+        # Temporary response for development.
+        # In production, this token will be sent through email.
+        return {
+            "message": "Password reset token created",
+            "reset_token": reset_token,
+        }, 200   
+
+class ResetPasswordResource(Resource):
+    def post(self):
+        data = request.get_json()
+
+        if not data:
+            return {"message": "Request body is required"}, 400
+
+        token = data.get("token")
+        new_password = data.get("new_password")
+
+        if not token or not new_password:
+            return {
+                "message": "Token and new password are required"
+            }, 400
+
+        if len(new_password) < 8:
+            return {
+                "message": "Password must be at least 8 characters"
+            }, 400
+
+        try:
+            reset_password(
+                raw_token=token,
+                new_password=new_password,
+            )
+
+            return {
+                "message": "Password reset successfully"
+            }, 200
+
+        except ValueError as error:
+            return {"message": str(error)}, 400         
                 
