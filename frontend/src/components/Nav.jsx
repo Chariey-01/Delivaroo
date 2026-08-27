@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectIsAdmin, selectUser } from '../store/authSlice';
 import { showToast } from '../store/uiSlice';
 import { color, font, radius } from '../theme';
+import Logo from './Logo';
 
 const linkStyle = ({ isActive }) => ({
   fontSize: '14.5px',
@@ -36,11 +37,8 @@ export default function Nav() {
         fontFamily: font.body,
       }}
     >
-      <Link
-        to="/"
-        style={{ fontWeight: 800, fontSize: '18px', color: color.ink, textDecoration: 'none' }}
-      >
-        DELIVAROO
+      <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex' }}>
+        <Logo size={19} />
       </Link>
 
       <nav style={{ display: 'flex', gap: '18px', marginLeft: 'auto', alignItems: 'center' }}>
