@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { color, font, radius } from '../../theme';
+import Logo from '../Logo';
 
 /** The frame both auth screens sit in, so they cannot drift apart visually. */
 export default function AuthCard({ title, subtitle, children, footer }) {
@@ -27,17 +28,9 @@ export default function AuthCard({ title, subtitle, children, footer }) {
       >
         <Link
           to="/"
-          style={{
-            display: 'inline-block',
-            marginBottom: '18px',
-            fontWeight: 800,
-            fontSize: '18px',
-            letterSpacing: '.02em',
-            color: color.ink,
-            textDecoration: 'none',
-          }}
+          style={{ display: 'inline-flex', marginBottom: '18px', textDecoration: 'none' }}
         >
-          DELIVAROO
+          <Logo size={19} />
         </Link>
         <h1 style={{ margin: '0 0 8px', fontSize: 'clamp(24px,3.4vw,30px)', color: color.ink }}>{title}</h1>
         <p style={{ margin: '0 0 26px', fontSize: '14.5px', lineHeight: 1.55, color: color.body }}>
