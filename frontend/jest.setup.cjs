@@ -1,5 +1,11 @@
 require('@testing-library/jest-dom');
 
+// jsdom does not expose the WHATWG encoding globals that React Router 7 imports at
+// module load. Node has had them since 11; they just are not on jsdom's `window`.
+const { TextDecoder, TextEncoder } = require('node:util');
+if (!global.TextEncoder) global.TextEncoder = TextEncoder;
+if (!global.TextDecoder) global.TextDecoder = TextDecoder;
+
 // jsdom implements neither; layout code and scroll restoration call both.
 window.scrollTo = () => {};
 Element.prototype.scrollIntoView = () => {};
