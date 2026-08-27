@@ -10,6 +10,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { makeStore } from '../store';
 import { AppRoutes } from '../App';
+import { setTokens } from '../lib/tokenStorage';
 
 export const ADMIN_USER = {
   id: 2,
@@ -80,6 +81,21 @@ export function renderApp({ route = '/', preloadedState } = {}) {
     </Provider>,
   );
   return { ...utils, store };
+}
+
+/**
+ * Mount the app with `user` already signed in.
+ *
+ * A preloaded auth slice is not enough on its own, and that is the app behaving
+ * correctly rather than a quirk of the harness: AppLayout re-asks /auth/me on mount,
+ * and a store that claims a session while localStorage holds no token is a state the
+ * real app can never be in. So this seeds the token too, and stubs the endpoint the
+ * restore will call.
+ */
+export function renderSignedIn(user, { route = '/', routes = {} } = {}) {
+  setTokens({ access: 'test-access-token', refresh: 'test-refresh-token' });
+  mockApi({ 'GET /api/auth/me': ok({ user }), ...routes });
+  return renderApp({ route, preloadedState: signedInState(user) });
 }
 
 /** A store state with the session question already answered, for guard tests. */
