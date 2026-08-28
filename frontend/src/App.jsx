@@ -1,122 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AppLayout from "./routes/AppLayout";
+import LandingPage from "./routes/LandingPage";
+import BookPage from "./routes/BookPage";
+import Confirmation from "./routes/Confirmation";
+import TrackLookup from "./routes/TrackLookup";
+import TrackOrder from "./routes/TrackOrder";
+import OrderDetails from "./routes/OrderDetails";
+import MyOrders from "./routes/MyOrders";
+import AdminPortal from "./routes/admin/AdminPortal";
+import AdminOverview from "./routes/admin/AdminOverview";
+import AdminDeliveries from "./routes/admin/AdminDeliveries";
+import AdminCouriers from "./routes/admin/AdminCouriers";
+import AdminCapacity from "./routes/admin/AdminCapacity";
+import AdminAccounts from "./routes/admin/AdminAccounts";
+import AdminReports from "./routes/admin/AdminReports";
+import AdminNotifications from "./routes/admin/AdminNotifications";
+import AdminAudit from "./routes/admin/AdminAudit";
+import AdminSettings from "./routes/admin/AdminSettings";
+import NotFound from "./routes/NotFound";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+/** Split out so tests can mount the same route table inside a MemoryRouter. */
+export function AppRoutes() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/book" element={<BookPage />} />
+        <Route path="/track" element={<TrackLookup />} />
+        <Route path="/track/:id" element={<TrackOrder />} />
+        <Route path="/orders" element={<MyOrders />} />
+        <Route path="/orders/:id" element={<OrderDetails />} />
+        <Route path="/orders/:id/confirmation" element={<Confirmation />} />
+        {/* §27 — the admin portal: one gated shell, one section per job. */}
+        <Route path="/admin" element={<AdminPortal />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="deliveries" element={<AdminDeliveries />} />
+          <Route path="couriers" element={<AdminCouriers />} />
+          <Route path="capacity" element={<AdminCapacity />} />
+          <Route path="accounts" element={<AdminAccounts />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="audit" element={<AdminAudit />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
