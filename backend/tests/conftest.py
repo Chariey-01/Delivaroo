@@ -89,3 +89,18 @@ def sample_parcel(db_session, sample_user, sample_weight_category):
     db_session.add(parcel)
     db_session.commit()
     return parcel
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+def auth_headers_for(app, user):
+    from flask_jwt_extended import create_access_token
+
+    with app.app_context():
+        token = create_access_token(
+            identity=str(user.id),
+            additional_claims={"role": user.role},
+        )
+    return {"Authorization": f"Bearer {token}"}
