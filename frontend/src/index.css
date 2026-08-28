@@ -109,3 +109,41 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ---------------------------------------------------------------------------
+   Application shell (frontend foundation task).
+   Appended rather than folded into the block above so the Vite starter styling
+   the team already had stays intact and reviewable in the diff.
+   --------------------------------------------------------------------------- */
+
+/* The starter sets an 18px root and a dark-mode background that fight the app's
+   own light surfaces. Scope the app back to a normal baseline. */
+body {
+  margin: 0;
+  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #4a5a61;
+  background: #f3f1ed;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: #c4700f;
+}
+
+/* Used by components/ui/Spinner.jsx — inline styles cannot declare keyframes. */
+@keyframes delivaroo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes delivaroo-spin {
+    to {
+      transform: none;
+    }
+  }
+}
