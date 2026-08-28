@@ -9,6 +9,7 @@ from app.resources.auth import (
     RegisterResource,
 )
 from app.resources.admin_parcel import AdminParcelListResource
+from app.resources.admin_status import AdminParcelStatusResource
 
 
 def init_resources(app):
@@ -21,3 +22,4 @@ def init_resources(app):
     api.add_resource(ForgotPasswordResource, "/auth/forgot-password")
     api.add_resource(ResetPasswordResource, "/auth/reset-password")
     api.add_resource(AdminParcelListResource, "/admin/parcels")
+    api.add_resource(AdminParcelStatusResource, "/admin/parcels/<uuid:parcel_id>/status")
