@@ -1,15 +1,19 @@
 from flask_restful import Api
+from app.resources.auth import LoginResource, RegisterResource
+from app.resources.parcel import ParcelResource
 
 from app.resources.auth import (
     ForgotPasswordResource,
     ResetPasswordResource,
     LoginResource,
     LogoutResource,
+    MeResource,
     RefreshResource,
     RegisterResource,
 )
 from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_status import AdminParcelStatusResource
+from app.resources.parcel_cancel import ParcelCancelResource
 
 
 def init_resources(app):
@@ -23,3 +27,6 @@ def init_resources(app):
     api.add_resource(ResetPasswordResource, "/auth/reset-password")
     api.add_resource(AdminParcelListResource, "/admin/parcels")
     api.add_resource(AdminParcelStatusResource, "/admin/parcels/<uuid:parcel_id>/status")
+    api.add_resource(ParcelResource, "/api/parcels/<uuid:parcel_id>")
+    api.add_resource(ParcelCancelResource, "/parcels/<uuid:parcel_id>")
+    api.add_resource(MeResource, "/auth/me")

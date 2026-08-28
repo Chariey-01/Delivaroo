@@ -22,4 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test coverage reports (Jest) — build output, never committed.
 coverage
