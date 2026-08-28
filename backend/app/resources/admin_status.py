@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_restful import Resource
 
 from app.models.parcel import Parcel
+from app.extensions import db
 from app.services.admin_status_service import admin_update_status
 from app.services.status_history_service import (
     InvalidStatusError,
@@ -19,7 +20,7 @@ class AdminParcelStatusResource(Resource):
         if not data or "status" not in data:
             return {"message": "status is required"}, 400
 
-        parcel = Parcel.query.get(parcel_id)
+        parcel = db.session.get(Parcel, parcel_id)
         if not parcel:
             return {"message": "Parcel not found"}, 404
 
