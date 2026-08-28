@@ -101,3 +101,25 @@ class Parcel(db.Model):
         cascade="all, delete-orphan",
         order_by="StatusHistory.created_at",
     )
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "tracking_number": self.tracking_number,
+            "user_id": str(self.user_id),
+            "weight_category_id": str(self.weight_category_id),
+            "pickup_address": self.pickup_address,
+            "pickup_latitude": float(self.pickup_latitude) if self.pickup_latitude is not None else None,
+            "pickup_longitude": float(self.pickup_longitude) if self.pickup_longitude is not None else None,
+            "destination_address": self.destination_address,
+            "destination_latitude": float(self.destination_latitude) if self.destination_latitude is not None else None,
+            "destination_longitude": float(self.destination_longitude) if self.destination_longitude is not None else None,
+            "present_latitude": float(self.present_latitude) if self.present_latitude is not None else None,
+            "present_longitude": float(self.present_longitude) if self.present_longitude is not None else None,
+            "status": self.status,
+            "price": float(self.price),
+            "distance": float(self.distance) if self.distance is not None else None,
+            "duration": self.duration,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
