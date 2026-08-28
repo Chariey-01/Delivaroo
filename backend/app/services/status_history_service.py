@@ -87,3 +87,18 @@ def record_location_change(parcel, latitude, longitude, changed_by_id, notes=Non
     db.session.add(entry)
     db.session.commit()
     return entry
+
+def record_destination_change(parcel, old_address, new_address, changed_by_id):
+    """
+    Records a destination update for a parcel as a StatusHistory audit row.
+    Does not alter parcel.status. Commits the transaction.
+    """
+    entry = StatusHistory(
+        parcel_id=parcel.id,
+        changed_by=changed_by_id,
+        status=parcel.status,
+        notes=f"Destination updated from '{old_address}' to '{new_address}'",
+    )
+    db.session.add(entry)
+    db.session.commit()
+    return entry
