@@ -7,6 +7,7 @@ import App from './App';
 import 'leaflet/dist/leaflet.css';
 import './styles/global.css';
 
+// App owns the Redux Provider and the Router — see the note in App.jsx.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
