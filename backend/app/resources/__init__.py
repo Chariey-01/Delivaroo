@@ -24,6 +24,7 @@ from app.resources.address import (
     AddressResource,
     AddressSetDefaultResource,
 )
+from app.resources.profile import ProfileResource
 
 
 def init_resources(app):
@@ -74,3 +75,5 @@ def init_resources(app):
     api.add_resource(AddressListResource, "/addresses")
     api.add_resource(AddressResource, "/addresses/<uuid:address_id>")
     api.add_resource(AddressSetDefaultResource, "/addresses/<uuid:address_id>/default")
+
+    api.add_resource(ProfileResource, "/profile", "/api/profile")
