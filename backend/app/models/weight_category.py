@@ -48,4 +48,5 @@ class WeightCategory(db.Model):
         db.DateTime,
         nullable=False,
         server_default=db.func.now(),
+        onupdate=db.func.now(),
     )

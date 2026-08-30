@@ -14,8 +14,10 @@ from app.models import User, WeightCategory, Parcel
 class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "TEST_DATABASE_URL",
-        "postgresql://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test",
+        "sqlite:///:memory:",
     )
+    SECRET_KEY = "test-secret"
+    JWT_SECRET_KEY = "test-jwt-secret-with-at-least-thirty-two-bytes"
     TESTING = True
 
 
@@ -33,6 +35,11 @@ def db_session(app):
         _db.session.rollback()
         _db.session.remove()
         _db.drop_all()
+
+
+@pytest.fixture
+def client(app, db_session):
+    return app.test_client()
 
 
 @pytest.fixture
@@ -90,6 +97,40 @@ def sample_parcel(db_session, sample_user, sample_weight_category):
     db_session.commit()
     return parcel
 
+
+@pytest.fixture
+def auth_headers(client):
+    def _auth_headers(email=None, password="Password123!", role="user"):
+        email = email or f"user_{uuid.uuid4().hex[:8]}@example.com"
+        response = client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+        assert response.status_code == 201
+
+        if role != "user":
+            user = User.query.filter_by(email=email.lower()).first()
+            user.role = role
+            _db.session.commit()
+
+        login = client.post(
+            "/auth/login",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+        assert login.status_code == 200
+        access_token = login.get_json()["access_token"]
+
+        return {
+            "Authorization": f"Bearer {access_token}",
+        }
+
+    return _auth_headers
 @pytest.fixture
 def client(app):
     return app.test_client()
