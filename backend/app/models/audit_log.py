@@ -1,4 +1,5 @@
-from uuid import uuid4
+import uuid
+from datetime import datetime
 
 from app.extensions import db
 
@@ -9,7 +10,7 @@ class AuditLog(db.Model):
     id = db.Column(
         db.UUID(as_uuid=True),
         primary_key=True,
-        default=uuid4,
+        default=uuid.uuid4,
     )
 
     user_id = db.Column(
@@ -24,7 +25,7 @@ class AuditLog(db.Model):
     )
 
     entity_type = db.Column(
-        db.String(100),
+        db.String(50),
         nullable=False,
     )
 
@@ -34,12 +35,12 @@ class AuditLog(db.Model):
     )
 
     old_value = db.Column(
-        db.JSON,
+        db.Text,
         nullable=True,
     )
 
     new_value = db.Column(
-        db.JSON,
+        db.Text,
         nullable=True,
     )
 
@@ -51,5 +52,5 @@ class AuditLog(db.Model):
     created_at = db.Column(
         db.DateTime,
         nullable=False,
-        server_default=db.func.now(),
+        default=datetime.utcnow,
     )

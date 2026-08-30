@@ -9,7 +9,13 @@ from app.services.email_service import send_password_reset_email
 from app.services.token_service import (
     get_valid_refresh_token,
     revoke_refresh_token,
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    jwt_required,
 )
+
+from app.models.user import User
 
 from app.services.auth_service import (
     register_user,
@@ -21,6 +27,10 @@ from app.services.password_reset_service import (
     reset_password,
 )
 
+from app.services.token_service import (
+    get_valid_refresh_token,
+    revoke_refresh_token,
+)
 
 def serialize_user(user):
     return {
@@ -247,3 +257,25 @@ class ResetPasswordResource(Resource):
 
         except ValueError as error:
             return {"message": str(error)}, 400
+            return {"message": str(error)}, 400         
+        
+class MeResource(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+
+        user = User.query.get(user_id)
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        return {
+            "message": "Authenticated user retrieved successfully",
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "role": user.role,
+                "is_active": user.is_active,
+            },
+        }, 200        
+        

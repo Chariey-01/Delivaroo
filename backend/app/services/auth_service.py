@@ -27,8 +27,8 @@ def register_user(email: str, password: str) -> User:
     return user
 
 
-def authenticate_user(email: str, password: str) -> dict:
-    """Authenticate a user and return authentication tokens."""
+def authenticate_user(email: str, password: str) -> str:
+    """Authenticate a user and return an access token."""
 
     normalized_email = email.strip().lower()
 
