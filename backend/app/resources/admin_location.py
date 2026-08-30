@@ -38,9 +38,12 @@ class AdminParcelLocationResource(Resource):
                 admin_id=admin_id,
             )
 
+            parcel_data = parcel.to_dict()
+
             return {
                 "message": "Parcel location updated successfully",
-                "parcel": parcel.to_dict(),
+                "parcel": parcel_data,
+                "data": parcel_data,
             }, 200
 
         except ParcelLocationLockedError as error:
