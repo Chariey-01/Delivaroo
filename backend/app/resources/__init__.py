@@ -13,6 +13,11 @@ from app.resources.parcel import ParcelResource
 from app.resources.parcel_cancel import ParcelCancelResource
 from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_status import AdminParcelStatusResource
+from app.resources.address import (
+    AddressListResource,
+    AddressResource,
+    AddressSetDefaultResource,
+)
 from app.resources.admin_location import AdminParcelLocationResource
 
 from app.resources.parcel import ParcelDetailResource, ParcelListResource
@@ -36,4 +41,7 @@ def init_resources(app):
     api.add_resource(ParcelCancelResource, "/parcels/<uuid:parcel_id>")
     api.add_resource(AdminParcelListResource, "/admin/parcels")
     api.add_resource(AdminParcelStatusResource, "/admin/parcels/<uuid:parcel_id>/status")
+    api.add_resource(AddressListResource, "/addresses")
+    api.add_resource(AddressResource, "/addresses/<uuid:address_id>")
+    api.add_resource(AddressSetDefaultResource, "/addresses/<uuid:address_id>/default")
     api.add_resource(AdminParcelLocationResource, "/admin/parcels/<uuid:parcel_id>/location")
