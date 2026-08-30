@@ -38,6 +38,7 @@ class AdminParcelStatusResource(Resource):
 
             return {
                 "message": "Parcel status updated successfully",
+                "data": parcel.to_dict(),
                 "parcel": parcel.to_dict(),
             }, 200
 

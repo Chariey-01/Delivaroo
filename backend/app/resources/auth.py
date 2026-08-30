@@ -13,9 +13,19 @@ from app.services.password_reset_service import (
     reset_password,
 )
 from app.services.token_service import (
+    create_refresh_token,
     get_valid_refresh_token,
     revoke_refresh_token,
 )
+
+
+def bearer_token_from_header():
+    authorization = request.headers.get("Authorization", "")
+
+    if not authorization.lower().startswith("bearer "):
+        return None
+
+    return authorization.split(None, 1)[1].strip()
 
 
 def serialize_user(user):
@@ -45,9 +55,23 @@ class RegisterResource(Resource):
         except ValueError as error:
             return {"message": str(error)}, 409
 
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={"role": user.role},
+        )
+        refresh_token = create_refresh_token(user.id)
+        user_payload = serialize_user(user)
+
         return {
             "message": "User registered successfully",
-            "user": serialize_user(user),
+            "data": {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": user_payload,
+            },
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": user_payload,
         }, 201
 
 
@@ -71,6 +95,11 @@ class LoginResource(Resource):
 
         return {
             "message": "Login successful",
+            "data": {
+                "access_token": result["access_token"],
+                "refresh_token": result["refresh_token"],
+                "user": serialize_user(result["user"]),
+            },
             "access_token": result["access_token"],
             "refresh_token": result["refresh_token"],
             "user": serialize_user(result["user"]),
@@ -92,18 +121,16 @@ class MeResource(Resource):
 
         return {
             "message": "Authenticated user retrieved successfully",
+            "data": serialize_user(user),
             "user": serialize_user(user),
         }, 200
 
 
 class RefreshResource(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
 
-        if not data:
-            return {"message": "Request body is required"}, 400
-
-        refresh_token = data.get("refresh_token")
+        refresh_token = data.get("refresh_token") or bearer_token_from_header()
 
         if not refresh_token:
             return {"message": "Refresh token is required"}, 400
@@ -128,18 +155,18 @@ class RefreshResource(Resource):
 
         return {
             "message": "Access token refreshed successfully",
+            "data": {
+                "access_token": access_token,
+            },
             "access_token": access_token,
         }, 200
 
 
 class LogoutResource(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
 
-        if not data:
-            return {"message": "Request body is required"}, 400
-
-        refresh_token = data.get("refresh_token")
+        refresh_token = data.get("refresh_token") or bearer_token_from_header()
 
         if not refresh_token:
             return {"message": "Refresh token is required"}, 400

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from app.extensions import db
 from app.models import PasswordResetToken, RefreshToken, User
 from app.services.password_reset_service import create_password_reset_token
+from app.services.token_service import get_valid_refresh_token
 from app.utils.security import verify_password
 
 
@@ -154,7 +155,7 @@ def test_expired_and_invalid_refresh_token_rejected(client):
         json={"email": "expired-refresh@example.com", "password": "Password123!"},
     )
     raw_token = login.get_json()["refresh_token"]
-    stored_token = RefreshToken.query.first()
+    stored_token = get_valid_refresh_token(raw_token)
     stored_token.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     db.session.commit()
 
@@ -175,11 +176,12 @@ def test_logout_revokes_refresh_token(client):
         json={"email": "logout@example.com", "password": "Password123!"},
     )
     refresh_token = login.get_json()["refresh_token"]
+    stored_token = get_valid_refresh_token(refresh_token)
 
     response = client.post("/auth/logout", json={"refresh_token": refresh_token})
 
     assert response.status_code == 200
-    assert RefreshToken.query.first().revoked_at is not None
+    assert stored_token.revoked_at is not None
 
 
 def test_password_reset_token_expires(client):

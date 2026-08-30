@@ -20,6 +20,7 @@ class AdminParcelListResource(Resource):
                 page=page,
                 per_page=per_page,
             )
+            result["data"] = result["parcels"]
             return result, 200
 
         except InvalidFilterError as error:

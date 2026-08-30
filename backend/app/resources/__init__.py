@@ -18,15 +18,35 @@ from app.resources.parcel import ParcelListResource, ParcelResource
 def init_resources(app):
     api = Api(app)
 
-    api.add_resource(RegisterResource, "/auth/register")
-    api.add_resource(LoginResource, "/auth/login")
-    api.add_resource(RefreshResource, "/auth/refresh")
-    api.add_resource(LogoutResource, "/auth/logout")
-    api.add_resource(MeResource, "/auth/me")
-    api.add_resource(ForgotPasswordResource, "/auth/forgot-password")
-    api.add_resource(ResetPasswordResource, "/auth/reset-password")
+    api.add_resource(RegisterResource, "/auth/register", "/api/auth/register")
+    api.add_resource(LoginResource, "/auth/login", "/api/auth/login")
+    api.add_resource(RefreshResource, "/auth/refresh", "/api/auth/refresh")
+    api.add_resource(LogoutResource, "/auth/logout", "/api/auth/logout")
+    api.add_resource(MeResource, "/auth/me", "/api/auth/me")
+    api.add_resource(
+        ForgotPasswordResource,
+        "/auth/forgot-password",
+        "/api/auth/forgot-password",
+    )
+    api.add_resource(
+        ResetPasswordResource,
+        "/auth/reset-password",
+        "/api/auth/reset-password",
+    )
     api.add_resource(ParcelListResource, "/api/parcels")
-    api.add_resource(ParcelResource, "/api/parcels/<uuid:parcel_id>")
-    api.add_resource(AdminParcelListResource, "/admin/parcels")
-    api.add_resource(AdminParcelStatusResource, "/admin/parcels/<uuid:parcel_id>/status")
-    api.add_resource(ParcelCancelResource, "/parcels/<uuid:parcel_id>")
+    api.add_resource(
+        ParcelResource,
+        "/api/parcels/<uuid:parcel_id>",
+        "/api/parcels/<uuid:parcel_id>/destination",
+    )
+    api.add_resource(AdminParcelListResource, "/admin/parcels", "/api/admin/parcels")
+    api.add_resource(
+        AdminParcelStatusResource,
+        "/admin/parcels/<uuid:parcel_id>/status",
+        "/api/admin/parcels/<uuid:parcel_id>/status",
+    )
+    api.add_resource(
+        ParcelCancelResource,
+        "/parcels/<uuid:parcel_id>",
+        "/api/parcels/<uuid:parcel_id>/cancel",
+    )

@@ -9,7 +9,7 @@
 // changes if the backend settles on a different shape.
 
 import { del, get, post } from './client';
-import { clearTokens, setTokens } from '../lib/tokenStorage';
+import { clearTokens, getRefreshToken, setTokens } from '../lib/tokenStorage';
 
 /** Backend user record → the shape the store and components read. */
 export function normalizeUser(raw) {
@@ -74,7 +74,7 @@ export async function me() {
  */
 export async function logout() {
   try {
-    await post('/auth/logout');
+    await post('/auth/logout', { refresh_token: getRefreshToken() });
   } catch {
     /* already expired or unreachable — signing out locally is still correct */
   } finally {

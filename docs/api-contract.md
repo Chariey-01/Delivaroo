@@ -2,6 +2,8 @@
 
 ## Auth
 
+The auth endpoints are available both at `/auth/...` and `/api/auth/...`.
+
 ### POST /auth/register
 
 Authentication: not required.
@@ -20,6 +22,18 @@ Success: `201`
 ```json
 {
   "message": "User registered successfully",
+  "data": {
+    "access_token": "jwt",
+    "refresh_token": "opaque-token",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "user",
+      "is_active": true
+    }
+  },
+  "access_token": "jwt",
+  "refresh_token": "opaque-token",
   "user": {
     "id": "uuid",
     "email": "user@example.com",
@@ -49,6 +63,16 @@ Success: `200`
 ```json
 {
   "message": "Login successful",
+  "data": {
+    "access_token": "jwt",
+    "refresh_token": "opaque-token",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "user",
+      "is_active": true
+    }
+  },
   "access_token": "jwt",
   "refresh_token": "opaque-token",
   "user": {
@@ -64,7 +88,7 @@ Errors: `400` when the body, email, or password is missing. `401` for invalid cr
 
 ### POST /auth/refresh
 
-Authentication: not required. A valid persisted refresh token is required in the JSON body.
+Authentication: not required. A valid persisted refresh token is required in the JSON body or as a bearer token.
 
 Request JSON:
 
@@ -79,6 +103,9 @@ Success: `200`
 ```json
 {
   "message": "Access token refreshed successfully",
+  "data": {
+    "access_token": "jwt"
+  },
   "access_token": "jwt"
 }
 ```
@@ -87,7 +114,7 @@ Errors: `400` when the body or refresh token is missing. `401` when the refresh 
 
 ### POST /auth/logout
 
-Authentication: not required. A valid persisted refresh token is required in the JSON body.
+Authentication: not required. A valid persisted refresh token is required in the JSON body or as a bearer token.
 
 Request JSON:
 
@@ -115,6 +142,13 @@ Success: `200`
 
 ```json
 {
+  "message": "Authenticated user retrieved successfully",
+  "data": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "role": "user",
+    "is_active": true
+  },
   "user": {
     "id": "uuid",
     "email": "user@example.com",
@@ -200,6 +234,12 @@ Success: `201`
 ```json
 {
   "message": "Parcel created successfully",
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "price": "225.00"
+  },
   "parcel": {
     "id": "uuid",
     "tracking_number": "DLV-ABC1234567",
@@ -235,6 +275,7 @@ Success: `200`
 
 ```json
 {
+  "data": [],
   "parcels": []
 }
 ```
@@ -251,6 +292,12 @@ Success: `200`
 
 ```json
 {
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "price": "225.00"
+  },
   "parcel": {
     "id": "uuid",
     "tracking_number": "DLV-ABC1234567",
@@ -277,7 +324,9 @@ Admin-only endpoints additionally require the token's `role` claim to be `"admin
 
 ---
 
-## PATCH /parcels/:id
+## PATCH /api/parcels/:id
+
+Alias: `PATCH /api/parcels/:id/destination`
 
 Update a parcel's destination. Owner only.
 
@@ -305,6 +354,8 @@ Update a parcel's destination. Owner only.
 
 ## DELETE /parcels/:id
 
+Alias: `PATCH /api/parcels/:id/cancel`
+
 Soft-cancel a parcel (sets status to `CANCELLED`, does not delete the row). Owner only. Idempotent — cancelling an already-cancelled parcel returns 200 with no error.
 
 **Auth:** required (owner)
@@ -320,6 +371,8 @@ Soft-cancel a parcel (sets status to `CANCELLED`, does not delete the row). Owne
 ---
 
 ## GET /admin/parcels
+
+Alias: `GET /api/admin/parcels`
 
 List all parcels across all users. Admin only.
 

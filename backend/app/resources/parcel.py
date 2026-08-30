@@ -58,6 +58,7 @@ class ParcelListResource(Resource):
 
         return {
             "message": "Parcel created successfully",
+            "data": serialize_parcel(parcel),
             "parcel": serialize_parcel(parcel),
         }, 201
 
@@ -66,6 +67,7 @@ class ParcelListResource(Resource):
         parcels = list_user_parcels(get_jwt_identity())
 
         return {
+            "data": [serialize_parcel(parcel) for parcel in parcels],
             "parcels": [serialize_parcel(parcel) for parcel in parcels],
         }, 200
 
@@ -82,7 +84,10 @@ class ParcelResource(Resource):
         except (ParcelNotFoundError, ValueError):
             return {"message": "Parcel not found"}, 404
 
-        return {"parcel": serialize_parcel(parcel)}, 200
+        return {
+            "data": serialize_parcel(parcel),
+            "parcel": serialize_parcel(parcel),
+        }, 200
 
     @jwt_required()
     def patch(self, parcel_id):
@@ -113,5 +118,6 @@ class ParcelResource(Resource):
 
         return {
             "message": "Parcel destination updated successfully",
+            "data": updated_parcel.to_dict(),
             "parcel": updated_parcel.to_dict(),
         }, 200
