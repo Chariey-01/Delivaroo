@@ -15,5 +15,5 @@ __all__ = [
     "PasswordResetToken",
     "StatusHistory",
     "AuditLog",
-    "Address",
+    "Address"
 ]
