@@ -1,4 +1,5 @@
 from uuid import uuid4
+from datetime import datetime, timezone
 
 from app.extensions import db
 
@@ -86,6 +87,7 @@ class Parcel(db.Model):
     created_at = db.Column(
         db.DateTime,
         nullable=False,
+        default=lambda: datetime.now(timezone.utc),
         server_default=db.func.now(),
     )
 
@@ -93,6 +95,7 @@ class Parcel(db.Model):
         db.DateTime,
         nullable=False,
         server_default=db.func.now(),
+        onupdate=db.func.now(),
     )
 
     status_history = db.relationship(
