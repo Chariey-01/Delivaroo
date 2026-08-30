@@ -2,9 +2,9 @@ import pytest
 
 from app.models.status_history import StatusHistory
 from app.services.admin_location_service import (
-    InvalidLocationError,
-    ParcelLocationLockedError,
     admin_update_location,
+    ParcelLocationLockedError,
+    InvalidLocationError,
 )
 
 
@@ -30,7 +30,6 @@ def test_location_update_creates_history_row(db_session, sample_parcel, sample_a
     )
 
     entries = StatusHistory.query.filter_by(parcel_id=sample_parcel.id).all()
-
     assert len(entries) == 1
     assert entries[0].changed_by == sample_admin.id
     assert float(entries[0].latitude) == -1.2921
@@ -38,7 +37,6 @@ def test_location_update_creates_history_row(db_session, sample_parcel, sample_a
 
 def test_location_update_does_not_alter_status(db_session, sample_parcel, sample_admin):
     sample_parcel.status = "IN_TRANSIT"
-
     admin_update_location(
         parcel=sample_parcel,
         latitude=-1.2921,
