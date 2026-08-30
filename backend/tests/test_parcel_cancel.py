@@ -87,3 +87,25 @@ def test_cancelling_already_cancelled_parcel_is_idempotent(db_session, sample_pa
     assert result.status == "CANCELLED"
     entries = StatusHistory.query.filter_by(parcel_id=sample_parcel.id).all()
     assert len(entries) == 0
+
+
+# --- Idempotency ---
+#
+# Cancelling twice is not an error: the confirmation screen retries, and a retried
+# cancel that 400s would be a worse answer than a no-op. See the contract in
+# cancel_parcel's docstring.
+
+def test_cancelling_an_already_cancelled_parcel_is_idempotent(db_session, sample_parcel, sample_user):
+    cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
+
+    again = cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
+
+    assert again.status == "CANCELLED"
+
+
+def test_repeat_cancel_does_not_create_a_second_audit_row(db_session, sample_parcel, sample_user):
+    cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
+    cancel_parcel(parcel=sample_parcel, requester_id=sample_user.id)
+
+    entries = StatusHistory.query.filter_by(parcel_id=sample_parcel.id).all()
+    assert len(entries) == 1

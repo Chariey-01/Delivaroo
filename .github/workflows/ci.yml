@@ -12,7 +12,7 @@ on:
 
 jobs:
   frontend:
-    name: Frontend Build
+    name: Frontend Tests and Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -43,12 +43,29 @@ jobs:
         run: npm run build
 
   backend:
-    name: Backend Setup
+    name: Backend Tests and Build
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: backend
+
+    # tests/conftest.py builds TestConfig against a real Postgres (db.create_all()
+    # per test), so the suite needs a live server rather than an in-memory stand-in.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: deliveroo_user
+          POSTGRES_PASSWORD: deliveroo_pass
+          POSTGRES_DB: deliveroo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -64,6 +81,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Verify Python compilation
-        run: python -m compileall app
+      # Config.validate() raises unless both secrets are present; the values are
+      # irrelevant to the assertions, they only have to exist.
+      - name: Run backend tests
+        env:
+          SECRET_KEY: ci-secret-key-not-used-outside-tests
+          JWT_SECRET_KEY: ci-jwt-secret-key-not-used-outside-tests
+          TEST_DATABASE_URL: postgresql://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test
+        run: pytest
 
+      - name: Verify Python compilation
+        run: python3 -m compileall app
