@@ -131,11 +131,6 @@ def auth_headers(client):
         }
 
     return _auth_headers
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
 def auth_headers_for(app, user):
     from flask_jwt_extended import create_access_token
 
