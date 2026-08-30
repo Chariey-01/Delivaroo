@@ -77,7 +77,11 @@ def test_rejects_non_numeric_coordinates(db_session, sample_parcel, sample_admin
         )
 
 
-def test_rejects_location_update_on_delivered_parcel(db_session, sample_parcel, sample_admin):
+def test_rejects_location_update_on_delivered_parcel(
+    db_session,
+    sample_parcel,
+    sample_admin,
+):
     sample_parcel.status = "DELIVERED"
     db_session.commit()
 
@@ -90,7 +94,11 @@ def test_rejects_location_update_on_delivered_parcel(db_session, sample_parcel, 
         )
 
 
-def test_rejects_location_update_on_cancelled_parcel(db_session, sample_parcel, sample_admin):
+def test_rejects_location_update_on_cancelled_parcel(
+    db_session,
+    sample_parcel,
+    sample_admin,
+):
     sample_parcel.status = "CANCELLED"
     db_session.commit()
 

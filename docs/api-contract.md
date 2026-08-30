@@ -2,6 +2,8 @@
 
 ## Auth
 
+The auth endpoints are available both at `/auth/...` and `/api/auth/...`.
+
 ### POST /auth/register
 
 Authentication: not required.
@@ -20,6 +22,18 @@ Success: `201`
 ```json
 {
   "message": "User registered successfully",
+  "data": {
+    "access_token": "jwt",
+    "refresh_token": "opaque-token",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "user",
+      "is_active": true
+    }
+  },
+  "access_token": "jwt",
+  "refresh_token": "opaque-token",
   "user": {
     "id": "uuid",
     "email": "user@example.com",
@@ -49,6 +63,16 @@ Success: `200`
 ```json
 {
   "message": "Login successful",
+  "data": {
+    "access_token": "jwt",
+    "refresh_token": "opaque-token",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "user",
+      "is_active": true
+    }
+  },
   "access_token": "jwt",
   "refresh_token": "opaque-token",
   "user": {
@@ -64,7 +88,7 @@ Errors: `400` when the body, email, or password is missing. `401` for invalid cr
 
 ### POST /auth/refresh
 
-Authentication: not required. A valid persisted refresh token is required in the JSON body.
+Authentication: not required. A valid persisted refresh token is required in the JSON body or as a bearer token.
 
 Request JSON:
 
@@ -79,6 +103,9 @@ Success: `200`
 ```json
 {
   "message": "Access token refreshed successfully",
+  "data": {
+    "access_token": "jwt"
+  },
   "access_token": "jwt"
 }
 ```
@@ -87,7 +114,7 @@ Errors: `400` when the body or refresh token is missing. `401` when the refresh 
 
 ### POST /auth/logout
 
-Authentication: not required. A valid persisted refresh token is required in the JSON body.
+Authentication: not required. A valid persisted refresh token is required in the JSON body or as a bearer token.
 
 Request JSON:
 
@@ -115,6 +142,13 @@ Success: `200`
 
 ```json
 {
+  "message": "Authenticated user retrieved successfully",
+  "data": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "role": "user",
+    "is_active": true
+  },
   "user": {
     "id": "uuid",
     "email": "user@example.com",
@@ -200,6 +234,12 @@ Success: `201`
 ```json
 {
   "message": "Parcel created successfully",
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "price": "225.00"
+  },
   "parcel": {
     "id": "uuid",
     "tracking_number": "DLV-ABC1234567",
@@ -235,6 +275,7 @@ Success: `200`
 
 ```json
 {
+  "data": [],
   "parcels": []
 }
 ```
@@ -251,6 +292,12 @@ Success: `200`
 
 ```json
 {
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "price": "225.00"
+  },
   "parcel": {
     "id": "uuid",
     "tracking_number": "DLV-ABC1234567",
@@ -261,6 +308,61 @@ Success: `200`
 ```
 
 Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist, the ID is invalid, or the requesting regular user does not own it.
+
+### GET /api/parcels/track/{tracking_number}
+
+Authentication: JWT access token required.
+
+Authorization: parcel owners and admins can track a parcel by tracking number. Unrelated regular users receive `404`.
+
+Success: `200`
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "present_latitude": null,
+    "present_longitude": null
+  },
+  "parcel": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING"
+  }
+}
+```
+
+Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist or the requesting regular user does not own it.
+
+### GET /api/parcels/{id}/history
+
+Authentication: JWT access token required.
+
+Authorization: parcel owners and admins can view parcel status history. Unrelated regular users receive `404`.
+
+Success: `200`
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "parcel_id": "uuid",
+      "changed_by": "uuid",
+      "status": "PICKED_UP",
+      "latitude": null,
+      "longitude": null,
+      "notes": null,
+      "created_at": "iso-8601"
+    }
+  ],
+  "history": []
+}
+```
+
+Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist or the requesting regular user does not own it.
 # API Contract — Parcel & Admin Endpoints
 
 Documents endpoints owned by the backend parcel-management work
@@ -277,7 +379,9 @@ Admin-only endpoints additionally require the token's `role` claim to be `"admin
 
 ---
 
-## PATCH /parcels/:id
+## PATCH /api/parcels/:id
+
+Alias: `PATCH /api/parcels/:id/destination`
 
 Update a parcel's destination. Owner only.
 
@@ -305,6 +409,8 @@ Update a parcel's destination. Owner only.
 
 ## DELETE /parcels/:id
 
+Alias: `PATCH /api/parcels/:id/cancel`
+
 Soft-cancel a parcel (sets status to `CANCELLED`, does not delete the row). Owner only. Idempotent — cancelling an already-cancelled parcel returns 200 with no error.
 
 **Auth:** required (owner)
@@ -320,6 +426,8 @@ Soft-cancel a parcel (sets status to `CANCELLED`, does not delete the row). Owne
 ---
 
 ## GET /admin/parcels
+
+Alias: `GET /api/admin/parcels`
 
 List all parcels across all users. Admin only.
 
@@ -358,6 +466,32 @@ List all parcels across all users. Admin only.
   }
 }
 ```
+
+## PATCH /admin/parcels/:id/location
+
+Alias: `PATCH /api/admin/parcels/:id/location`
+
+Update a parcel's present location. Admin only.
+
+**Auth:** required (role: admin)
+
+**Body:**
+```json
+{
+  "latitude": number,
+  "longitude": number,
+  "address": "optional string"
+}
+```
+
+**Responses:**
+| Status | Meaning |
+|---|---|
+| 200 | Updated successfully, returns updated parcel |
+| 400 | Invalid or missing coordinates |
+| 403 | Requester is not an admin |
+| 404 | Parcel not found |
+| 409 | Parcel is delivered or cancelled |
 
 **Known limitation:** `owner` currently only includes `email`. The owner's
 name is not yet available because the `profiles` model (per the ERD) has
