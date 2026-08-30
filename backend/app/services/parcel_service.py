@@ -221,8 +221,8 @@ def create_parcel(
     )
 
     db.session.add(parcel)
-    # Darren owns StatusHistory/Notifications; integrate initial history when
-    # that feature exposes a stable creation function for PENDING events.
+    # Integrate initial status history/notifications once those features expose
+    # a stable creation function for PENDING events.
     db.session.commit()
 
     return parcel
