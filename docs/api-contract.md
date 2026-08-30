@@ -308,6 +308,61 @@ Success: `200`
 ```
 
 Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist, the ID is invalid, or the requesting regular user does not own it.
+
+### GET /api/parcels/track/{tracking_number}
+
+Authentication: JWT access token required.
+
+Authorization: parcel owners and admins can track a parcel by tracking number. Unrelated regular users receive `404`.
+
+Success: `200`
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING",
+    "present_latitude": null,
+    "present_longitude": null
+  },
+  "parcel": {
+    "id": "uuid",
+    "tracking_number": "DLV-ABC1234567",
+    "status": "PENDING"
+  }
+}
+```
+
+Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist or the requesting regular user does not own it.
+
+### GET /api/parcels/{id}/history
+
+Authentication: JWT access token required.
+
+Authorization: parcel owners and admins can view parcel status history. Unrelated regular users receive `404`.
+
+Success: `200`
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "parcel_id": "uuid",
+      "changed_by": "uuid",
+      "status": "PICKED_UP",
+      "latitude": null,
+      "longitude": null,
+      "notes": null,
+      "created_at": "iso-8601"
+    }
+  ],
+  "history": []
+}
+```
+
+Errors: `401` when the JWT is missing or invalid. `404` when the parcel does not exist or the requesting regular user does not own it.
 # API Contract — Parcel & Admin Endpoints
 
 Documents endpoints owned by the backend parcel-management work
@@ -411,6 +466,32 @@ List all parcels across all users. Admin only.
   }
 }
 ```
+
+## PATCH /admin/parcels/:id/location
+
+Alias: `PATCH /api/admin/parcels/:id/location`
+
+Update a parcel's present location. Admin only.
+
+**Auth:** required (role: admin)
+
+**Body:**
+```json
+{
+  "latitude": number,
+  "longitude": number,
+  "address": "optional string"
+}
+```
+
+**Responses:**
+| Status | Meaning |
+|---|---|
+| 200 | Updated successfully, returns updated parcel |
+| 400 | Invalid or missing coordinates |
+| 403 | Requester is not an admin |
+| 404 | Parcel not found |
+| 409 | Parcel is delivered or cancelled |
 
 **Known limitation:** `owner` currently only includes `email`. The owner's
 name is not yet available because the `profiles` model (per the ERD) has

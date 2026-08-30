@@ -4,6 +4,7 @@ from flask_restful import Resource
 
 from app.extensions import db
 from app.models.parcel import Parcel
+from app.models.status_history import StatusHistory
 from app.services.parcel_service import (
     ParcelNotFoundError,
     create_parcel,
@@ -120,4 +121,52 @@ class ParcelResource(Resource):
             "message": "Parcel destination updated successfully",
             "data": updated_parcel.to_dict(),
             "parcel": updated_parcel.to_dict(),
+        }, 200
+
+
+class ParcelTrackingResource(Resource):
+    @jwt_required()
+    def get(self, tracking_number):
+        parcel = Parcel.query.filter_by(tracking_number=tracking_number).first()
+
+        if not parcel:
+            return {"message": "Parcel not found"}, 404
+
+        try:
+            visible_parcel = get_visible_parcel(
+                parcel_id=parcel.id,
+                user_id=get_jwt_identity(),
+                role=get_jwt().get("role"),
+            )
+        except (ParcelNotFoundError, ValueError):
+            return {"message": "Parcel not found"}, 404
+
+        return {
+            "data": serialize_parcel(visible_parcel),
+            "parcel": serialize_parcel(visible_parcel),
+        }, 200
+
+
+class ParcelHistoryResource(Resource):
+    @jwt_required()
+    def get(self, parcel_id):
+        try:
+            parcel = get_visible_parcel(
+                parcel_id=parcel_id,
+                user_id=get_jwt_identity(),
+                role=get_jwt().get("role"),
+            )
+        except (ParcelNotFoundError, ValueError):
+            return {"message": "Parcel not found"}, 404
+
+        history = (
+            StatusHistory.query.filter_by(parcel_id=parcel.id)
+            .order_by(StatusHistory.created_at.asc(), StatusHistory.id.asc())
+            .all()
+        )
+        data = [entry.to_dict() for entry in history]
+
+        return {
+            "data": data,
+            "history": data,
         }, 200

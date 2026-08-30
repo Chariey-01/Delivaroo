@@ -11,8 +11,14 @@ from app.resources.auth import (
 )
 from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_status import AdminParcelStatusResource
+from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.parcel_cancel import ParcelCancelResource
-from app.resources.parcel import ParcelListResource, ParcelResource
+from app.resources.parcel import (
+    ParcelHistoryResource,
+    ParcelListResource,
+    ParcelResource,
+    ParcelTrackingResource,
+)
 
 
 def init_resources(app):
@@ -46,7 +52,14 @@ def init_resources(app):
         "/api/admin/parcels/<uuid:parcel_id>/status",
     )
     api.add_resource(
+        AdminParcelLocationResource,
+        "/admin/parcels/<uuid:parcel_id>/location",
+        "/api/admin/parcels/<uuid:parcel_id>/location",
+    )
+    api.add_resource(
         ParcelCancelResource,
         "/parcels/<uuid:parcel_id>",
         "/api/parcels/<uuid:parcel_id>/cancel",
     )
+    api.add_resource(ParcelTrackingResource, "/api/parcels/track/<string:tracking_number>")
+    api.add_resource(ParcelHistoryResource, "/api/parcels/<uuid:parcel_id>/history")
