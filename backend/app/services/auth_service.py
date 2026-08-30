@@ -9,13 +9,15 @@ from app.services.token_service import create_refresh_token
 def register_user(email: str, password: str) -> User:
     """Create and persist a new user."""
 
-    existing_user = User.query.filter_by(email=email).first()
+    normalized_email = email.strip().lower()
+
+    existing_user = User.query.filter_by(email=normalized_email).first()
 
     if existing_user:
         raise ValueError("Email already registered")
 
     user = User(
-        email=email,
+        email=normalized_email,
         password_hash=hash_password(password),
     )
 
@@ -25,10 +27,12 @@ def register_user(email: str, password: str) -> User:
     return user
 
 
-def authenticate_user(email: str, password: str) -> dict:
-    """Authenticate a user and return authentication tokens."""
+def authenticate_user(email: str, password: str) -> str:
+    """Authenticate a user and return an access token."""
 
-    user = User.query.filter_by(email=email).first()
+    normalized_email = email.strip().lower()
+
+    user = User.query.filter_by(email=normalized_email).first()
 
     if not user or not verify_password(password, user.password_hash):
         raise ValueError("Invalid email or password")

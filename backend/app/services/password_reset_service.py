@@ -16,6 +16,13 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _as_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+
+    return value.astimezone(timezone.utc)
+
+
 def create_password_reset_token(user: User) -> str:
     """Create and persist a password-reset token for a user."""
 
@@ -53,7 +60,7 @@ def get_valid_password_reset_token(raw_token: str) -> PasswordResetToken:
     if reset_token.used_at is not None:
         raise ValueError("Password reset token has already been used")
 
-    if reset_token.expires_at <= datetime.now(timezone.utc):
+    if _as_aware_utc(reset_token.expires_at) <= datetime.now(timezone.utc):
         raise ValueError("Password reset token has expired")
 
     return reset_token
@@ -64,7 +71,7 @@ def reset_password(raw_token: str, new_password: str) -> User:
 
     reset_token = get_valid_password_reset_token(raw_token)
 
-    user = User.query.get(reset_token.user_id)
+    user = db.session.get(User, reset_token.user_id)
 
     if not user:
         raise ValueError("User not found")

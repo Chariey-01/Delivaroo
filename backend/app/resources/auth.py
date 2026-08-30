@@ -1,11 +1,21 @@
-from flask import request
+from flask import current_app, request
 from flask_restful import Resource
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from uuid import UUID
+
+from app.extensions import db
 from app.models.user import User
+from app.services.email_service import send_password_reset_email
 from app.services.token_service import (
     get_valid_refresh_token,
     revoke_refresh_token,
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    jwt_required,
 )
+
+from app.models.user import User
 
 from app.services.auth_service import (
     register_user,
@@ -16,6 +26,19 @@ from app.services.password_reset_service import (
     create_password_reset_token,
     reset_password,
 )
+
+from app.services.token_service import (
+    get_valid_refresh_token,
+    revoke_refresh_token,
+)
+
+def serialize_user(user):
+    return {
+        "id": str(user.id),
+        "email": user.email,
+        "role": user.role,
+        "is_active": user.is_active,
+    }
 
 
 class RegisterResource(Resource):
@@ -41,11 +64,7 @@ class RegisterResource(Resource):
 
             return {
                 "message": "User registered successfully",
-                "user": {
-                    "id": str(user.id),
-                    "email": user.email,
-                    "role": user.role,
-                },
+                "user": serialize_user(user),
             }, 201
 
         except ValueError as error:
@@ -77,15 +96,29 @@ class LoginResource(Resource):
                 "message": "Login successful",
                 "access_token": result["access_token"],
                 "refresh_token": result["refresh_token"],
-                "user": {
-                    "id": str(result["user"].id),
-                    "email": result["user"].email,
-                    "role": result["user"].role,
-                },
+                "user": serialize_user(result["user"]),
             }, 200
 
         except ValueError as error:
             return {"message": str(error)}, 401
+
+
+class MeResource(Resource):
+    @jwt_required()
+    def get(self):
+        try:
+            user_id = UUID(get_jwt_identity())
+        except ValueError:
+            return {"message": "User not found"}, 404
+
+        user = db.session.get(User, user_id)
+
+        if not user or not user.is_active:
+            return {"message": "User not found"}, 404
+
+        return {
+            "user": serialize_user(user),
+        }, 200
 
 class RefreshResource(Resource):
     def post(self):
@@ -102,7 +135,7 @@ class RefreshResource(Resource):
         try:
             stored_token = get_valid_refresh_token(refresh_token)
 
-            user = User.query.get(stored_token.user_id)
+            user = db.session.get(User, stored_token.user_id)
 
             if not user:
                 return {"message": "User not found"}, 404
@@ -159,7 +192,7 @@ class ForgotPasswordResource(Resource):
         if not email:
             return {"message": "Email is required"}, 400
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email.strip().lower()).first()
 
         if not user:
             return {
@@ -173,12 +206,24 @@ class ForgotPasswordResource(Resource):
 
         reset_token = create_password_reset_token(user)
 
-        # Temporary response for development.
-        # In production, this token will be sent through email.
-        return {
-            "message": "Password reset token created",
-            "reset_token": reset_token,
-        }, 200   
+        try:
+            send_password_reset_email(user.email, reset_token)
+        except RuntimeError:
+            if not current_app.testing:
+                current_app.logger.warning(
+                    "Password reset email skipped because email service is not configured"
+                )
+        except Exception:
+            current_app.logger.exception("Password reset email delivery failed")
+
+        response = {
+            "message": "If the email exists, a password reset link will be sent"
+        }
+
+        if current_app.testing:
+            response["reset_token"] = reset_token
+
+        return response, 200
 
 class ResetPasswordResource(Resource):
     def post(self):
@@ -211,5 +256,26 @@ class ResetPasswordResource(Resource):
             }, 200
 
         except ValueError as error:
+            return {"message": str(error)}, 400
             return {"message": str(error)}, 400         
-                
+        
+class MeResource(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+
+        user = User.query.get(user_id)
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        return {
+            "message": "Authenticated user retrieved successfully",
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "role": user.role,
+                "is_active": user.is_active,
+            },
+        }, 200        
+        
