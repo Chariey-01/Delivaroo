@@ -17,6 +17,8 @@ Request JSON:
 }
 ```
 
+The same endpoint also accepts frontend-friendly aliases: `weightCategoryId`, `pickup: { address, lat, lng }`, `destination: { address, lat, lng }`, `distanceKm`, and `durationSeconds`.
+
 Success: `201`
 
 ```json
@@ -395,6 +397,8 @@ Update a parcel's destination. Owner only.
   "destination_longitude": number
 }
 ```
+
+The alias route also accepts `{ "address": "string", "lat": number, "lng": number }` or a nested `destination` object with those fields.
 
 **Responses:**
 | Status | Meaning |
