@@ -1,6 +1,7 @@
 from app.extensions import db
 from app.models.parcel import Parcel
 from app.models.user import User
+from app.models.transport import TRANSPORT_MODES
 
 
 VALID_STATUSES = {
@@ -17,7 +18,7 @@ class InvalidFilterError(ValueError):
     """Raised when a filter or pagination parameter is invalid."""
 
 
-def list_all_parcels(status=None, tracking_number=None, page=1, per_page=20):
+def list_all_parcels(status=None, tracking_number=None, transport_mode=None, page=1, per_page=20):
     """
     Returns a paginated list of all parcels across all users, optionally
     filtered by status and/or a tracking number search.
@@ -27,6 +28,8 @@ def list_all_parcels(status=None, tracking_number=None, page=1, per_page=20):
     """
     if status is not None and status not in VALID_STATUSES:
         raise InvalidFilterError(f"'{status}' is not a valid parcel status")
+    if transport_mode is not None and transport_mode not in TRANSPORT_MODES:
+        raise InvalidFilterError(f"'{transport_mode}' is not a valid transport mode")
 
     try:
         page = int(page)
@@ -47,6 +50,8 @@ def list_all_parcels(status=None, tracking_number=None, page=1, per_page=20):
 
     if tracking_number:
         query = query.filter(Parcel.tracking_number.ilike(f"%{tracking_number}%"))
+    if transport_mode is not None:
+        query = query.filter(Parcel.transport_mode == transport_mode)
 
     query = query.order_by(Parcel.created_at.desc())
 

@@ -10,6 +10,7 @@ class AdminParcelListResource(Resource):
     def get(self):
         status = request.args.get("status")
         tracking_number = request.args.get("tracking_number")
+        transport_mode = request.args.get("transport_mode")
         page = request.args.get("page", 1)
         per_page = request.args.get("per_page", 20)
 
@@ -17,6 +18,7 @@ class AdminParcelListResource(Resource):
             result = list_all_parcels(
                 status=status,
                 tracking_number=tracking_number,
+                transport_mode=transport_mode,
                 page=page,
                 per_page=per_page,
             )

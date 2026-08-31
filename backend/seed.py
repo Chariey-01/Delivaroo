@@ -10,10 +10,11 @@ from sqlalchemy import or_, select
 
 from app import create_app
 from app.extensions import db
-from app.models import Address, AuditLog, Parcel, StatusHistory, User, WeightCategory
+from app.models import Address, AuditLog, DeliveryAgent, Parcel, StatusHistory, User, WeightCategory
 from app.services.parcel_service import calculate_parcel_price
 from app.services.status_history_service import VALID_STATUSES
 from app.utils.security import hash_password
+from app.utils.geo import haversine_distance_km
 
 
 DEMO_DOMAIN = "demo.delivaroo.test"
@@ -46,6 +47,17 @@ WEIGHT_CATEGORIES = (
     ("Freight", Decimal("25.01"), Decimal("100.00"), Decimal("900.00"), Decimal("65.00")),
 )
 
+DEMO_AGENTS = (
+    ("Noah Kamau", "noah.kamau@demo.delivaroo.test", "+254700000101", "MOTORBIKE"),
+    ("Wanjiku Muli", "wanjiku.muli@demo.delivaroo.test", "+254700000102", "MOTORBIKE"),
+    ("Tobias Kiprono", "tobias.kiprono@demo.delivaroo.test", "+254700000201", "TRUCK"),
+    ("Aisha Noor", "aisha.noor@demo.delivaroo.test", "+254700000202", "TRUCK"),
+    ("Musa Bakari", "musa.bakari@demo.delivaroo.test", "+254700000301", "SHIP"),
+    ("Zawadi Said", "zawadi.said@demo.delivaroo.test", "+254700000302", "SHIP"),
+    ("Nia Wekesa", "nia.wekesa@demo.delivaroo.test", "+254700000401", "AIR"),
+    ("Eli Mwangi", "eli.mwangi@demo.delivaroo.test", "+254700000402", "AIR"),
+)
+
 LOCATIONS = (
     ("Nairobi", "Kenyatta Avenue, Nairobi", Decimal("-1.2863890"), Decimal("36.8172230")),
     ("Nakuru", "Kenyatta Avenue, Nakuru", Decimal("-0.3030990"), Decimal("36.0800250")),
@@ -55,6 +67,7 @@ LOCATIONS = (
     ("Naivasha", "Kenyatta Avenue, Naivasha", Decimal("-0.7172080"), Decimal("36.4310000")),
     ("Thika", "Kenyatta Highway, Thika", Decimal("-1.0395950"), Decimal("37.0900080")),
     ("Machakos", "Mwatu wa Ngoma Road, Machakos", Decimal("-1.5176830"), Decimal("37.2634140")),
+    ("Zanzibar", "Stone Town, Zanzibar", Decimal("-6.1659170"), Decimal("39.2026410")),
 )
 
 STATUS_DISTRIBUTION = (
@@ -129,6 +142,19 @@ def _upsert_weight_category(spec):
     return category
 
 
+def _upsert_delivery_agent(spec):
+    name, email, phone, transport_mode = spec
+    agent = DeliveryAgent.query.filter_by(email=email).one_or_none()
+    if agent is None:
+        agent = DeliveryAgent(email=email)
+        db.session.add(agent)
+    agent.name = name
+    agent.phone = phone
+    agent.transport_mode = transport_mode
+    agent.is_active = True
+    return agent
+
+
 def _upsert_address(user, label, location, is_default):
     city, address_line, latitude, longitude = location
     address = Address.query.filter_by(user_id=user.id, label=label).one_or_none()
@@ -186,13 +212,20 @@ def _upsert_audit(parcel, actor_id, action, old_value, new_value, created_at):
         entry.created_at = created_at
 
 
-def _seed_parcel(index, status, users, categories, admin):
+def _seed_parcel(index, status, users, categories, agents_by_mode, admin):
     owner = users[index % len(users)]
     category = categories[index % len(categories)]
-    pickup = LOCATIONS[index % len(LOCATIONS)]
-    destination = LOCATIONS[(index + 3) % len(LOCATIONS)]
+    transport_mode = ("MOTORBIKE", "TRUCK", "SHIP", "AIR")[index % 4]
+    if transport_mode == "SHIP":
+        pickup, destination = LOCATIONS[2], LOCATIONS[8]
+    elif transport_mode == "AIR":
+        pickup, destination = LOCATIONS[0], LOCATIONS[2]
+    else:
+        pickup = LOCATIONS[index % 8]
+        destination = LOCATIONS[(index + 3) % 8]
+    agent = agents_by_mode[transport_mode][index % len(agents_by_mode[transport_mode])]
     created_at = _demo_timestamp(index)
-    distance = Decimal(12 + ((index * 7) % 180)).quantize(Decimal("0.01"))
+    distance = Decimal(str(haversine_distance_km(pickup[2], pickup[3], destination[2], destination[3]))).quantize(Decimal("0.01"))
     duration = int(distance * Decimal("3.2")) + 12
     tracking_number = f"{DEMO_TRACKING_PREFIX}{index + 1:04d}"
 
@@ -203,6 +236,8 @@ def _seed_parcel(index, status, users, categories, admin):
 
     parcel.user_id = owner.id
     parcel.weight_category_id = category.id
+    parcel.delivery_agent_id = agent.id
+    parcel.transport_mode = transport_mode
     parcel.pickup_address = pickup[1]
     parcel.pickup_latitude = pickup[2]
     parcel.pickup_longitude = pickup[3]
@@ -286,6 +321,7 @@ def reset_demo_data():
         )
     )
     demo_emails = [demo_admin_email(), *(f"{slug}@{DEMO_DOMAIN}" for slug, _ in DEMO_USERS)]
+    agent_ids = list(db.session.scalars(select(DeliveryAgent.id).where(DeliveryAgent.email.like(f"%@{DEMO_DOMAIN}"))))
     user_ids = list(db.session.scalars(select(User.id).where(User.email.in_(demo_emails))))
 
     if parcel_ids or user_ids:
@@ -300,12 +336,15 @@ def reset_demo_data():
     if user_ids:
         db.session.query(Address).filter(Address.user_id.in_(user_ids)).delete(synchronize_session=False)
         db.session.query(User).filter(User.id.in_(user_ids)).delete(synchronize_session=False)
+    if agent_ids:
+        db.session.query(DeliveryAgent).filter(DeliveryAgent.id.in_(agent_ids)).delete(synchronize_session=False)
 
 
 def demo_counts():
     """Return the supported demo model counts for reporting and tests."""
     return {
         "users": User.query.filter(User.email.like(f"%@{DEMO_DOMAIN}")).count(),
+        "delivery_agents": DeliveryAgent.query.filter(DeliveryAgent.email.like(f"%@{DEMO_DOMAIN}")).count(),
         "weight_categories": WeightCategory.query.filter(
             WeightCategory.name.in_([spec[0] for spec in WEIGHT_CATEGORIES])
         ).count(),
@@ -344,14 +383,19 @@ def seed_demo_data(*, reset=False):
             for index, (slug, _) in enumerate(DEMO_USERS)
         ]
         categories = [_upsert_weight_category(spec) for spec in WEIGHT_CATEGORIES]
+        agents = [_upsert_delivery_agent(spec) for spec in DEMO_AGENTS]
         db.session.flush()
+        agents_by_mode = {
+            mode: [agent for agent in agents if agent.transport_mode == mode]
+            for mode in {"MOTORBIKE", "TRUCK", "SHIP", "AIR"}
+        }
 
         for index, user in enumerate(users):
             _upsert_address(user, "Home", LOCATIONS[index % len(LOCATIONS)], True)
             _upsert_address(user, "Office", LOCATIONS[(index + 2) % len(LOCATIONS)], False)
 
         for index, status in enumerate(_status_sequence()):
-            _seed_parcel(index, status, users, categories, admin)
+            _seed_parcel(index, status, users, categories, agents_by_mode, admin)
 
         db.session.commit()
     except Exception:
