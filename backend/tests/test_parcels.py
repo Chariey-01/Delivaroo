@@ -1,7 +1,7 @@
 import uuid
 
 from app.extensions import db
-from app.models import Parcel, User
+from app.models import Parcel, StatusHistory, User
 
 
 def parcel_payload(category, **overrides):
@@ -55,6 +55,22 @@ def test_parcel_create_rejects_invalid_transport_mode(client, auth_headers, samp
 
     assert response.status_code == 400
     assert response.get_json()["message"] == "Invalid transport mode"
+
+
+def test_parcel_create_records_initial_status_history(client, auth_headers, sample_weight_category):
+    response = client.post(
+        "/api/parcels",
+        json=parcel_payload(sample_weight_category),
+        headers=auth_headers(),
+    )
+
+    parcel_id = uuid.UUID(response.get_json()["parcel"]["id"])
+    entries = StatusHistory.query.filter_by(parcel_id=parcel_id).all()
+
+    assert response.status_code == 201
+    assert len(entries) == 1
+    assert entries[0].status == "PENDING"
+    assert entries[0].notes == "Parcel created"
 
 
 def test_create_requires_authentication(client, sample_weight_category):

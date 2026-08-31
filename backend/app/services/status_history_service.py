@@ -31,6 +31,22 @@ class InvalidStatusTransitionError(ValueError):
     """Raised when a status change does not follow the allowed flow."""
 
 
+def record_initial_status(parcel, changed_by_id, latitude=None, longitude=None, notes=None):
+    """Append the initial history row for a newly created parcel."""
+
+    entry = StatusHistory(
+        parcel_id=parcel.id,
+        changed_by=changed_by_id,
+        status=parcel.status,
+        latitude=latitude,
+        longitude=longitude,
+        notes=notes,
+    )
+    db.session.add(entry)
+    db.session.commit()
+    return entry
+
+
 def record_status_change(parcel, new_status, changed_by_id, latitude=None, longitude=None, notes=None):
     """
     Validates and applies a status transition on a parcel, then appends
