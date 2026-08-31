@@ -89,7 +89,7 @@ export default function DeliveryTable({ orders, selectedId, onSelect }) {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '9px', flexWrap: 'wrap' }}>
                 <span style={{ fontFamily: font.mono, fontSize: '12px', letterSpacing: '.06em', color: color.muted }}>
-                  {order.id}
+                  {order.trackingNumber || order.id}
                 </span>
                 <StatusPill status={order.status} size="sm" />
                 <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 700, color: color.ink }}>
@@ -172,7 +172,7 @@ export default function DeliveryTable({ orders, selectedId, onSelect }) {
                       cursor: 'pointer'
                     }}
                   >
-                    {order.id}
+                    {order.trackingNumber || order.id}
                   </button>
                 </td>
                 <td style={quiet}>{order.sender?.name || '—'}</td>
