@@ -1,14 +1,16 @@
-from flask import request
+from flask import request, current_app
 from flask_jwt_extended import get_jwt_identity
 from flask_restful import Resource
 
 from app.models.parcel import Parcel
+from app.models.user import User
 from app.extensions import db
 from app.services.admin_status_service import admin_update_status
 from app.services.status_history_service import (
     InvalidStatusError,
     InvalidStatusTransitionError,
 )
+from app.services.notification_service import notify_status_change_async
 from app.utils.auth_decorators import admin_required
 
 
@@ -36,6 +38,15 @@ class AdminParcelStatusResource(Resource):
                 notes=notes,
             )
 
+            owner = db.session.get(User, parcel.user_id)
+            if owner:
+                notify_status_change_async(
+                    current_app._get_current_object(),
+                    owner.email,
+                    parcel.tracking_number,
+                    new_status,
+                )
+
             return {
                 "message": "Parcel status updated successfully",
                 "data": parcel.to_dict(),
@@ -44,6 +55,5 @@ class AdminParcelStatusResource(Resource):
 
         except InvalidStatusError as error:
             return {"message": str(error)}, 400
-
         except InvalidStatusTransitionError as error:
             return {"message": str(error)}, 400
