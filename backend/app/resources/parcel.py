@@ -143,6 +143,7 @@ class ParcelListResource(Resource):
                 ),
                 distance=_first_value(data, "distance", "distanceKm"),
                 duration=_duration_value(data),
+                transport_mode=_first_value(data, "transport_mode", "transportMode") or "MOTORBIKE",
             )
         except ValueError as error:
             return {"message": str(error)}, 400

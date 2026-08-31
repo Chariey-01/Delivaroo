@@ -80,6 +80,7 @@ def test_create_parcel_accepts_frontend_nested_payload(
             },
             "distanceKm": 12.5,
             "durationSeconds": 2100,
+            "transportMode": "AIR",
             "price": 1,
         },
         headers=auth_headers(),
@@ -92,6 +93,7 @@ def test_create_parcel_accepts_frontend_nested_payload(
     assert data["distance"] == "12.50"
     assert data["duration"] == 35
     assert data["price"] == "225.00"
+    assert data["transport_mode"] == "AIR"
 
 
 def test_destination_update_alias_works_for_frontend(

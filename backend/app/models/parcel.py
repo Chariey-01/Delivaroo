@@ -1,6 +1,8 @@
 from uuid import uuid4
 from datetime import datetime, timezone
+from sqlalchemy.orm import validates
 from app.extensions import db
+from app.models.transport import TRANSPORT_MODES
 
 
 class Parcel(db.Model):
@@ -25,6 +27,11 @@ class Parcel(db.Model):
         db.UUID(as_uuid=True),
         db.ForeignKey("weight_categories.id"),
         nullable=False,
+    )
+    transport_mode = db.Column(
+        db.String(20),
+        nullable=False,
+        default="MOTORBIKE",
     )
     pickup_address = db.Column(
         db.String(255),
@@ -86,6 +93,11 @@ class Parcel(db.Model):
         cascade="all, delete-orphan",
         order_by="StatusHistory.created_at",
     )
+    @validates("transport_mode")
+    def validate_transport_mode(self, key, transport_mode):
+        if transport_mode not in TRANSPORT_MODES:
+            raise ValueError("Invalid transport mode")
+        return transport_mode
 
     def to_dict(self):
         return {
@@ -93,6 +105,8 @@ class Parcel(db.Model):
             "tracking_number": self.tracking_number,
             "user_id": str(self.user_id),
             "weight_category_id": str(self.weight_category_id),
+            "transport_mode": self.transport_mode,
+            "transport_label": TRANSPORT_MODES[self.transport_mode],
             "pickup_address": self.pickup_address,
             "pickup_latitude": float(self.pickup_latitude) if self.pickup_latitude is not None else None,
             "pickup_longitude": float(self.pickup_longitude) if self.pickup_longitude is not None else None,

@@ -31,6 +31,30 @@ def test_parcel_create_success(client, auth_headers, sample_weight_category):
     body = response.get_json()["parcel"]
     assert body["tracking_number"].startswith("DLV-")
     assert body["status"] == "PENDING"
+    assert body["transport_mode"] == "MOTORBIKE"
+    assert body["transport_label"] == "Motorbike"
+
+
+def test_parcel_create_accepts_valid_transport_mode(client, auth_headers, sample_weight_category):
+    response = client.post(
+        "/api/parcels",
+        json=parcel_payload(sample_weight_category, transport_mode="TRUCK"),
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 201
+    assert response.get_json()["parcel"]["transport_mode"] == "TRUCK"
+
+
+def test_parcel_create_rejects_invalid_transport_mode(client, auth_headers, sample_weight_category):
+    response = client.post(
+        "/api/parcels",
+        json=parcel_payload(sample_weight_category, transport_mode="BICYCLE"),
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["message"] == "Invalid transport mode"
 
 
 def test_create_requires_authentication(client, sample_weight_category):
