@@ -7,6 +7,7 @@ from app.extensions import db
 from app.models.parcel import Parcel
 from app.models.user import User
 from app.models.weight_category import WeightCategory
+from app.services.status_history_service import record_initial_status
 
 
 class ParcelNotFoundError(ValueError):
@@ -221,9 +222,14 @@ def create_parcel(
     )
 
     db.session.add(parcel)
-    # Integrate initial status history/notifications once those features expose
-    # a stable creation function for PENDING events.
-    db.session.commit()
+    db.session.flush()
+    record_initial_status(
+        parcel=parcel,
+        changed_by_id=user_uuid,
+        latitude=pickup_latitude,
+        longitude=pickup_longitude,
+        notes="Parcel created",
+    )
 
     return parcel
 
