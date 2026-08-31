@@ -5,6 +5,7 @@
 // not that the data is safe.
 
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
   ADMIN_USER,
   CUSTOMER_USER,
@@ -35,7 +36,7 @@ describe('unauthenticated users', () => {
 
   test('public routes stay reachable', async () => {
     renderApp({ route: '/', preloadedState: signedOutState });
-    expect(await screen.findByRole('heading', { name: /send it/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /the future of delivery is here/i })).toBeInTheDocument();
   });
 });
 
@@ -67,7 +68,7 @@ describe('authenticated customers', () => {
 describe('administrators', () => {
   test('reach the admin portal', async () => {
     renderSignedIn(ADMIN_USER, { route: '/admin' });
-    expect(await screen.findByRole('heading', { name: /admin portal/i })).toBeInTheDocument();
+    expect(await screen.findByText('Operations at a glance')).toBeInTheDocument();
   });
 
   test('also reach the ordinary dashboard', async () => {
@@ -78,7 +79,9 @@ describe('administrators', () => {
   test('see the admin link in the navigation', async () => {
     renderSignedIn(ADMIN_USER, { route: '/dashboard' });
     await screen.findByText(/hello, ada/i);
-    expect(screen.getByRole('link', { name: /^admin$/i })).toBeInTheDocument();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /ada admin/i }));
+    expect(screen.getByRole('menuitem', { name: /admin portal/i })).toBeInTheDocument();
   });
 });
 
@@ -90,7 +93,7 @@ describe('session restoration', () => {
     // No preloaded user: exactly the state after a hard refresh on a protected URL.
     renderApp({ route: '/admin' });
 
-    expect(await screen.findByRole('heading', { name: /admin portal/i })).toBeInTheDocument();
+    expect(await screen.findByText('Operations at a glance')).toBeInTheDocument();
   });
 
   test('a guard shows the checking state instead of bouncing while the token is exchanged', async () => {
@@ -119,6 +122,6 @@ describe('session restoration', () => {
 describe('unknown routes', () => {
   test('render the not-found page', async () => {
     renderApp({ route: '/nowhere', preloadedState: signedOutState });
-    expect(await screen.findByRole('heading', { name: /page not found/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /that page has moved on/i })).toBeInTheDocument();
   });
 });

@@ -132,7 +132,7 @@ describe('login', () => {
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     // ...and afterwards they land on /admin, not on the generic dashboard.
-    expect(await screen.findByRole('heading', { name: /admin portal/i })).toBeInTheDocument();
+    expect(await screen.findByText('Operations at a glance')).toBeInTheDocument();
   });
 });
 
@@ -151,9 +151,10 @@ describe('logout', () => {
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
     await screen.findByText(/hello, cassie/i);
 
-    await user.click(screen.getByRole('button', { name: /sign out/i }));
+    await user.click(screen.getByRole('button', { name: /cassie customer/i }));
+    await user.click(screen.getByRole('menuitem', { name: /sign out/i }));
 
     await waitFor(() => expect(getAccessToken()).toBeNull());
-    expect(await screen.findByRole('link', { name: /sign up/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /sign in/i })).toBeInTheDocument();
   });
 });

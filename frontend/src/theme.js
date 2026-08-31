@@ -1,64 +1,139 @@
 // Single source of truth for the values repeated across the inline styles.
-// Kept deliberately small — the visual design is another task's territory; this is
-// only enough shared vocabulary for the auth and map screens to look intentional.
-
 export const color = {
   ink: '#141414',
+  inkSoft: '#101820',
   body: '#4A5A61',
   muted: '#6E6862',
   paper: '#F3F1ED',
+  paperWarm: '#E6E2DC',
   white: '#FFFFFF',
   orange: '#F5911E',
   orangeDeep: '#C4700F',
-  // The kite in the logo only — the UI accent above is a separate, softer orange.
-  brand: '#FF5000',
-  danger: '#B3261E',
-  success: '#1E7B4F',
+  black: '#0A0A0A'
 };
 
 export const font = {
-  body: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-  mono: "'JetBrains Mono', ui-monospace, monospace",
+  display: "'Space Grotesk', system-ui, sans-serif",
+  body: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+  icon: "'Material Symbols Rounded'",
+  /**
+   * The wordmark only. Its box, van and wheels are positioned in `em` against this
+   * face's condensed letterforms, so it does not survive a family swap — and a logo
+   * keeping its own typeface is normal anyway.
+   */
+  brand: "'Anton', 'Space Grotesk', sans-serif"
+};
+
+export const ease = {
+  out: 'cubic-bezier(.16,1,.3,1)',
+  spring: 'cubic-bezier(.34,1.5,.5,1)'
+};
+
+export const layout = {
+  maxWidth: '1320px',
+  gutter: 'clamp(20px,4vw,56px)'
+};
+
+// Hover style objects, shared by several sections.
+export const hover = {
+  link: { color: color.orange },
+  yellow: { transform: 'translateY(-2px)', boxShadow: '0 16px 30px -14px rgba(17,17,17,.55)' },
+  dark: { transform: 'translateY(-2px)', boxShadow: '0 16px 30px -14px rgba(17,17,17,.7)' },
+  ghost: { borderColor: 'rgba(17,17,17,.55)', background: 'rgba(17,17,17,.04)' },
+  yellowGhost: { borderColor: color.ink, background: 'rgba(17,17,17,.07)' },
+  card: {
+    transform: 'translateY(-6px)',
+    boxShadow: '0 32px 56px -34px rgba(17,17,17,.5)',
+    borderColor: 'rgba(17,17,17,.16)'
+  },
+  drop: { background: 'rgba(245,145,30,.16)', color: color.ink },
+  social: { background: color.orange, color: color.ink, borderColor: color.orange },
+  foot: { color: color.orange }
+};
+
+// §3 keeps the palette closed, so order statuses reuse the nine colors above
+// rather than introducing a traffic-light set of their own.
+export const statusTone = {
+  PENDING: color.muted,
+  ASSIGNED: color.orange,
+  PICKED_UP: color.orange,
+  IN_TRANSIT: color.orangeDeep,
+  DELIVERED: color.inkSoft,
+  CANCELLED: color.body
 };
 
 export const radius = {
   field: '14px',
   card: '22px',
-  pill: '999px',
+  pill: '999px'
 };
 
+// Form controls are new to this codebase and repeat across booking, auth and admin.
+// They live here for the same reason the hover objects do: one place to change them.
 export const control = {
   field: {
     width: '100%',
-    height: '52px',
+    height: '56px',
     padding: '0 16px',
     borderRadius: radius.field,
-    // Longhand, not the `border` shorthand: the focus and invalid states below
-    // override borderColor alone, and React warns when a shorthand and one of its
-    // longhands are mixed across renders.
-    borderWidth: '1.5px',
-    borderStyle: 'solid',
-    borderColor: 'rgba(17,17,17,.14)',
+    border: '1.5px solid rgba(17,17,17,.14)',
     background: color.white,
     fontFamily: font.body,
     fontSize: '16px',
     color: color.ink,
     outline: 'none',
-    transition: 'border-color .18s, box-shadow .18s',
+    transition: 'border-color .18s, box-shadow .18s'
   },
   fieldFocus: {
     borderColor: color.orange,
-    boxShadow: '0 0 0 3px rgba(245,145,30,.22)',
+    boxShadow: `0 0 0 3px rgba(245,145,30,.22)`
   },
   fieldInvalid: {
-    borderColor: color.danger,
-    boxShadow: '0 0 0 3px rgba(179,38,30,.15)',
+    borderColor: color.orangeDeep,
+    boxShadow: '0 0 0 3px rgba(196,112,15,.16)'
   },
   label: {
     display: 'block',
-    marginBottom: '7px',
-    fontSize: '13.5px',
-    fontWeight: 600,
-    color: color.body,
+    marginBottom: '8px',
+    fontFamily: font.mono,
+    fontSize: '10.5px',
+    letterSpacing: '.14em',
+    textTransform: 'uppercase',
+    color: color.muted
   },
+  chip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '46px',
+    padding: '0 18px',
+    borderRadius: radius.pill,
+    border: '1.5px solid rgba(17,17,17,.14)',
+    background: color.white,
+    fontFamily: font.body,
+    fontSize: '15px',
+    fontWeight: 600,
+    color: color.ink,
+    cursor: 'pointer',
+    transition: `border-color .18s, background .18s, color .18s`
+  },
+  chipActive: {
+    borderColor: color.ink,
+    background: color.ink,
+    color: color.paper
+  },
+  // §24: focus must be visible on every interactive element, including dark surfaces.
+  focusRing: {
+    outline: `2px solid ${color.orange}`,
+    outlineOffset: '2px'
+  }
+};
+
+export const eyebrow = {
+  fontFamily: font.mono,
+  fontSize: '11.5px',
+  letterSpacing: '.16em',
+  textTransform: 'uppercase',
+  color: color.muted
 };

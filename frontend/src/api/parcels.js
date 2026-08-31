@@ -42,7 +42,8 @@ export function normalizeParcel(raw) {
   };
 }
 
-const many = (data) => (Array.isArray(data) ? data : (data?.items ?? [])).map(normalizeParcel);
+const many = (data) =>
+  (Array.isArray(data) ? data : (data?.items ?? data?.parcels ?? data?.data ?? [])).map(normalizeParcel);
 
 export const listParcels = async () => many(await get('/parcels'));
 export const getParcel = async (id) => normalizeParcel(await get(`/parcels/${id}`));
@@ -50,6 +51,7 @@ export const trackParcel = async (trackingNumber) =>
   normalizeParcel(await get(`/parcels/track/${encodeURIComponent(trackingNumber)}`));
 
 export const createParcel = async (draft) => normalizeParcel(await post('/parcels', draft));
+export const listWeightCategories = () => get('/weight-categories');
 export const updateDestination = async (id, destination) =>
   normalizeParcel(await patch(`/parcels/${id}/destination`, destination));
 export const cancelParcel = async (id) => normalizeParcel(await patch(`/parcels/${id}/cancel`));

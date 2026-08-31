@@ -6,7 +6,7 @@
 // would be a cycle. This slice owns who is signed in and how the last attempt went.
 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { authApi } from '../api';
+import { authApi, getSession, usingMockBackend, verifyOtp as verifyMockOtp } from '../api';
 import { clearTokens, hasSession } from '../lib/tokenStorage';
 import { ROLE, roleOf } from '../lib/roles';
 
@@ -22,6 +22,16 @@ const withMessage = (fn) => async (arg, { rejectWithValue }) => {
 export const signup = createAsyncThunk('auth/signup', withMessage(authApi.register));
 export const login = createAsyncThunk('auth/login', withMessage(authApi.login));
 export const logout = createAsyncThunk('auth/logout', withMessage(authApi.logout));
+export const signOut = logout;
+
+/** Demo-only compatibility for the local fixture suite; the live UI uses `login`. */
+export const verifyOtp = createAsyncThunk(
+  'auth/verifyOtp',
+  withMessage(async (payload) => {
+    if (!usingMockBackend) throw new Error('One-time-code sign-in is not available.');
+    return verifyMockOtp(payload);
+  }),
+);
 
 /**
  * Restore a session from a stored token on page load. Resolves to null with no token
@@ -30,7 +40,10 @@ export const logout = createAsyncThunk('auth/logout', withMessage(authApi.logout
  */
 export const loadSession = createAsyncThunk(
   'auth/loadSession',
-  async () => (hasSession() ? authApi.me() : null),
+  async () => {
+    if (hasSession()) return authApi.me();
+    return usingMockBackend ? getSession() : null;
+  },
 );
 
 const initialState = {
@@ -99,18 +112,18 @@ const authSlice = createSlice({
 
     builder
       .addMatcher(
-        (action) => [signup.pending.type, login.pending.type].includes(action.type),
+        (action) => [signup.pending.type, login.pending.type, verifyOtp.pending.type].includes(action.type),
         (state) => {
           state.submitting = true;
           state.error = null;
         },
       )
       .addMatcher(
-        (action) => [signup.fulfilled.type, login.fulfilled.type].includes(action.type),
+        (action) => [signup.fulfilled.type, login.fulfilled.type, verifyOtp.fulfilled.type].includes(action.type),
         signedIn,
       )
       .addMatcher(
-        (action) => [signup.rejected.type, login.rejected.type].includes(action.type),
+        (action) => [signup.rejected.type, login.rejected.type, verifyOtp.rejected.type].includes(action.type),
         failed,
       );
   },
