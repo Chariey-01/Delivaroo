@@ -26,8 +26,8 @@ def upgrade():
     sa.Column('latitude', sa.Numeric(precision=10, scale=7), nullable=True),
     sa.Column('longitude', sa.Numeric(precision=10, scale=7), nullable=True),
     sa.Column('is_default', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
