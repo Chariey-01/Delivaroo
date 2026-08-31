@@ -17,8 +17,6 @@ Request JSON:
 }
 ```
 
-The same endpoint also accepts frontend-friendly aliases: `weightCategoryId`, `pickup: { address, lat, lng }`, `destination: { address, lat, lng }`, `distanceKm`, and `durationSeconds`.
-
 Success: `201`
 
 ```json
@@ -229,7 +227,9 @@ Request JSON:
 }
 ```
 
-Server-controlled fields: `user_id`, `tracking_number`, `status`, and `price`. The API ignores any client-supplied `price`. Price is calculated as `base_price + (price_per_km * distance)` using the selected `WeightCategory`. If `distance` is not supplied, the API does not fabricate one and uses the category base price.
+Server-controlled fields: `user_id`, `tracking_number`, `status`, and `price`. The API ignores any client-supplied `price`. Price is calculated as `base_price + (price_per_km * distance)` using the selected `WeightCategory`. If `distance` is not supplied, the API does not fabricate one and uses the category base price. `transport_mode` accepts `MOTORBIKE`, `TRUCK`, `SHIP`, or `AIR` and defaults to `MOTORBIKE`.
+
+The same endpoint also accepts frontend-friendly aliases: `weightCategoryId`, `pickup: { address, lat, lng }`, `destination: { address, lat, lng }`, `distanceKm`, and `durationSeconds`.
 
 Success: `201`
 
@@ -442,6 +442,7 @@ List all parcels across all users. Admin only.
 |---|---|---|---|
 | `status` | string | none | Filter by exact status (`PENDING`, `PICKED_UP`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`) |
 | `tracking_number` | string | none | Case-insensitive substring search |
+| `transport_mode` | string | none | Exact transport filter (`MOTORBIKE`, `TRUCK`, `SHIP`, `AIR`) |
 | `page` | integer | 1 | Must be >= 1 |
 | `per_page` | integer | 20 | Must be between 1 and 100 |
 

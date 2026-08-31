@@ -80,6 +80,7 @@ def test_create_parcel_accepts_frontend_nested_payload(
             },
             "distanceKm": 12.5,
             "durationSeconds": 2100,
+            "transportMode": "AIR",
             "price": 1,
         },
         headers=auth_headers(),
@@ -92,6 +93,7 @@ def test_create_parcel_accepts_frontend_nested_payload(
     assert data["distance"] == "12.50"
     assert data["duration"] == 35
     assert data["price"] == "225.00"
+    assert data["transport_mode"] == "AIR"
 
 
 def test_destination_update_alias_works_for_frontend(
@@ -158,3 +160,18 @@ def test_api_prefixed_admin_routes_work(client, app, sample_admin, sample_parcel
     assert listing.get_json()["data"]
     assert status.status_code == 200
     assert status.get_json()["data"]["status"] == "PICKED_UP"
+
+
+def test_api_admin_parcels_filters_by_transport_mode(client, app, sample_admin, sample_parcel):
+    sample_parcel.transport_mode = "AIR"
+    from app.extensions import db
+
+    db.session.commit()
+
+    response = client.get(
+        "/api/admin/parcels?transport_mode=AIR",
+        headers=auth_headers_for(app, sample_admin),
+    )
+
+    assert response.status_code == 200
+    assert [parcel["id"] for parcel in response.get_json()["data"]] == [str(sample_parcel.id)]

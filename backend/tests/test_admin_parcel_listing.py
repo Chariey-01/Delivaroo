@@ -60,6 +60,26 @@ def test_each_parcel_includes_owner_email(db_session, multiple_parcels, sample_u
     assert sample_user.email in owner_emails
 
 
+def test_each_parcel_includes_transport_and_delivery_agent(db_session, multiple_parcels):
+    from app.models import DeliveryAgent
+
+    agent = DeliveryAgent(
+        name="Demo Courier",
+        email="courier@example.com",
+        transport_mode="TRUCK",
+        is_active=True,
+    )
+    multiple_parcels[0].transport_mode = "TRUCK"
+    multiple_parcels[0].delivery_agent = agent
+    db_session.add(agent)
+    db_session.commit()
+
+    parcel = next(item for item in list_all_parcels()["parcels"] if item["id"] == str(multiple_parcels[0].id))
+    assert parcel["transport_mode"] == "TRUCK"
+    assert parcel["transport_label"] == "Truck"
+    assert parcel["delivery_agent"]["name"] == "Demo Courier"
+
+
 # --- Status filtering ---
 
 def test_filter_by_status(db_session, multiple_parcels):
@@ -72,6 +92,20 @@ def test_filter_by_status(db_session, multiple_parcels):
 def test_filter_by_invalid_status_raises_error(db_session, multiple_parcels):
     with pytest.raises(InvalidFilterError):
         list_all_parcels(status="NOT_A_REAL_STATUS")
+
+
+def test_filter_by_transport_mode(db_session, multiple_parcels):
+    multiple_parcels[0].transport_mode = "AIR"
+    db_session.commit()
+
+    result = list_all_parcels(transport_mode="AIR")
+
+    assert [parcel["id"] for parcel in result["parcels"]] == [str(multiple_parcels[0].id)]
+
+
+def test_filter_by_invalid_transport_mode_raises_error(db_session, multiple_parcels):
+    with pytest.raises(InvalidFilterError):
+        list_all_parcels(transport_mode="BICYCLE")
 
 
 # --- Tracking number search ---
