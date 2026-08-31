@@ -24,8 +24,8 @@ def upgrade():
     sa.Column('password_hash', sa.String(length=255), nullable=False),
     sa.Column('role', sa.String(length=20), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
@@ -36,8 +36,8 @@ def upgrade():
     sa.Column('max_weight', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('base_price', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('price_per_km', sa.Numeric(precision=12, scale=2), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
@@ -58,8 +58,8 @@ def upgrade():
     sa.Column('price', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('distance', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('duration', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['weight_category_id'], ['weight_categories.id'], ),
     sa.PrimaryKeyConstraint('id'),
