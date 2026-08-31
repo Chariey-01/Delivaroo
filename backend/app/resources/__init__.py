@@ -26,11 +26,14 @@ from app.resources.address import (
     AddressSetDefaultResource,
 )
 from app.resources.profile import ProfileResource
+from app.resources.maps import GeocodeResource, ReverseGeocodeResource, RouteResource
+from app.resources.health import HealthResource
 
 
 def init_resources(app):
     api = Api(app)
 
+    api.add_resource(HealthResource, "/api/health")
     api.add_resource(RegisterResource, "/auth/register", "/api/auth/register")
     api.add_resource(LoginResource, "/auth/login", "/api/auth/login")
     api.add_resource(RefreshResource, "/auth/refresh", "/api/auth/refresh")
@@ -87,3 +90,6 @@ def init_resources(app):
     )
 
     api.add_resource(ProfileResource, "/profile", "/api/profile")
+    api.add_resource(GeocodeResource, "/api/maps/geocode")
+    api.add_resource(ReverseGeocodeResource, "/api/maps/reverse-geocode")
+    api.add_resource(RouteResource, "/api/maps/route")

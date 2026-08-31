@@ -27,6 +27,9 @@ class Config:
     )
     CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
     CORS_METHODS = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]
+    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+    GOOGLE_MAPS_TIMEOUT_SECONDS = float(os.getenv("GOOGLE_MAPS_TIMEOUT_SECONDS", "5"))
+    GOOGLE_MAPS_DEFAULT_REGION = os.getenv("GOOGLE_MAPS_DEFAULT_REGION", "KE")
 
     @classmethod
     def validate(cls):

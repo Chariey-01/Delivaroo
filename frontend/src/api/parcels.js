@@ -22,6 +22,8 @@ export function normalizeParcel(raw) {
     price: raw.price == null ? null : Number(raw.price),
     distance: raw.distance == null ? null : Number(raw.distance),
     duration: raw.duration == null ? null : Number(raw.duration),
+    owner: raw.owner ?? null,
+    weightCategoryId: raw.weight_category_id ?? raw.weightCategoryId,
     pickup: {
       address: raw.pickup_address ?? raw.pickupAddress ?? '',
       ...point(raw.pickup_latitude ?? raw.pickupLatitude, raw.pickup_longitude ?? raw.pickupLongitude),

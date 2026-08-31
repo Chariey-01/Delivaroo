@@ -13,6 +13,8 @@ def test_weight_categories_are_available_to_authenticated_clients(
             "name": sample_weight_category.name,
             "min_weight": "0.00",
             "max_weight": "5.00",
+            "base_price": "100.00",
+            "price_per_km": "10.00",
         }
     ]
 

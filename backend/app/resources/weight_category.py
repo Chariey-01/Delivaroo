@@ -10,6 +10,8 @@ def serialize_weight_category(category):
         "name": category.name,
         "min_weight": str(category.min_weight),
         "max_weight": str(category.max_weight),
+        "base_price": str(category.base_price),
+        "price_per_km": str(category.price_per_km),
     }
 
 

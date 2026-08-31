@@ -21,17 +21,22 @@ const unsupported = (feature) => () => {
 const asOrder = (parcel) => {
   if (!parcel) return null;
   const point = (place) => ({ name: place?.address || '', label: place?.address || '', lat: place?.lat, lng: place?.lng });
+  const ownerEmail = parcel.owner?.email || '';
+  const durationSeconds = Number(parcel.duration || 0) * 60;
   return {
     id: parcel.id,
     trackingNumber: parcel.trackingNumber,
     status: parcel.status,
+    sender: { name: ownerEmail || 'Customer', email: ownerEmail },
+    parcel: { weightKg: 0, weightCategoryId: parcel.weightCategoryId },
     transport: { mode: parcel.transportMode, label: parcel.transportLabel },
     pickup: point(parcel.pickup),
     destination: point(parcel.destination),
     presentLocation: parcel.presentLocation,
-    route: { distanceKm: parcel.distance, durationSeconds: Number(parcel.duration || 0) * 60 },
-    pricing: { total: parcel.price },
+    route: { distanceKm: parcel.distance, durationSeconds },
+    pricing: { total: parcel.price, durationSeconds },
     courier: parcel.deliveryAgent,
+    history: [],
     createdAt: parcel.createdAt,
     updatedAt: parcel.updatedAt,
   };
@@ -70,8 +75,6 @@ const createLiveOrder = async (draft) => {
         lat: draft.destination?.lat,
         lng: draft.destination?.lng,
       },
-      distanceKm: draft.route?.distanceKm,
-      durationSeconds: draft.route?.durationSeconds,
       transportMode,
     }),
   );
@@ -86,7 +89,7 @@ const http = {
   createOrder: createLiveOrder,
   getOrder: async (id) => asOrder(await parcelsApi.getParcel(id)),
   listOrders: async () => asOrders(await parcelsApi.listParcels()),
-  listAllOrders: async () => asOrders(await parcelsApi.listAllParcels()),
+  listAllOrders: async () => asOrders(await parcelsApi.listAllParcels({ per_page: 100 })),
   updateOrderStatus: async (id, status) => asOrder(await parcelsApi.updateParcelStatus(id, status)),
   updateCourierPosition: unsupported('Courier position updates'),
   // §25 — dispatch finds and attaches a pickup agent. The server owns the matching;

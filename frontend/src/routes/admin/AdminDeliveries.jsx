@@ -78,7 +78,7 @@ export default function AdminDeliveries() {
       .filter((order) => {
         if (filter !== 'ALL' && order.status !== filter) return false;
         if (!needle) return true;
-        return [order.id, order.pickup.label, order.destination.label, order.sender?.name, order.courier?.name]
+        return [order.id, order.trackingNumber, order.pickup.label, order.destination.label, order.sender?.name, order.courier?.name]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(needle));
       })

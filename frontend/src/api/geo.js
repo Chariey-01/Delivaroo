@@ -1,20 +1,17 @@
 // Geocoding + routing behind one interface (§6, §7).
 //
-// Today: Photon for address autocomplete, OSRM for the driving route. Both are free
-// and keyless, which is why they were chosen over Google Maps. Both are public demo
-// endpoints with fair-use limits — for production, self-host OSRM and Photon (or swap
-// in a paid provider) by replacing only the two fetch calls below. Callers depend on
-// the shape returned here, not on the provider.
+// Browser geocoding/autocomplete plus backend routing behind one interface (§6, §7).
+// The backend owns route distance and duration because parcel prices are derived
+// from those fields server-side.
 
 import { loadGoogleMaps } from '../lib/loadGoogleMaps';
+import { api } from './client';
 
 /** Nairobi. Search results are biased toward it so local queries rank first. */
 export const CITY_CENTER = { lat: -1.2921, lng: 36.8219 };
 
 const PHOTON = 'https://photon.komoot.io/api';
-const OSRM = 'https://router.project-osrm.org/route/v1/driving';
-
-/** Straight-line km. Used only for the offline fallback below. */
+/** Straight-line km. Used by tests and local display helpers. */
 export function haversineKm(a, b) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
@@ -148,59 +145,16 @@ export function currentPosition() {
 }
 
 /**
- * Driving route between two points.
+ * Driving route between two points, calculated by the Flask backend so distance
+ * and duration stay tied to the server-side price.
  * → { distanceKm, durationSeconds, coordinates: [[lat, lng], ...], estimated }
- *
- * `estimated: true` means OSRM was unreachable and we fell back to a straight line
- * scaled by a typical detour factor. The UI labels the figures as estimates in that
- * case rather than silently presenting a guess as a measured route.
  */
 export async function routeBetween(from, to) {
-  try {
-    const maps = await loadGoogleMaps();
-    const result = await new maps.DirectionsService().route({
-      origin: from,
-      destination: to,
-      travelMode: maps.TravelMode.DRIVING,
-    });
-    const leg = result.routes?.[0]?.legs?.[0];
-    if (!leg) throw new Error('No route');
-    return {
-      distanceKm: leg.distance.value / 1000,
-      durationSeconds: leg.duration.value,
-      coordinates: (result.routes[0].overview_path ?? []).map((point) => ({
-        lat: typeof point.lat === 'function' ? point.lat() : point.lat,
-        lng: typeof point.lng === 'function' ? point.lng() : point.lng,
-      })),
-      estimated: false,
-    };
-  } catch {
-    // Continue to the keyless route provider.
-  }
-
-  const path = `${from.lng},${from.lat};${to.lng},${to.lat}`;
-  try {
-    const response = await fetch(`${OSRM}/${path}?overview=full&geometries=geojson`);
-    if (!response.ok) throw new Error(`OSRM ${response.status}`);
-    const data = await response.json();
-    const route = data.routes?.[0];
-    if (!route) throw new Error('No route');
-    return {
-      distanceKm: route.distance / 1000,
-      durationSeconds: route.duration,
-      coordinates: route.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })),
-      estimated: false
-    };
-  } catch {
-    // Offline / rate-limited: 1.35 is a common urban straight-line-to-road ratio,
-    // and 24 km/h approximates Nairobi traffic.
-    const straight = haversineKm(from, to);
-    const distanceKm = straight * 1.35;
-    return {
-      distanceKm,
-      durationSeconds: (distanceKm / 24) * 3600,
-      coordinates: [from, to],
-      estimated: true
-    };
-  }
+  return api('/maps/route', {
+    method: 'POST',
+    body: {
+      pickup: { lat: from.lat, lng: from.lng },
+      destination: { lat: to.lat, lng: to.lng },
+    },
+  });
 }

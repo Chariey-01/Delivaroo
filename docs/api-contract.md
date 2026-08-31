@@ -227,9 +227,9 @@ Request JSON:
 }
 ```
 
-Server-controlled fields: `user_id`, `tracking_number`, `status`, and `price`. The API ignores any client-supplied `price`. Price is calculated as `base_price + (price_per_km * distance)` using the selected `WeightCategory`. If `distance` is not supplied, the API does not fabricate one and uses the category base price. `transport_mode` accepts `MOTORBIKE`, `TRUCK`, `SHIP`, or `AIR` and defaults to `MOTORBIKE`.
+Server-controlled fields: `user_id`, `tracking_number`, `status`, `distance`, `duration`, and `price`. The API ignores any client-supplied `price`, `distance`, `distanceKm`, `duration`, or `durationSeconds` when pickup and destination coordinates are present. Distance and duration are calculated by the backend Maps service; price is calculated as `base_price + (price_per_km * distance)` using the selected `WeightCategory`. If coordinates are not supplied, the API does not fabricate a route and uses the category base price. `transport_mode` accepts `MOTORBIKE`, `TRUCK`, `SHIP`, or `AIR` and defaults to `MOTORBIKE`.
 
-The same endpoint also accepts frontend-friendly aliases: `weightCategoryId`, `pickup: { address, lat, lng }`, `destination: { address, lat, lng }`, `distanceKm`, and `durationSeconds`.
+The same endpoint also accepts frontend-friendly aliases: `weightCategoryId`, `pickup: { address, lat, lng }`, and `destination: { address, lat, lng }`.
 
 Success: `201`
 

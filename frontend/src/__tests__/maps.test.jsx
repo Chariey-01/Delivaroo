@@ -7,10 +7,11 @@
 // a readable notice instead of a crash.
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { directionsResult, installGoogleMaps, uninstallGoogleMaps } from '../__mocks__/googleMaps';
+import { installGoogleMaps, uninstallGoogleMaps } from '../__mocks__/googleMaps';
 import { resetGoogleMapsLoader } from '../lib/loadGoogleMaps';
 import DeliveryMap from '../components/maps/DeliveryMap';
 import { haversineKm, routeBetween, reverseGeocode, searchPlaces } from '../api/geo';
+import { mockApi, ok } from './testUtils';
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const MOMBASA = { lat: -4.0435, lng: 39.6682 };
@@ -153,29 +154,34 @@ describe('geo service', () => {
     expect(place).toMatchObject({ id: 'xyz', label: 'Kenyatta Ave, Nairobi', name: 'Kenyatta Ave' });
   });
 
-  test('routeBetween reports the distance and duration Directions returned', async () => {
-    installGoogleMaps({
-      route: directionsResult({ km: 12.5, minutes: 30, path: [NAIROBI, MOMBASA] }),
+  test('routeBetween reports the distance and duration the backend returned', async () => {
+    const calls = mockApi({
+      'POST /api/maps/route': ok({
+        distanceKm: 12.5,
+        durationSeconds: 1800,
+        coordinates: [NAIROBI, MOMBASA],
+        estimated: false,
+      }),
     });
 
     const route = await routeBetween(NAIROBI, MOMBASA);
 
+    expect(calls[0].body).toEqual({
+      pickup: NAIROBI,
+      destination: MOMBASA,
+    });
     expect(route.distanceKm).toBeCloseTo(12.5);
     expect(route.durationSeconds).toBe(1800);
     expect(route.estimated).toBe(false);
     expect(route.coordinates).toHaveLength(2);
   });
 
-  test('routeBetween falls back to a flagged estimate when Directions fails', async () => {
-    installGoogleMaps({ route: null });
+  test('routeBetween surfaces backend route failures', async () => {
+    mockApi({
+      'POST /api/maps/route': { status: 400, body: { message: 'No route found between those locations' } },
+    });
 
-    const route = await routeBetween(NAIROBI, MOMBASA);
-
-    expect(route.estimated).toBe(true);
-    // The detour factor is applied to the straight-line distance, so it must be longer.
-    expect(route.distanceKm).toBeGreaterThan(haversineKm(NAIROBI, MOMBASA));
-    expect(route.durationSeconds).toBeGreaterThan(0);
-    expect(route.coordinates).toEqual([NAIROBI, MOMBASA]);
+    await expect(routeBetween(NAIROBI, MOMBASA)).rejects.toThrow('No route found');
   });
 
   test('haversine measures a known distance sensibly', () => {

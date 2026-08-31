@@ -248,6 +248,12 @@ python seed.py --reset-demo-data
 
 The reset command refuses to run when `FLASK_ENV=production`.
 
+## Deployment
+
+Deploy the Flask API to Render and the Vite frontend to Vercel. The exact build
+commands, environment variables, migration step, CORS setup, and verification
+checks are documented in [docs/deployment.md](docs/deployment.md).
+
 ## Development Timeline
 
 ### Week 1 — Foundation
