@@ -59,6 +59,41 @@ def test_parcel_collection_includes_data_for_frontend(
     assert len(response.get_json()["data"]) == 1
 
 
+def test_create_parcel_accepts_frontend_nested_payload(
+    client,
+    auth_headers,
+    sample_weight_category,
+):
+    response = client.post(
+        "/api/parcels",
+        json={
+            "weightCategoryId": str(sample_weight_category.id),
+            "pickup": {
+                "address": "Frontend Pickup",
+                "lat": -1.2921,
+                "lng": 36.8219,
+            },
+            "destination": {
+                "address": "Frontend Destination",
+                "lat": -1.3000,
+                "lng": 36.9000,
+            },
+            "distanceKm": 12.5,
+            "durationSeconds": 2100,
+            "price": 1,
+        },
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 201
+    data = response.get_json()["data"]
+    assert data["pickup_address"] == "Frontend Pickup"
+    assert data["destination_address"] == "Frontend Destination"
+    assert data["distance"] == "12.50"
+    assert data["duration"] == 35
+    assert data["price"] == "225.00"
+
+
 def test_destination_update_alias_works_for_frontend(
     client,
     app,
@@ -77,6 +112,26 @@ def test_destination_update_alias_works_for_frontend(
 
     assert response.status_code == 200
     assert response.get_json()["data"]["destination_address"] == "Frontend Destination"
+
+
+def test_destination_update_accepts_frontend_place_payload(
+    client,
+    app,
+    sample_parcel,
+    sample_user,
+):
+    response = client.patch(
+        f"/api/parcels/{sample_parcel.id}/destination",
+        json={
+            "address": "Frontend Place",
+            "lat": -1.35,
+            "lng": 36.9,
+        },
+        headers=auth_headers_for(app, sample_user),
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["data"]["destination_address"] == "Frontend Place"
 
 
 def test_cancel_alias_works_for_frontend(client, app, sample_parcel, sample_user):

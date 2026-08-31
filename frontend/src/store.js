@@ -1,8 +1,10 @@
-import { configureStore } from "@reduxjs/toolkit";
-import parcelsReducer from "./redux/slices/parcelsSlice";
+import { configureStore } from '@reduxjs/toolkit';
+import parcels from './redux/slices/parcelsSlice';
+import auth from './store/authSlice';
+import ui from './store/uiSlice';
 
-export const store = configureStore({
-  reducer: {
-    parcels: parcelsReducer,
-  },
-});
+const reducer = { auth, ui, parcels };
+
+export const makeStore = (preloadedState) => configureStore({ reducer, preloadedState });
+
+export const store = makeStore();
