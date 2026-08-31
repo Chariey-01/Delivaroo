@@ -1,0 +1,86 @@
+// Authentication endpoints, exactly as BACKENDPRD §19 specifies them:
+//
+//   POST /auth/register   POST /auth/login   POST /auth/refresh
+//   POST /auth/logout     GET  /auth/me
+//
+// The backend is not written yet, so the one thing this module does beyond calling
+// those paths is normalise the response. Flask/SQLAlchemy serialises snake_case and
+// the React side reads camelCase; doing the translation here means exactly one file
+// changes if the backend settles on a different shape.
+
+import { del, get, post } from './client';
+import { clearTokens, getRefreshToken, setTokens } from '../lib/tokenStorage';
+
+/** Backend user record → the shape the store and components read. */
+export function normalizeUser(raw) {
+  if (!raw) return null;
+  const profile = raw.profile ?? {};
+  return {
+    id: raw.id,
+    email: raw.email,
+    role: (raw.role ?? 'USER').toUpperCase(),
+    isActive: raw.is_active ?? raw.isActive ?? true,
+    fullName: profile.full_name ?? profile.fullName ?? raw.full_name ?? raw.fullName ?? '',
+    phone: profile.phone ?? raw.phone ?? '',
+    profileImage: profile.profile_image ?? profile.profileImage ?? null,
+  };
+}
+
+/**
+ * A login/register response carries the token pair and the user together. Tokens are
+ * persisted here rather than in the slice so that a caller who bypasses Redux — a
+ * test, or a future route loader — still ends up authenticated.
+ */
+function acceptSession(payload) {
+  const access = payload?.access_token ?? payload?.accessToken;
+  const refresh = payload?.refresh_token ?? payload?.refreshToken;
+  if (access) setTokens({ access, refresh });
+  return normalizeUser(payload?.user ?? payload);
+}
+
+export async function register({ email, password, fullName, phone }) {
+  const data = await post(
+    '/auth/register',
+    {
+      email: email?.trim().toLowerCase(),
+      password,
+      full_name: fullName,
+      phone: phone || undefined,
+    },
+    { auth: false },
+  );
+  return acceptSession(data);
+}
+
+export async function login({ email, password }) {
+  const data = await post(
+    '/auth/login',
+    { email: email?.trim().toLowerCase(), password },
+    { auth: false },
+  );
+  return acceptSession(data);
+}
+
+/** The current user, used to restore a session from a stored token on page load. */
+export async function me() {
+  const data = await get('/auth/me');
+  return normalizeUser(data?.user ?? data);
+}
+
+/**
+ * Ask the backend to revoke the refresh token, then drop the local pair. The local
+ * clear happens either way: a logout that fails on the network must still log you out
+ * of this browser.
+ */
+export async function logout() {
+  try {
+    await post('/auth/logout', { refresh_token: getRefreshToken() });
+  } catch {
+    /* already expired or unreachable — signing out locally is still correct */
+  } finally {
+    clearTokens();
+  }
+  return null;
+}
+
+export { del };
