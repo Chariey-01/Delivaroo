@@ -1,14 +1,16 @@
-from flask import request
+from flask import request, current_app
 from flask_jwt_extended import get_jwt_identity
 from flask_restful import Resource
 
 from app.extensions import db
 from app.models.parcel import Parcel
+from app.models.user import User
 from app.services.admin_location_service import (
     admin_update_location,
     ParcelLocationLockedError,
     InvalidLocationError,
 )
+from app.services.notification_service import notify_location_change_async
 from app.utils.auth_decorators import admin_required
 
 
@@ -38,8 +40,18 @@ class AdminParcelLocationResource(Resource):
                 admin_id=admin_id,
             )
 
-            parcel_data = parcel.to_dict()
+            owner = db.session.get(User, parcel.user_id)
+            if owner:
+                notify_location_change_async(
+                    current_app._get_current_object(),
+                    owner.email,
+                    parcel.tracking_number,
+                    latitude,
+                    longitude,
+                    address,
+                )
 
+            parcel_data = parcel.to_dict()
             return {
                 "message": "Parcel location updated successfully",
                 "parcel": parcel_data,
@@ -48,6 +60,5 @@ class AdminParcelLocationResource(Resource):
 
         except ParcelLocationLockedError as error:
             return {"message": str(error)}, 409
-
         except InvalidLocationError as error:
             return {"message": str(error)}, 400
