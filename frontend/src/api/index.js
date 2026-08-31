@@ -70,8 +70,6 @@ const createLiveOrder = async (draft) => {
         lat: draft.destination?.lat,
         lng: draft.destination?.lng,
       },
-      distanceKm: draft.route?.distanceKm,
-      durationSeconds: draft.route?.durationSeconds,
       transportMode,
     }),
   );

@@ -1,5 +1,6 @@
 import os
 import uuid
+from decimal import Decimal
 import pytest
 from dotenv import load_dotenv
 
@@ -9,6 +10,7 @@ from app import create_app
 from app.config import Config
 from app.extensions import db as _db
 from app.models import User, WeightCategory, Parcel
+from app.services.maps_service import RouteInfo
 
 
 class TestConfig(Config):
@@ -40,6 +42,19 @@ def db_session(app):
 @pytest.fixture
 def client(app, db_session):
     return app.test_client()
+
+
+@pytest.fixture(autouse=True)
+def mocked_parcel_route(monkeypatch):
+    def _route_between(pickup, destination):
+        return RouteInfo(
+            distance_km=Decimal("12.50"),
+            duration_minutes=35,
+            duration_seconds=2100,
+            coordinates=[pickup, destination],
+        )
+
+    monkeypatch.setattr("app.resources.parcel.route_between", _route_between)
 
 
 @pytest.fixture

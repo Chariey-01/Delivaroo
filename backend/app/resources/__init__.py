@@ -26,6 +26,7 @@ from app.resources.address import (
     AddressSetDefaultResource,
 )
 from app.resources.profile import ProfileResource
+from app.resources.maps import GeocodeResource, ReverseGeocodeResource, RouteResource
 
 
 def init_resources(app):
@@ -87,3 +88,6 @@ def init_resources(app):
     )
 
     api.add_resource(ProfileResource, "/profile", "/api/profile")
+    api.add_resource(GeocodeResource, "/api/maps/geocode")
+    api.add_resource(ReverseGeocodeResource, "/api/maps/reverse-geocode")
+    api.add_resource(RouteResource, "/api/maps/route")

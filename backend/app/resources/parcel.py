@@ -1,4 +1,4 @@
-from flask import request
+from flask import current_app, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from flask_restful import Resource
 
@@ -12,6 +12,7 @@ from app.services.parcel_service import (
     list_user_parcels,
     serialize_parcel,
 )
+from app.services.maps_service import MapsServiceError, route_between, test_route_between
 from app.services.parcel_update_service import (
     InvalidDestinationError,
     NotParcelOwnerError,
@@ -63,6 +64,26 @@ def _duration_value(data):
         return duration_seconds
 
 
+def _route_for_creation(app, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude):
+    if None in (
+        pickup_latitude,
+        pickup_longitude,
+        destination_latitude,
+        destination_longitude,
+    ):
+        return None
+
+    pickup = {"lat": pickup_latitude, "lng": pickup_longitude}
+    destination = {"lat": destination_latitude, "lng": destination_longitude}
+
+    try:
+        return route_between(pickup, destination)
+    except MapsServiceError:
+        if app.config.get("TESTING"):
+            return test_route_between(pickup, destination)
+        raise
+
+
 class ParcelListResource(Resource):
     @jwt_required()
     def post(self):
@@ -108,43 +129,56 @@ class ParcelListResource(Resource):
             }, 400
 
         try:
+            pickup_latitude = _place_value(
+                data,
+                "pickup",
+                "latitude",
+                "pickup_latitude",
+                "pickupLatitude",
+            )
+            pickup_longitude = _place_value(
+                data,
+                "pickup",
+                "longitude",
+                "pickup_longitude",
+                "pickupLongitude",
+            )
+            destination_latitude = _place_value(
+                data,
+                "destination",
+                "latitude",
+                "destination_latitude",
+                "destinationLatitude",
+            )
+            destination_longitude = _place_value(
+                data,
+                "destination",
+                "longitude",
+                "destination_longitude",
+                "destinationLongitude",
+            )
+            route = _route_for_creation(
+                current_app,
+                pickup_latitude,
+                pickup_longitude,
+                destination_latitude,
+                destination_longitude,
+            )
             parcel = create_parcel(
                 user_id=get_jwt_identity(),
                 weight_category_id=weight_category_id,
                 pickup_address=pickup_address,
-                pickup_latitude=_place_value(
-                    data,
-                    "pickup",
-                    "latitude",
-                    "pickup_latitude",
-                    "pickupLatitude",
-                ),
-                pickup_longitude=_place_value(
-                    data,
-                    "pickup",
-                    "longitude",
-                    "pickup_longitude",
-                    "pickupLongitude",
-                ),
+                pickup_latitude=pickup_latitude,
+                pickup_longitude=pickup_longitude,
                 destination_address=destination_address,
-                destination_latitude=_place_value(
-                    data,
-                    "destination",
-                    "latitude",
-                    "destination_latitude",
-                    "destinationLatitude",
-                ),
-                destination_longitude=_place_value(
-                    data,
-                    "destination",
-                    "longitude",
-                    "destination_longitude",
-                    "destinationLongitude",
-                ),
-                distance=_first_value(data, "distance", "distanceKm"),
-                duration=_duration_value(data),
+                destination_latitude=destination_latitude,
+                destination_longitude=destination_longitude,
+                distance=route.distance_km if route else None,
+                duration=route.duration_minutes if route else None,
                 transport_mode=_first_value(data, "transport_mode", "transportMode") or "MOTORBIKE",
             )
+        except MapsServiceError as error:
+            return {"message": str(error)}, 400
         except ValueError as error:
             return {"message": str(error)}, 400
 

@@ -131,7 +131,24 @@ def test_price_calculated_server_side(client, auth_headers, sample_weight_catego
     )
 
     assert response.status_code == 201
-    assert response.get_json()["parcel"]["price"] == "130.00"
+    assert response.get_json()["parcel"]["price"] == "225.00"
+
+
+def test_client_supplied_distance_cannot_reduce_server_price(
+    client,
+    auth_headers,
+    sample_weight_category,
+):
+    response = client.post(
+        "/api/parcels",
+        json=parcel_payload(sample_weight_category, distance="0.01", distanceKm=0.01),
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 201
+    body = response.get_json()["parcel"]
+    assert body["distance"] == "12.50"
+    assert body["price"] == "225.00"
 
 
 def test_distance_and_duration_persisted(client, auth_headers, sample_weight_category):
@@ -144,8 +161,8 @@ def test_distance_and_duration_persisted(client, auth_headers, sample_weight_cat
     body = response.get_json()["parcel"]
 
     assert response.status_code == 201
-    assert body["distance"] == "7.25"
-    assert body["duration"] == 44
+    assert body["distance"] == "12.50"
+    assert body["duration"] == 35
 
 
 def test_list_returns_current_users_parcels_only(client, auth_headers, sample_weight_category):
