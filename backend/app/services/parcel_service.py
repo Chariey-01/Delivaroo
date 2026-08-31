@@ -7,6 +7,8 @@ from app.extensions import db
 from app.models.parcel import Parcel
 from app.models.user import User
 from app.models.weight_category import WeightCategory
+from app.models.transport import TRANSPORT_MODES
+from app.services.status_history_service import record_initial_status
 
 
 class ParcelNotFoundError(ValueError):
@@ -89,6 +91,10 @@ def serialize_parcel(parcel: Parcel) -> dict:
         "tracking_number": parcel.tracking_number,
         "user_id": str(parcel.user_id),
         "weight_category_id": str(parcel.weight_category_id),
+        "delivery_agent_id": str(parcel.delivery_agent_id) if parcel.delivery_agent_id else None,
+        "delivery_agent": parcel.delivery_agent.to_dict() if parcel.delivery_agent else None,
+        "transport_mode": parcel.transport_mode,
+        "transport_label": TRANSPORT_MODES[parcel.transport_mode],
         "pickup_address": parcel.pickup_address,
         "pickup_latitude": (
             str(parcel.pickup_latitude)
@@ -142,6 +148,7 @@ def create_parcel(
     destination_longitude=None,
     distance=None,
     duration=None,
+    transport_mode="MOTORBIKE",
 ) -> Parcel:
     """Create and persist a parcel for an authenticated user."""
 
@@ -194,6 +201,9 @@ def create_parcel(
     distance = _parse_decimal(distance, "distance")
     duration = _parse_int(duration, "duration")
 
+    if transport_mode not in TRANSPORT_MODES:
+        raise ValueError("Invalid transport mode")
+
     if distance is not None and distance < 0:
         raise ValueError("Distance cannot be negative")
 
@@ -218,12 +228,18 @@ def create_parcel(
         distance=distance,
         duration=duration,
         price=price,
+        transport_mode=transport_mode,
     )
 
     db.session.add(parcel)
-    # Integrate initial status history/notifications once those features expose
-    # a stable creation function for PENDING events.
-    db.session.commit()
+    db.session.flush()
+    record_initial_status(
+        parcel=parcel,
+        changed_by_id=user_uuid,
+        latitude=pickup_latitude,
+        longitude=pickup_longitude,
+        notes="Parcel created",
+    )
 
     return parcel
 
