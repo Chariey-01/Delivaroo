@@ -26,6 +26,7 @@ def test_seed_creates_a_complete_idempotent_demo_dataset(app, db_session, monkey
 
         assert first_counts == second_counts == {
             "users": 13,
+            "delivery_agents": 8,
             "weight_categories": 4,
             "parcels": 84,
             "addresses": 24,
@@ -47,6 +48,14 @@ def test_seed_creates_a_complete_idempotent_demo_dataset(app, db_session, monkey
         assert Address.query.count() == 24
         assert StatusHistory.query.count() == 277
         assert AuditLog.query.filter_by(entity_type="parcel").count() == 277
+        assert {parcel.transport_mode for parcel in Parcel.query.all()} == {
+            "MOTORBIKE", "TRUCK", "SHIP", "AIR"
+        }
+        assert all(parcel.delivery_agent is not None for parcel in Parcel.query.all())
+        assert all(
+            parcel.delivery_agent.transport_mode == parcel.transport_mode
+            for parcel in Parcel.query.all()
+        )
 
 
 def test_seeded_demo_data_supports_admin_pagination_and_pricing(app, db_session):

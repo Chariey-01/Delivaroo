@@ -28,6 +28,11 @@ class Parcel(db.Model):
         db.ForeignKey("weight_categories.id"),
         nullable=False,
     )
+    delivery_agent_id = db.Column(
+        db.UUID(as_uuid=True),
+        db.ForeignKey("delivery_agents.id"),
+        nullable=True,
+    )
     transport_mode = db.Column(
         db.String(20),
         nullable=False,
@@ -93,6 +98,7 @@ class Parcel(db.Model):
         cascade="all, delete-orphan",
         order_by="StatusHistory.created_at",
     )
+    delivery_agent = db.relationship("DeliveryAgent", back_populates="parcels")
     @validates("transport_mode")
     def validate_transport_mode(self, key, transport_mode):
         if transport_mode not in TRANSPORT_MODES:
@@ -105,6 +111,8 @@ class Parcel(db.Model):
             "tracking_number": self.tracking_number,
             "user_id": str(self.user_id),
             "weight_category_id": str(self.weight_category_id),
+            "delivery_agent_id": str(self.delivery_agent_id) if self.delivery_agent_id else None,
+            "delivery_agent": self.delivery_agent.to_dict() if self.delivery_agent else None,
             "transport_mode": self.transport_mode,
             "transport_label": TRANSPORT_MODES[self.transport_mode],
             "pickup_address": self.pickup_address,

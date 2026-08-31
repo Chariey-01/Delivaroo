@@ -90,6 +90,8 @@ def serialize_parcel(parcel: Parcel) -> dict:
         "tracking_number": parcel.tracking_number,
         "user_id": str(parcel.user_id),
         "weight_category_id": str(parcel.weight_category_id),
+        "delivery_agent_id": str(parcel.delivery_agent_id) if parcel.delivery_agent_id else None,
+        "delivery_agent": parcel.delivery_agent.to_dict() if parcel.delivery_agent else None,
         "transport_mode": parcel.transport_mode,
         "transport_label": TRANSPORT_MODES[parcel.transport_mode],
         "pickup_address": parcel.pickup_address,
