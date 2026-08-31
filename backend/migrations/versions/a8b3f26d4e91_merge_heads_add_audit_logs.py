@@ -7,9 +7,8 @@ Create Date: 2026-08-30 00:00:00.000000
 NOTE: This originally also created audit_logs, but that table is
 already created by migration 9a1c4e7f2b3d earlier in the merged chain.
 Neutralized to a pure merge migration to avoid a duplicate-table error.
-Flagged to Charity in case her column definitions (JSON fields,
-String(100) for entity_type) were intentional improvements over
-9a1c4e7f2b3d's version - pending her input on which to keep.
+Resolved with Charity - she confirmed 9a1c4e7f2b3d is the canonical
+audit_logs schema.
 """
 from alembic import op
 import sqlalchemy as sa

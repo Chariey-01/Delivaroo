@@ -20,6 +20,49 @@ from app.services.parcel_update_service import (
 )
 
 
+def _first_value(data, *keys):
+    for key in keys:
+        value = data.get(key)
+        if value not in (None, ""):
+            return value
+
+    return None
+
+
+def _place_value(data, place_key, field_name, *flat_keys):
+    place = data.get(place_key)
+
+    if isinstance(place, dict):
+        nested_aliases = {
+            "address": ("address",),
+            "latitude": ("latitude", "lat"),
+            "longitude": ("longitude", "lng", "lon"),
+        }
+        value = _first_value(place, *nested_aliases[field_name])
+
+        if value is not None:
+            return value
+
+    return _first_value(data, *flat_keys)
+
+
+def _duration_value(data):
+    duration = _first_value(data, "duration", "durationMinutes")
+
+    if duration is not None:
+        return duration
+
+    duration_seconds = _first_value(data, "duration_seconds", "durationSeconds")
+
+    if duration_seconds is None:
+        return None
+
+    try:
+        return round(float(duration_seconds) / 60)
+    except (TypeError, ValueError):
+        return duration_seconds
+
+
 class ParcelListResource(Resource):
     @jwt_required()
     def post(self):
@@ -28,12 +71,35 @@ class ParcelListResource(Resource):
         if not data:
             return {"message": "Request body is required"}, 400
 
-        required_fields = [
+        weight_category_id = _first_value(
+            data,
             "weight_category_id",
+            "weightCategoryId",
+        )
+        pickup_address = _place_value(
+            data,
+            "pickup",
+            "address",
             "pickup_address",
+            "pickupAddress",
+        )
+        destination_address = _place_value(
+            data,
+            "destination",
+            "address",
             "destination_address",
-        ]
-        missing_fields = [field for field in required_fields if not data.get(field)]
+            "destinationAddress",
+        )
+        missing_fields = []
+
+        if not weight_category_id:
+            missing_fields.append("weight_category_id")
+
+        if not pickup_address:
+            missing_fields.append("pickup_address")
+
+        if not destination_address:
+            missing_fields.append("destination_address")
 
         if missing_fields:
             return {
@@ -44,15 +110,39 @@ class ParcelListResource(Resource):
         try:
             parcel = create_parcel(
                 user_id=get_jwt_identity(),
-                weight_category_id=data["weight_category_id"],
-                pickup_address=data["pickup_address"],
-                pickup_latitude=data.get("pickup_latitude"),
-                pickup_longitude=data.get("pickup_longitude"),
-                destination_address=data["destination_address"],
-                destination_latitude=data.get("destination_latitude"),
-                destination_longitude=data.get("destination_longitude"),
-                distance=data.get("distance"),
-                duration=data.get("duration"),
+                weight_category_id=weight_category_id,
+                pickup_address=pickup_address,
+                pickup_latitude=_place_value(
+                    data,
+                    "pickup",
+                    "latitude",
+                    "pickup_latitude",
+                    "pickupLatitude",
+                ),
+                pickup_longitude=_place_value(
+                    data,
+                    "pickup",
+                    "longitude",
+                    "pickup_longitude",
+                    "pickupLongitude",
+                ),
+                destination_address=destination_address,
+                destination_latitude=_place_value(
+                    data,
+                    "destination",
+                    "latitude",
+                    "destination_latitude",
+                    "destinationLatitude",
+                ),
+                destination_longitude=_place_value(
+                    data,
+                    "destination",
+                    "longitude",
+                    "destination_longitude",
+                    "destinationLongitude",
+                ),
+                distance=_first_value(data, "distance", "distanceKm"),
+                duration=_duration_value(data),
             )
         except ValueError as error:
             return {"message": str(error)}, 400
@@ -106,9 +196,32 @@ class ParcelResource(Resource):
             updated_parcel = update_parcel_destination(
                 parcel=parcel,
                 requester_id=get_jwt_identity(),
-                new_address=data.get("destination_address"),
-                new_latitude=data.get("destination_latitude"),
-                new_longitude=data.get("destination_longitude"),
+                new_address=_place_value(
+                    data,
+                    "destination",
+                    "address",
+                    "destination_address",
+                    "destinationAddress",
+                    "address",
+                ),
+                new_latitude=_place_value(
+                    data,
+                    "destination",
+                    "latitude",
+                    "destination_latitude",
+                    "destinationLatitude",
+                    "latitude",
+                    "lat",
+                ),
+                new_longitude=_place_value(
+                    data,
+                    "destination",
+                    "longitude",
+                    "destination_longitude",
+                    "destinationLongitude",
+                    "longitude",
+                    "lng",
+                ),
             )
         except NotParcelOwnerError as error:
             return {"message": str(error)}, 403

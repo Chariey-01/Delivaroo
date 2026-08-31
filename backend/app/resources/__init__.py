@@ -2,13 +2,16 @@ from flask_restful import Api
 
 from app.resources.auth import (
     ForgotPasswordResource,
-    ResetPasswordResource,
     LoginResource,
     LogoutResource,
     MeResource,
     RefreshResource,
     RegisterResource,
+    ResetPasswordResource,
 )
+from app.resources.admin_parcel import AdminParcelListResource
+from app.resources.admin_location import AdminParcelLocationResource
+from app.resources.admin_status import AdminParcelStatusResource
 from app.resources.parcel import (
     ParcelHistoryResource,
     ParcelListResource,
@@ -16,9 +19,6 @@ from app.resources.parcel import (
     ParcelTrackingResource,
 )
 from app.resources.parcel_cancel import ParcelCancelResource
-from app.resources.admin_parcel import AdminParcelListResource
-from app.resources.admin_status import AdminParcelStatusResource
-from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.address import (
     AddressListResource,
     AddressResource,
@@ -72,8 +72,16 @@ def init_resources(app):
         "/api/admin/parcels/<uuid:parcel_id>/location",
     )
 
-    api.add_resource(AddressListResource, "/addresses")
-    api.add_resource(AddressResource, "/addresses/<uuid:address_id>")
-    api.add_resource(AddressSetDefaultResource, "/addresses/<uuid:address_id>/default")
+    api.add_resource(AddressListResource, "/addresses", "/api/addresses")
+    api.add_resource(
+        AddressResource,
+        "/addresses/<uuid:address_id>",
+        "/api/addresses/<uuid:address_id>",
+    )
+    api.add_resource(
+        AddressSetDefaultResource,
+        "/addresses/<uuid:address_id>/default",
+        "/api/addresses/<uuid:address_id>/default",
+    )
 
     api.add_resource(ProfileResource, "/profile", "/api/profile")
