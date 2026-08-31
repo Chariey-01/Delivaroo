@@ -19,6 +19,7 @@ from app.resources.parcel import (
     ParcelTrackingResource,
 )
 from app.resources.parcel_cancel import ParcelCancelResource
+from app.resources.weight_category import WeightCategoryListResource
 from app.resources.address import (
     AddressListResource,
     AddressResource,
@@ -45,6 +46,7 @@ def init_resources(app):
         "/api/auth/reset-password",
     )
     api.add_resource(ParcelListResource, "/api/parcels")
+    api.add_resource(WeightCategoryListResource, "/api/weight-categories")
     api.add_resource(
         ParcelResource,
         "/api/parcels/<uuid:parcel_id>",

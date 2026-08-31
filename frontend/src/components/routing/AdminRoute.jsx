@@ -3,8 +3,9 @@
 // about and one place a mistake could live.
 
 import ProtectedRoute from './ProtectedRoute';
-import { ROLE } from '../../lib/roles';
+import { ROLE, STAFF_ROLES } from '../../lib/roles';
+import { usingMockBackend } from '../../api';
 
 export default function AdminRoute({ children }) {
-  return <ProtectedRoute roles={[ROLE.ADMIN]}>{children}</ProtectedRoute>;
+  return <ProtectedRoute roles={usingMockBackend ? STAFF_ROLES : [ROLE.ADMIN]}>{children}</ProtectedRoute>;
 }

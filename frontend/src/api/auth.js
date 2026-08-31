@@ -15,12 +15,14 @@ import { clearTokens, getRefreshToken, setTokens } from '../lib/tokenStorage';
 export function normalizeUser(raw) {
   if (!raw) return null;
   const profile = raw.profile ?? {};
+  const role = (raw.role ?? 'USER').toUpperCase();
+  const fullName = profile.full_name ?? profile.fullName ?? raw.full_name ?? raw.fullName ?? '';
   return {
     id: raw.id,
     email: raw.email,
-    role: (raw.role ?? 'USER').toUpperCase(),
+    role,
     isActive: raw.is_active ?? raw.isActive ?? true,
-    fullName: profile.full_name ?? profile.fullName ?? raw.full_name ?? raw.fullName ?? '',
+    fullName,
     phone: profile.phone ?? raw.phone ?? '',
     profileImage: profile.profile_image ?? profile.profileImage ?? null,
   };

@@ -2,9 +2,8 @@ import { useId, useState } from 'react';
 import { color, control, font } from '../../theme';
 
 /**
- * Labelled text input. Inline styles have no :focus, so focus is tracked in state.
- * Errors are wired through aria-describedby and aria-invalid so a screen reader hears
- * the message that the sighted user reads under the box.
+ * Labelled text input. Inline styles have no :focus, so focus is tracked in state —
+ * the same reason useHover exists. Errors are wired with aria-describedby (§24).
  */
 export default function Field({
   label,
@@ -13,61 +12,54 @@ export default function Field({
   error,
   hint,
   type = 'text',
-  name,
+  inputMode,
   placeholder,
   autoComplete,
-  required,
-  disabled,
   onKeyDown,
   inputRef,
+  ...rest
 }) {
   const id = useId();
   const [focused, setFocused] = useState(false);
-  const noteId = `${id}-note`;
 
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <label htmlFor={id} style={control.label}>
-        {label}
-      </label>
+    <label htmlFor={id} style={{ display: 'block' }} {...rest}>
+      {label && <span style={control.label}>{label}</span>}
       <input
         id={id}
         ref={inputRef}
-        name={name}
         type={type}
+        inputMode={inputMode}
         value={value}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        required={required}
-        disabled={disabled}
         onKeyDown={onKeyDown}
         onChange={(event) => onChange(event.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         aria-invalid={Boolean(error)}
-        aria-describedby={error || hint ? noteId : undefined}
+        aria-describedby={error || hint ? `${id}-note` : undefined}
         style={{
           ...control.field,
           ...(focused ? control.fieldFocus : null),
-          ...(error ? control.fieldInvalid : null),
-          ...(disabled ? { opacity: 0.6, cursor: 'not-allowed' } : null),
+          ...(error ? control.fieldInvalid : null)
         }}
       />
       {(error || hint) && (
         <span
-          id={noteId}
+          id={`${id}-note`}
           role={error ? 'alert' : undefined}
           style={{
             display: 'block',
             marginTop: '7px',
             fontSize: '13px',
             fontFamily: font.body,
-            color: error ? color.danger : color.muted,
+            color: error ? color.orangeDeep : color.muted
           }}
         >
           {error || hint}
         </span>
       )}
-    </div>
+    </label>
   );
 }

@@ -1,21 +1,50 @@
-import { color } from '../theme';
+import { color, eyebrow, font, layout } from '../theme';
 
-/** Shared page frame so every screen gets the same width, gutter and heading rhythm. */
-export default function PageShell({ title, subtitle, children, aside }) {
+/**
+ * Interior-page header. The band is dark for a practical reason as well as a visual
+ * one: the fixed nav is white text designed to sit over the hero photo, so every page
+ * needs something dark beneath it at scroll position zero.
+ */
+export default function PageShell({ eyebrow: label, title, children, aside }) {
   return (
-    <main style={{ maxWidth: '1120px', margin: '0 auto', padding: 'clamp(24px,4vw,48px) clamp(16px,4vw,40px)' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-start' }}>
-        <div style={{ flex: '1 1 420px' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 'clamp(26px,4vw,38px)', color: color.ink }}>{title}</h1>
-          {subtitle && (
-            <p style={{ margin: '0 0 28px', maxWidth: '60ch', fontSize: '15.5px', lineHeight: 1.6 }}>
-              {subtitle}
-            </p>
-          )}
+    <>
+      <div style={{ background: color.ink, padding: 'calc(80px + clamp(36px,6vw,80px)) 0 clamp(36px,5vw,72px)' }}>
+        <div
+          style={{
+            maxWidth: layout.maxWidth,
+            margin: '0 auto',
+            padding: `0 ${layout.gutter}`,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: '24px'
+          }}
+        >
+          <div>
+            {label && <div style={{ ...eyebrow, color: color.orange, marginBottom: '16px' }}>{label}</div>}
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: font.display,
+                fontWeight: 700,
+                fontSize: 'clamp(34px,5.6vw,84px)',
+                lineHeight: 0.92,
+                letterSpacing: '-.015em',
+                textTransform: 'uppercase',
+                color: color.paper,
+                maxWidth: '18ch'
+              }}
+            >
+              {title}
+            </h1>
+          </div>
+          {aside}
         </div>
-        {aside}
       </div>
-      {children}
-    </main>
+      <div style={{ background: color.paper, padding: 'clamp(36px,5vw,72px) 0 clamp(64px,8vw,120px)' }}>
+        <div style={{ maxWidth: layout.maxWidth, margin: '0 auto', padding: `0 ${layout.gutter}` }}>{children}</div>
+      </div>
+    </>
   );
 }

@@ -1,119 +1,407 @@
-# Delivaroo — Frontend
+# Deliveroo — on-demand multi-modal delivery (React + Redux Toolkit)
 
-React + Vite single-page app for the Delivaroo parcel delivery platform.
-It talks to the Flask API described in [`../BACKENDPRD.md`](../BACKENDPRD.md).
+Vite + React (JavaScript), Redux Toolkit for state, inline style objects kept 1:1 with the
+approved design.
 
-## Stack
+Tell Deliveroo where to collect a parcel and where it's going; it works out how it travels —
+**motorbike, road, air, sea or drone** — what each option costs, and how long each takes, then
+sends a rider or an agent to come and get it.
 
-| Concern | Choice |
-| --- | --- |
-| Framework | React 19 |
-| Build | Vite 8 |
-| Routing | React Router 7 |
-| State | Redux Toolkit + React Redux |
-| HTTP | `fetch`, wrapped in `src/api/client.js` |
-| Maps | Google Maps JavaScript API (Places, Geocoding, Directions) |
-| Tests | Jest + React Testing Library |
-| Lint | ESLint 10 (flat config) |
+```
+WHERE? → WHAT? → HOW? → PRICE → REQUEST PICKUP → AGENT ASSIGNED → PICKED UP → TRANSPORTING → TRACK → DELIVERED
+```
 
-## Getting started
+Covers the whole customer journey — request, price, dispatch, track — plus a nine-section
+admin portal: the dispatch board, the courier roster, transport capacity, accounts and roles,
+reports, the notification outbox, an audit trail and the platform settings.
+
+## Run it
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in the values below
-npm run dev                  # http://localhost:5173
+npm run dev        # http://localhost:5173
+npm test           # Jest + React Testing Library
+npm run build      # production bundle to dist/
 ```
 
-The dev server proxies `/api/*` to the Flask backend (default
-`http://localhost:5000`), so there is no CORS to configure locally and no backend
-host baked into the frontend.
+Node 18+.
 
-## Environment variables
+### Try the full journey
 
-Copy `.env.example` to `.env.local`. **Never commit `.env.local`.**
+1. `/` → **Request a delivery** → pick a pickup and destination (type 3+ characters, use the
+   location button, or tap the map).
+2. The route, distance and duration draw themselves. Say what you're sending — weight, type,
+   optionally dimensions.
+3. **Choose how it travels.** Four cards, priced live against this route and this parcel.
+   Anything that can't serve the route is disabled *and says why* ("Sea freight starts at
+   200 km"). Try Nairobi → Westlands (motorbike, road, drone) against Nairobi → Mombasa
+   (road, air, sea).
+4. **Request Pickup — KES x** → sign in with any email or phone; the verification code is
+   `000000`.
+5. The confirmation screen goes looking for an agent, then shows who is coming, in what, how
+   far out and their ETA. **Track pickup** opens the live map.
+6. Open `/admin` in a second tab and sign in as `admin@deliveroo.co` (code `000000`). The
+   overview leads with what needs a person; **Deliveries** is the board. Change the order's
+   status, drag the vehicle marker, or set where the parcel currently is — **the tracking tab
+   updates without a reload**. Take drone capacity offline under **Capacity** and it
+   disappears from the customer's options.
+7. Sign in as `dispatch@deliveroo.co` instead to see the same portal as a dispatcher: the
+   board, the roster and capacity, but no accounts and no settings — including by URL.
 
-| Variable | Required | Purpose |
+## Multi-modal transport (`src/lib/transport.js`)
+
+One pure module owns the catalogue: what can carry a parcel, whether it may carry it on a
+given route, what it costs and how long it takes. `pricing.js` imports it — never the other
+way round.
+
+| Mode | Base | Per km | Per kg | Floor | Eligible when |
+| --- | --- | --- | --- | --- | --- |
+| 🚐 Road | — | 40 (first 50 km), then 6 | 50 | 200 | route ≤ 1,500 km, ≤ 2,000 kg |
+| 🏍️ Motorbike | 60 | 28 | 22 | 150 | route ≤ 45 km, ≤ 20 kg, ≤ 70 cm longest side |
+| ✈️ Air | 1,500 | 11 | 240 | 2,000 | route ≥ 120 km, ≤ 250 kg |
+| 🚢 Ship | 900 | 4.5 | 28 | 1,400 | route ≥ 200 km **and** one end within 90 km of a port |
+| 🚁 Drone | 350 | 60 | 110 | 700 | route ≤ 30 km, ≤ 5 kg, ≤ 45 cm longest side |
+
+Road keeps the tariff the app has always charged, so **every existing quote is unchanged** —
+`quote({ weightKg: 3, distanceKm: 12.4 })` is still KES 650. It gains one thing: a line-haul
+band, because 40/km is a cross-town rate and absurd over 400 km.
+
+Motorbike is the other road-network vehicle and undercuts the van on every count that matters
+in a city — less fuel, one rider, no loading bay — so a small local parcel defaults to it: the
+same 12.4 km hop is KES 480 rather than 650, and twenty minutes quicker. It takes a
+flag-fall like any other on-demand ride, and it is capped hard on distance, weight and bulk,
+because past roughly an hour in the saddle a parcel belongs in a van.
+
+The other three are flat per-km shared-capacity freight, which is why sea undercuts road over
+distance while taking a day, and air costs multiples of both.
+
+Other rules that live here:
+
+- **Priority** is a multiplier pair (`STANDARD`, `EXPRESS` at ×1.45 price, ×0.72 time), applied
+  to whichever vehicle was chosen rather than being a tariff of its own.
+- **Volumetric weight** (L×W×H ÷ 5000) — a big light parcel is charged on the space it takes,
+  and dimensions are what tell us a drone can't take it.
+- **Duration** is time in motion plus each mode's handling at either end. Road and motorbike
+  prefer OSRM's measured driving time — the bike then scales it by a traffic factor, because it
+  filters past the queue the van joins — while a flight does not care how long the drive would
+  have been.
+- **The word for the person collecting the parcel follows the vehicle** (`agentNoun`): a
+  motorbike delivery sends a *rider*, everything else a *pickup agent*. The dispatch screen, the
+  tracking timeline, the console and the notifications all read that one definition.
+- **Ineligible modes come back with a reason**, never dropped. §25: a greyed-out card with no
+  explanation is a dead end.
+- **Availability** (`FLEET_STATUS`) — the console can mark a mode Available / Busy / Offline.
+  Offline withdraws it from quotes; Busy still books but adds to the ETA.
+
+## The journey, in two levels of detail
+
+`STATUS` is unchanged — `PENDING → ASSIGNED → PICKED_UP → IN_TRANSIT → DELIVERED`, plus
+`CANCELLED`. What a customer watching a parcel wants is finer than that, so `journeyStages()`
+*derives* seven rows (requested, agent assigned, picked up, dispatched, in transit, arriving,
+delivered) from the status and how far through the journey the parcel is. One vocabulary for
+the API, one for the human. `progressFor()` moves with the clock once a parcel is in transit,
+which is what makes the ETA count down and the timeline reach "Arriving" on its own.
+
+## The admin portal (`/admin`)
+
+One gated shell — `routes/admin/AdminPortal.jsx` — around nine sections. It decides whether
+the person may be here at all, loads everything the portal reads, keeps it live through the
+same cross-tab subscription the customer's tracking screen uses, and gives each section its
+heading. The sections are then free to be about their own subject.
+
+| Section | What it is for | Needs |
 | --- | --- | --- |
-| `VITE_API_URL` | production only | Flask API origin. Leave blank in development so requests go to `/api` and hit the Vite proxy. |
-| `VITE_API_PROXY` | no | Where the dev proxy forwards `/api`. Defaults to `http://localhost:5000`. |
-| `VITE_GOOGLE_MAPS_API_KEY` | for maps | Google Maps JavaScript API key. Without it the app still builds and runs — the map renders a "not configured" notice instead. |
-| `VITE_MAP_DEFAULT_LAT` / `VITE_MAP_DEFAULT_LNG` | no | Where the map opens before it has anything to show. Defaults to Nairobi. |
+| Overview | The four figures a shift lead acts on, then the exceptions, then the shape of the fortnight | staff |
+| Deliveries | The dispatch board: search, sort, filter, and the levers on the selected parcel | staff |
+| Couriers | The roster — who is on shift, what they are carrying, what they have moved | staff |
+| Capacity | Availability per mode, live load, and the tariff table printed from `transport.js` | staff |
+| Accounts | Customers and colleagues; roles and suspension | staff to read, **administrator** to change |
+| Reports | Volume, revenue, punctuality, busiest routes, courier performance, CSV export | staff |
+| Notifications | Every message the platform has written about a delivery (§19's outbox) | staff |
+| Audit trail | Who did what, to whose delivery, and when | staff |
+| Settings | Pause bookings, post a notice to staff, support contacts, reset the demo | **administrator** |
 
-The Google key needs **Maps JavaScript API**, **Places API** and **Directions API**
-enabled, and should be restricted by HTTP referrer in the Google Cloud console.
+### Roles (`src/lib/roles.js`)
 
-## Scripts
+`isAdmin` was fine while the console did one job. A portal that can also promote colleagues
+and pause the platform needs the finer answer, so a session carries a `role`:
 
-```bash
-npm run dev               # dev server
-npm run build             # production build
-npm run preview           # serve the production build
-npm run lint              # eslint
-npm test                  # every test
-npm run test:integration  # integration tests only
-npm run test:smoke        # smoke tests only
-npm run test:coverage     # tests with a coverage report
-```
-
-## Layout
-
-```text
-src/
-├── api/            HTTP layer — the only place that knows the backend exists
-│   ├── client.js       fetch wrapper: bearer token, refresh-on-401, error shapes
-│   ├── auth.js         /auth/register, /login, /logout, /refresh, /me
-│   ├── parcels.js      parcel + admin parcel endpoints
-│   ├── geo.js          Places / Geocoding / Directions, behind a provider-neutral API
-│   └── viteEnv.js      the only module that reads import.meta
-├── components/
-│   ├── auth/       the shared frame and error banner for the auth screens
-│   ├── maps/       DeliveryMap, PlaceSearch
-│   ├── routing/    ProtectedRoute, AdminRoute, PublicOnlyRoute
-│   └── ui/         Field, Button, Spinner
-├── lib/            roles, token storage, validators, the Maps script loader
-├── routes/         one file per screen
-├── store/          Redux Toolkit slices
-└── __tests__/      unit, integration/ and smoke/ suites
-```
-
-## Authentication
-
-Email + password against Flask-JWT-Extended, per BACKENDPRD §19.
-
-* `POST /api/auth/register` and `/login` return an access/refresh pair plus the user.
-* Tokens live in `localStorage`, behind `src/lib/tokenStorage.js` — the only module
-  that names the storage keys, so moving to httpOnly cookies later is a one-file change.
-* `src/api/client.js` attaches `Authorization: Bearer <token>` and, on a 401,
-  refreshes once and replays the request before giving up.
-* `AppLayout` restores the session from a stored token on mount; guards wait for that
-  question to be *answered* before redirecting, so a refresh on a protected URL does
-  not bounce a signed-in user to `/login`.
-
-### Route protection
-
-| Guard | Behaviour |
+| Role | Can |
 | --- | --- |
-| `ProtectedRoute` | Not signed in → `/login`, remembering where you were going. |
-| `ProtectedRoute roles={[...]}` | Signed in, wrong role → `/unauthorized` (a 403, not another login prompt). |
-| `AdminRoute` | `ProtectedRoute` narrowed to `ADMIN`. |
-| `PublicOnlyRoute` | Already signed in → sent onward, away from `/login` and `/signup`. |
+| `CUSTOMER` | Book and track their own deliveries. No portal at all. |
+| `DISPATCHER` | Run the board: statuses, the scale, the parcel's location, capacity, the roster. |
+| `ADMIN` | All of that, plus accounts, roles, suspension and platform settings. |
 
-These guards are for coherence and clarity, **not** security. Authorization is
-enforced by the backend on every endpoint (BACKENDPRD §2); a guard that lives only in
-the browser guards nothing.
+One grant table answers every question — the sidebar builds itself from it, each screen gates
+its own controls with it, and **the backend enforces it**. A section a dispatcher may not open
+is absent from the navigation *and* refused when its URL is typed, because a sidebar that hides
+a link is a convenience, not a control. `isAdmin` is still written into the session (`role !==
+CUSTOMER`), so everything that asked the old question keeps working, and a session stored
+before roles existed reads as an administrator rather than being locked out.
+
+The founding address `admin@deliveroo.co` is the bootstrap: a fresh install has no directory,
+so it needs one address that is an administrator by definition. Everyone else's role comes
+from the directory, which is why a promotion survives the next sign-in. An administrator
+cannot demote or suspend themselves — an install whose last administrator clicks the wrong row
+has nobody left to undo it.
+
+### What is enforced, not just displayed
+
+Four rules live in the data layer, where a hand-written `fetch` meets them too:
+
+- only staff may move an order along, weigh a parcel, report its location or change capacity;
+- only an administrator may change a role, suspend an account or touch settings;
+- a suspended account cannot get a session at all — refused at sign-in, not per endpoint;
+- while bookings are paused, `createOrder` refuses, so the pause holds against a stale tab
+  that still has the request button on screen. The booking screen says so up front as well.
+
+Every staff action against someone else's delivery or account writes an audit entry with the
+account that took it. The trail is append-only and nothing in the portal can edit it.
+
+### The figures (`src/lib/analytics.js`)
+
+Pure, like `pricing.js` and `transport.js`: it takes an array of orders and returns plain data,
+so the definitions are portable to the SQL aggregates a real backend would compute. Worth
+knowing what the words mean:
+
+- **Revenue** counts every delivery that was not cancelled, at the fare currently on the order
+  — the measured one where the parcel has been weighed, the estimate where it has not.
+- **On time** compares a delivery against the duration it was quoted, counted from *collection*.
+  Counting from the booking would charge the carrier for how long the customer took to hand the
+  parcel over.
+- **Needs attention** is the point of the screen: unassigned requests past 15 minutes, anything
+  past its ETA, parcels collected without going on a scale, and orders with no movement in six
+  hours. One parcel can raise several rows — being late and never having been weighed are two
+  jobs for two different people.
+- A day is the **operator's** day, bucketed on local date parts. ISO days are UTC, which in
+  Nairobi would file everything booked before 3am under the day before.
+
+Charts are one series on one axis — never two scales on one chart — with the value printed on
+every ranked bar so the chart still works with the colour taken away.
+
+## Data layer
+
+There is no backend yet. `src/api/index.js` picks an implementation:
+
+| `VITE_API_URL` | Implementation | Where data lives |
+| --- | --- | --- |
+| unset (default) | `src/api/mockBackend.js` | `localStorage` |
+| set | `src/api/client.js` | Flask, via `/api/*` |
+
+Both expose the same functions with the same shapes, so pointing at the real API is a
+config change, not a rewrite. **Import from `src/api`, never from `mockBackend` or `client`
+directly.** The endpoints the Flask side needs to expose are listed in `src/api/index.js`.
+
+### What the backend has to add for multi-modal
+
+Three new endpoints and three new fields. Nothing existing changes shape.
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /orders/:id/assign` | Dispatch matches a pickup agent. **Must be idempotent** — the confirmation screen may retry, and two tabs may both ask. Returns the order with `courier` attached and status `ASSIGNED`; an order that has already moved on comes back untouched. |
+| `PATCH /orders/:id/location` | Staff-only. `{ label, lat, lng }` → where the parcel is *in words*. |
+| `GET /transport/availability` · `PATCH /admin/transport/availability` | Read/write a status per mode — `AVAILABLE`, `BUSY` or `OFFLINE`. The PATCH is staff-only. |
+
+And for the portal (§27) — everything under `/admin` is staff-only, and the three account
+routes are administrator-only:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /admin/users` · `PATCH /admin/users/:id/role` · `PATCH /admin/users/:id/suspension` | The account directory. A suspended account must be refused a session at sign-in. |
+| `GET /admin/couriers` · `PATCH /admin/couriers/:id/shift` | The roster. Off shift means dispatch stops matching them to new parcels; it does not take a parcel off someone already carrying one. |
+| `GET /admin/audit` | Append-only trail of staff actions: actor, role, action, subject, detail. |
+| `GET /admin/notifications` | §19's outbox. |
+| `GET /settings` · `PATCH /admin/settings` | `acceptingOrders` (the platform pause, enforced in the create-order route), `noticeToStaff`, support contacts. The GET is public — the booking screen reads it. |
+
+New fields on an order:
+
+```jsonc
+{
+  "transport": { "mode": "AIR", "priority": "STANDARD" },   // absent ⇒ road/standard
+  "presentLocation": { "label": "Voi", "lat": …, "lng": …, "at": "…" } | null,
+  "parcel": { "packageType": "ELECTRONICS", "lengthCm": 40, "widthCm": 30, "heightCm": 20, … },
+  "courier": { "plate": "KDA 123A", "rating": 4.9, "distanceKm": 2.4, "etaMinutes": 7, … }
+}
+```
+
+Every reader defaults a missing `transport` to road at standard priority, so orders written
+before this change price and render exactly as they did.
+
+**Pricing must be mirrored server-side.** `quoteTransport()` in `src/lib/transport.js` is the
+whole rule, and it is deliberately free of React and of the store so it can be ported
+directly. The client's figure is an estimate either way — the fare is settled from the weight
+recorded on the scale at pickup.
+
+**Two rules are enforced in the mock backend, not just the UI**, and the Flask routes must do
+the same: only staff may record a measured weight or change transport availability, and only
+the account that booked a delivery may cancel or re-route it.
+
+Cross-tab live updates come from `subscribe()`: the mock writes to `localStorage`, which
+fires `storage` in other tabs, and dispatches a matching in-tab event. Swap it for SSE or a
+websocket when the backend can push.
+
+### Maps and geocoding
+
+Photon (autocomplete) and OSRM (routing) via `src/api/geo.js` — free and keyless, chosen over
+Google Maps so the project needs no billing account. Both are **public demo endpoints with
+fair-use limits**; self-host or move to a paid provider before production. Only the two
+`fetch` calls in that file need to change.
+
+If OSRM is unreachable, `routeBetween` falls back to a straight line scaled by a detour
+factor and flags the result `estimated: true`; the UI then labels the distance and price as
+approximate rather than presenting a guess as measured.
+
+## Structure
+
+```
+src/
+  main.jsx            Provider + root render
+  App.jsx             route table (AppRoutes is exported for tests)
+  theme.js            colors, fonts, easings, status tones, form control styles
+  routes/
+    AppLayout         nav + bottom nav + footer + auth modal + toast + hash scrolling
+    LandingPage       §2: Hero · ModesBand · Services
+    Confirmation      §13/§25 the live request: finding an agent → agent assigned
+    TrackOrder §14    live map, ETA, distance remaining, journey timeline
+    MyOrders §15      customer dashboard: active delivery, stats, search + filters
+    OrderDetails      §15–17 details, change destination, cancel
+    TrackLookup       §14 look a parcel up by id
+    admin/            §27 the portal — AdminPortal (gate + shell + live refresh) and
+                      Overview · Deliveries · Couriers · Capacity · Accounts ·
+                      Reports · Notifications · Audit · Settings
+  lib/
+    transport.js      §25 mode catalogue, eligibility, tariffs, ETAs, availability
+    pricing.js        priceOrder()/quote() and the money/distance/duration formatters
+    orderStatus.js    status vocabulary, §16/§17 guards, derived journey stages
+    roles.js          §27 roles, the permission grant table, `can(user, permission)`
+    analytics.js      §27 the portal's aggregates: KPIs, series, exceptions, CSV
+    notifications.js  §19 templates and a local outbox (read by the portal)
+  api/                index (selector) · mockBackend · client · geo · viteEnv
+  store/              ui · auth · booking · orders · fleet · admin
+  hooks/              useScrollEffects · useNarrowViewport · useReveal · useHover
+                      useOrder · useOrderSync · useNow · useStartBooking
+  components/
+    booking/          BookDelivery · TransportOptions · PlaceSearch · RouteMap
+                      StepShell · PriceCard · OrderSummary
+    transport/        TransportGlyph · TransportBadge
+    orders/           ActiveDelivery · DeliveryCard · StatusPill
+    tracking/         EtaPanel · CourierCard · FindingAgent · StatusTimeline
+    admin/            WeighParcel · DeliveryTable · FleetPanel · LocationUpdater · TrackingHistory
+                      AdminNav · adminSections · Panel · CourierTable · UserTable
+                      ColumnChart · BarList
+    auth/             AuthModal
+    ui/               Button · Field · Chip · Modal · Toast · StatTile · EmptyState · Skeleton
+    Nav · MobileMenu · BottomNav · Hero · ModesBand · Services · SiteFooter
+    Wordmark · WorldMap · Icon · HoverLink
+```
+
+## Conventions worth keeping
+
+**Styling is inline style objects.** No CSS modules, no Tailwind. `src/styles/global.css`
+holds only what inline styles can't express: resets, `@keyframes`, focus rings, scrollbars.
+Leaflet's stylesheet, imported in `main.jsx`, is the one third-party exception. Repeated
+values live in `theme.js` — import them rather than retyping hexes.
+
+**The palette is closed.** Order statuses reuse the existing nine colors via
+`theme.statusTone`; don't add a traffic-light set.
+
+**Hover and focus need JS**, since inline styles have no pseudo-classes. Use `<HoverLink>`,
+`<Button>`, or the `useHover()` hook, and put the hover object in `theme.js`.
+
+**Redux holds UI state and fetched data**, one slice per domain, `createAsyncThunk` calling
+`src/api`. Selectors that build a new object or array must be `createSelector`-memoized —
+`selectQuote` and `selectAllOrders` show the pattern.
+
+**Responsive** is `clamp()` + flex/grid wrapping, no media queries. The `narrow` flag
+(<980px, owned by `useNarrowViewport` in AppLayout) switches the four things that cannot
+simply reflow: the nav becomes the hamburger, the bottom navigation appears, the dispatch
+table becomes cards, and dialogs dock to the bottom edge as sheets. Everything else reflows.
+
+**Icons for transport modes go through `<TransportGlyph>`.** Road, motorbike, air and sea are Material
+Symbols like everything else; the quadcopter is inline SVG, because the icon set has no
+dependable drone glyph and a missing ligature renders as the literal word "drone".
+
+**Motion is small and purposeful** — a card acknowledging a tap, a route drawing itself, the
+live stage of a timeline breathing, skeletons while a quote is worked out. Keyframes live in
+`global.css`, and a `prefers-reduced-motion` block turns all of it off.
+
+**The hero is a full-bleed carousel.** Five slides — drone, motorbike, road, air, sea — crossfade
+over photography that fills the whole section (`clamp(560px,82vh,750px)` tall, no card, no
+gutter). `HERO_SLIDES` in `src/components/Hero.jsx` is the whole of the content: label,
+headline lines, copy, photo and the two `object-position` values that keep the subject in
+frame. `focus` is used above the 980px breakpoint, `focusNarrow` below it, because a phone
+crops the photo horizontally where a desktop crops it vertically — the second value is what
+stops the rider, the drone, the truck, the ship or the aircraft being cut out of its own slide. Photos
+live in `public/photos/hero-*.jpeg`.
+
+Two optional fields. `align: 'right'` puts the copy on the other side of the frame on
+desktop — the motorbike and truck photos have their subject under the usual text column and
+no horizontal slack to crop it aside, so the words move instead and the scrim flips with
+them. `meta` adds
+the small glass chip of at-a-glance facts under the copy (with `mode`, it carries that mode's
+`<TransportGlyph>`); only the motorbike slide has one.
+
+Each slide is its own absolutely positioned layer, so the change is an opacity crossfade
+with nothing to reflow, and the active photo drifts under `heroDrift` (`global.css`). Two
+light scrims carry the type: one across the frame on desktop, one up from the bottom edge on
+narrow, where the copy sits under the subject rather than on it. The carousel advances every
+`SLIDE_MS` (6s) and holds while the pointer or the keyboard is inside it, while the tab is in
+the background, and for `prefers-reduced-motion`. Indicators name the mode and fill over the
+slide's own duration; arrows are desktop-only, and a swipe does the same job on touch.
+
+The primary CTA is the approved goo pill, still routed through `useStartBooking`, so the hero
+uses the same booking gate as every other "request a delivery" in the app; the secondary one
+goes to `/#modes`.
+
+**Icons** are Material Symbols ligatures via `<Icon name="arrow_outward" />`; the font is
+loaded in `index.html`.
 
 ## Testing
 
-```bash
-npm test
+Jest with jsdom and Babel (no ts-jest). `makeStore()` gives each test a fresh store:
+
+```js
+import { makeStore } from './store';
+render(<Provider store={makeStore()}><MemoryRouter><Nav /></MemoryRouter></Provider>);
 ```
 
-* `src/__tests__/*.test.js[x]` — units: validators, roles, token storage, the API
-  client, the auth slice, the map components.
-* `src/__tests__/integration/` — the real store, the real route table and the real
-  guards, with only `fetch` stubbed.
-* `src/__tests__/smoke/` — shallow "is the app standing up?" checks. Run these first
-  after a merge.
+Fourteen suites: `pricing` · `transport` · `orderStatus` · `analytics` · `mockBackend` ·
+`adminAccess` (the rules that are actually enforced) and `App` · `routes` · `booking` ·
+`adminWeight` · `adminPortal` · `experience` · `hero` · `uiSlice` (what the screens do with
+them). The split is deliberate: `adminAccess.test.js` goes straight at the data layer with no
+screen involved, because the console can hide a button but only the backend can refuse the
+call behind it; `adminPortal.test.jsx` then checks the screens obey the same rules — a
+dispatcher is refused `/admin/settings` by URL, an administrator is not offered a control that
+would change their own role. `experience.test.jsx` covers the two things that are hard to
+eyeball — the dispatch wait resolving into an assigned agent, and the narrow-viewport layout.
+It also covers the customer dashboard, whose active-delivery panel is otherwise only reachable
+with a signed-in session and a live order. It sets `window.innerWidth` rather than dispatching
+`setNarrow`, because AppLayout reads the real viewport on mount and would overwrite it.
 
-`src/__tests__/testUtils.jsx` holds the shared harness, and
-`src/__mocks__/googleMaps.js` stands in for the Maps JavaScript API.
+`jest.setup.cjs` stubs `IntersectionObserver`, `scrollTo` and `scrollIntoView`, which jsdom
+lacks. Three `moduleNameMapper` entries matter:
+
+- `viteEnv` → a stub, because Babel emits CJS for Jest and `import.meta` is a syntax error
+  there. **That file is the only place `import.meta` may appear.**
+- `react-leaflet` / `leaflet` → stubs, because Leaflet needs layout APIs jsdom doesn't have.
+
+Full-app renders are slow, so `testTimeout` is 20s.
+
+## Not included
+
+Real payments, real email delivery (§19 is scaffolding only), Google sign-in, and courier-side
+apps. Notification templates exist in `src/lib/notifications.js` and write to a local outbox,
+ready to be pointed at a mail service.
+
+The courier roster is a prototype too: these are people dispatch matches to parcels, not
+employees the portal rosters shifts for, and a shift toggle only decides who is handed work
+next. The audit trail is capped at the last 300 actions because it lives in a browser; a real
+deployment keeps it server-side and keeps it for good. **Reset demo data** exists only against
+the local backend — there is nothing to re-seed on a real database, and a button that wiped one
+would be the worst button in the product.
+
+The transport availability console is a **prototype interface over partner capacity Deliveroo
+would book into** — it does not imply owned aircraft, ships or drones, and the wording on that
+panel is deliberate. Air and sea routes are drawn as schematic arcs rather than real flight or
+shipping lanes, because the road polyline OSRM returns would be a lie on the one screen that
+has to be true. Prices are illustrative rates, not a published tariff.

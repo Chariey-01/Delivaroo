@@ -5,7 +5,9 @@
 // when one of them fails, nothing else is worth reading.
 
 import { render, screen, within } from '@testing-library/react';
+import { Provider } from 'react-redux';
 import App from '../../App';
+import { makeStore } from '../../store';
 import { clearTokens } from '../../lib/tokenStorage';
 import { mockApi, renderApp, signedOutState } from '../testUtils';
 
@@ -15,9 +17,13 @@ beforeEach(() => {
 });
 
 describe('smoke: the app stands up', () => {
-  test('App mounts with its own store and router, without crashing', () => {
-    render(<App />);
-    expect(screen.getByText('Delivaroo')).toBeInTheDocument();
+  test('App mounts with its production providers, without crashing', () => {
+    render(
+      <Provider store={makeStore()}>
+        <App />
+      </Provider>
+    );
+    expect(screen.getByRole('link', { name: /deliveroo.*home/i })).toBeInTheDocument();
   });
 
   test('the store is wired with every reducer the app reads', () => {
@@ -31,11 +37,11 @@ describe('smoke: the app stands up', () => {
 
 describe('smoke: every public route renders', () => {
   const routes = [
-    ['/', /send it/i],
+    ['/', /the future of delivery is here/i],
     ['/login', /welcome back/i],
     ['/signup', /create your account/i],
     ['/unauthorized', /don't have access/i],
-    ['/definitely-not-a-route', /page not found/i],
+    ['/definitely-not-a-route', /that page has moved on/i],
   ];
 
   test.each(routes)('%s renders its screen', async (route, heading) => {
@@ -52,7 +58,7 @@ describe('smoke: navigation reflects the session', () => {
     const nav = within(await screen.findByRole('navigation'));
 
     expect(nav.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
-    expect(nav.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
+    expect(nav.getByRole('link', { name: /get started/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
   });
 });
