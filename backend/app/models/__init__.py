@@ -6,6 +6,7 @@ from app.models.status_history import StatusHistory
 from app.models.password_reset_token import PasswordResetToken
 from app.models.audit_log import AuditLog
 from app.models.address import Address
+from app.models.profile import Profile
 from app.models.delivery_agent import DeliveryAgent
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "StatusHistory",
     "AuditLog",
     "Address",
+    "Profile",
     "DeliveryAgent",
 ]

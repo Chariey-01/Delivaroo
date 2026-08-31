@@ -24,6 +24,7 @@ from app.resources.address import (
     AddressResource,
     AddressSetDefaultResource,
 )
+from app.resources.profile import ProfileResource
 
 
 def init_resources(app):
@@ -44,12 +45,21 @@ def init_resources(app):
         "/auth/reset-password",
         "/api/auth/reset-password",
     )
+
     api.add_resource(ParcelListResource, "/api/parcels")
     api.add_resource(
         ParcelResource,
         "/api/parcels/<uuid:parcel_id>",
         "/api/parcels/<uuid:parcel_id>/destination",
     )
+    api.add_resource(ParcelTrackingResource, "/api/parcels/track/<string:tracking_number>")
+    api.add_resource(ParcelHistoryResource, "/api/parcels/<uuid:parcel_id>/history")
+    api.add_resource(
+        ParcelCancelResource,
+        "/parcels/<uuid:parcel_id>",
+        "/api/parcels/<uuid:parcel_id>/cancel",
+    )
+
     api.add_resource(AdminParcelListResource, "/admin/parcels", "/api/admin/parcels")
     api.add_resource(
         AdminParcelStatusResource,
@@ -61,17 +71,17 @@ def init_resources(app):
         "/admin/parcels/<uuid:parcel_id>/location",
         "/api/admin/parcels/<uuid:parcel_id>/location",
     )
-    api.add_resource(
-        ParcelCancelResource,
-        "/parcels/<uuid:parcel_id>",
-        "/api/parcels/<uuid:parcel_id>/cancel",
-    )
-    api.add_resource(ParcelTrackingResource, "/api/parcels/track/<string:tracking_number>")
-    api.add_resource(ParcelHistoryResource, "/api/parcels/<uuid:parcel_id>/history")
+
     api.add_resource(AddressListResource, "/addresses", "/api/addresses")
-    api.add_resource(AddressResource, "/addresses/<uuid:address_id>", "/api/addresses/<uuid:address_id>")
+    api.add_resource(
+        AddressResource,
+        "/addresses/<uuid:address_id>",
+        "/api/addresses/<uuid:address_id>",
+    )
     api.add_resource(
         AddressSetDefaultResource,
         "/addresses/<uuid:address_id>/default",
         "/api/addresses/<uuid:address_id>/default",
     )
+
+    api.add_resource(ProfileResource, "/profile", "/api/profile")
