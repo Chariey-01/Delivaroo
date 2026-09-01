@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, toggleMobileMenu } from '../store/uiSlice';
@@ -8,6 +9,8 @@ import HoverLink from './HoverLink';
 import NavDropdown from './NavDropdown';
 import Wordmark from './Wordmark';
 import Icon from './Icon';
+import { getUnreadNotificationCount } from '../api/notifications';
+import { usingMockBackend } from '../api';
 
 // Three grouped menus. Section links carry the leading "/" so they work from the
 // tracking and admin routes too; ScrollToHash does the scrolling. "Talk to sales",
@@ -58,6 +61,7 @@ function ProfileMenu({ user }) {
 
   const items = [
     { label: 'My deliveries', to: '/orders' },
+    { label: 'Notifications', to: '/notifications' },
     ...(admin ? [{ label: 'Admin portal', to: '/admin' }] : []),
     {
       label: 'Sign out',
@@ -118,6 +122,25 @@ function ProfileMenu({ user }) {
         letterSpacing: '-.012em'
       }}
     />
+  );
+}
+
+function NotificationBell() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (usingMockBackend) return undefined;
+    const load = () => getUnreadNotificationCount().then((data) => setCount(data?.count || 0)).catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Link to="/notifications" aria-label={count ? `${count} unread notifications` : 'Notifications'} style={{ position: 'relative', display: 'inline-flex', width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center', color: color.white }}>
+      <Icon name="notifications" size={22} />
+      {count > 0 && <span style={{ position: 'absolute', top: '1px', right: '0', minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: radius.pill, display: 'grid', placeItems: 'center', background: color.orange, color: color.ink, fontSize: '10px', fontWeight: 800 }}>{count > 99 ? '99+' : count}</span>}
+    </Link>
   );
 }
 
@@ -221,6 +244,7 @@ export default function Nav() {
                   <Icon name="add" size={17} />
                   Request delivery
                 </HoverLink>
+                <NotificationBell />
                 <ProfileMenu user={user} />
               </>
             ) : (
