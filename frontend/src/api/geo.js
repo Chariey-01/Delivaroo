@@ -1,19 +1,18 @@
 // Geocoding + routing behind one interface (§6, §7).
 //
-// Today: Photon for address autocomplete, OSRM for the driving route. Both are free
-// and keyless, which is why they were chosen over Google Maps. Both are public demo
-// endpoints with fair-use limits — for production, self-host OSRM and Photon (or swap
-// in a paid provider) by replacing only the two fetch calls below. Callers depend on
-// the shape returned here, not on the provider.
+// Browser geocoding/autocomplete plus backend routing behind one interface (§6, §7).
+// The backend owns route distance and duration because parcel prices are derived
+// from those fields server-side.
+
+import { loadGoogleMaps } from '../lib/loadGoogleMaps';
+import { api } from './client';
 
 /** Nairobi. Search results are biased toward it so local queries rank first. */
 export const CITY_CENTER = { lat: -1.2921, lng: 36.8219 };
 
 const PHOTON = 'https://photon.komoot.io/api';
-const OSRM = 'https://router.project-osrm.org/route/v1/driving';
-
-/** Straight-line km. Used only for the offline fallback below. */
-function haversineKm(a, b) {
+/** Straight-line km. Used by tests and local display helpers. */
+export function haversineKm(a, b) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
@@ -49,6 +48,26 @@ export async function searchPlaces(query, { signal, limit = 6 } = {}) {
   const q = (query || '').trim();
   if (q.length < 3) return [];
 
+  try {
+    const maps = await loadGoogleMaps();
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    const predictions = await new Promise((resolve) => {
+      new maps.places.AutocompleteService().getPlacePredictions(
+        { input: q, locationBias: { center: CITY_CENTER, radius: 50000 } },
+        (results, status) => resolve(status === maps.places.PlacesServiceStatus.OK ? results ?? [] : []),
+      );
+    });
+    return predictions.slice(0, limit).map((prediction) => ({
+      id: prediction.place_id,
+      label: prediction.description,
+      name: prediction.structured_formatting?.main_text ?? prediction.description,
+      lat: null,
+      lng: null,
+    }));
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+  }
+
   const url = `${PHOTON}/?q=${encodeURIComponent(q)}&limit=${limit}&lang=en&lat=${CITY_CENTER.lat}&lon=${CITY_CENTER.lng}`;
   try {
     const response = await fetch(url, { signal });
@@ -61,9 +80,45 @@ export async function searchPlaces(query, { signal, limit = 6 } = {}) {
   }
 }
 
+/**
+ * Photon search results already include coordinates. Keeping this resolver makes the
+ * provider-neutral place-search component work with both the current provider and
+ * providers whose predictions need a second lookup.
+ */
+export async function resolvePlace(selected) {
+  if (!selected || (selected.lat != null && selected.lng != null)) return selected;
+  const maps = await loadGoogleMaps();
+  const { results } = await new maps.Geocoder().geocode({ placeId: selected.id });
+  const hit = results?.[0];
+  if (!hit) return selected;
+  const loc = hit.geometry.location;
+  return {
+    ...selected,
+    label: hit.formatted_address ?? selected.label,
+    lat: typeof loc.lat === 'function' ? loc.lat() : loc.lat,
+    lng: typeof loc.lng === 'function' ? loc.lng() : loc.lng,
+  };
+}
+
 /** Coordinates → an address label, for "use my current location" and map taps. */
 export async function reverseGeocode({ lat, lng }) {
   const fallback = { id: `pin${lat}${lng}`, label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, name: 'Dropped pin', lat, lng };
+  try {
+    const maps = await loadGoogleMaps();
+    const { results } = await new maps.Geocoder().geocode({ location: { lat, lng } });
+    const hit = results?.[0];
+    if (hit) {
+      return {
+        id: hit.place_id ?? fallback.id,
+        label: hit.formatted_address,
+        name: hit.address_components?.[0]?.long_name ?? hit.formatted_address,
+        lat,
+        lng,
+      };
+    }
+  } catch {
+    // Use the keyless provider below when Maps is not configured or unavailable.
+  }
   try {
     const response = await fetch(`${PHOTON}/reverse?lat=${lat}&lon=${lng}&lang=en`);
     if (!response.ok) return fallback;
@@ -90,40 +145,16 @@ export function currentPosition() {
 }
 
 /**
- * Driving route between two points.
+ * Driving route between two points, calculated by the Flask backend so distance
+ * and duration stay tied to the server-side price.
  * → { distanceKm, durationSeconds, coordinates: [[lat, lng], ...], estimated }
- *
- * `estimated: true` means OSRM was unreachable and we fell back to a straight line
- * scaled by a typical detour factor. The UI labels the figures as estimates in that
- * case rather than silently presenting a guess as a measured route.
  */
 export async function routeBetween(from, to) {
-  const path = `${from.lng},${from.lat};${to.lng},${to.lat}`;
-  try {
-    const response = await fetch(`${OSRM}/${path}?overview=full&geometries=geojson`);
-    if (!response.ok) throw new Error(`OSRM ${response.status}`);
-    const data = await response.json();
-    const route = data.routes?.[0];
-    if (!route) throw new Error('No route');
-    return {
-      distanceKm: route.distance / 1000,
-      durationSeconds: route.duration,
-      coordinates: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
-      estimated: false
-    };
-  } catch {
-    // Offline / rate-limited: 1.35 is a common urban straight-line-to-road ratio,
-    // and 24 km/h approximates Nairobi traffic.
-    const straight = haversineKm(from, to);
-    const distanceKm = straight * 1.35;
-    return {
-      distanceKm,
-      durationSeconds: (distanceKm / 24) * 3600,
-      coordinates: [
-        [from.lat, from.lng],
-        [to.lat, to.lng]
-      ],
-      estimated: true
-    };
-  }
+  return api('/maps/route', {
+    method: 'POST',
+    body: {
+      pickup: { lat: from.lat, lng: from.lng },
+      destination: { lat: to.lat, lng: to.lng },
+    },
+  });
 }
