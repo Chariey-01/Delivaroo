@@ -1,5 +1,6 @@
 from app.extensions import db
 from app.models.status_history import StatusHistory
+from app.services.audit_log_service import record_audit_log
 
 
 VALID_STATUSES = {
@@ -43,11 +44,26 @@ def record_initial_status(parcel, changed_by_id, latitude=None, longitude=None, 
         notes=notes,
     )
     db.session.add(entry)
+    record_audit_log(
+        user_id=changed_by_id,
+        action="parcel.created",
+        entity_type="parcel",
+        entity_id=parcel.id,
+        new_value={"status": parcel.status},
+    )
     db.session.commit()
     return entry
 
 
-def record_status_change(parcel, new_status, changed_by_id, latitude=None, longitude=None, notes=None):
+def record_status_change(
+    parcel,
+    new_status,
+    changed_by_id,
+    latitude=None,
+    longitude=None,
+    notes=None,
+    audit_action="parcel.status_changed",
+):
     """
     Validates and applies a status transition on a parcel, then appends
     an audit row to status_history. Commits the transaction.
@@ -78,6 +94,14 @@ def record_status_change(parcel, new_status, changed_by_id, latitude=None, longi
         notes=notes,
     )
     db.session.add(entry)
+    record_audit_log(
+        user_id=changed_by_id,
+        action=audit_action,
+        entity_type="parcel",
+        entity_id=parcel.id,
+        old_value={"status": current_status},
+        new_value={"status": new_status},
+    )
     db.session.commit()
     return entry
 
@@ -89,6 +113,10 @@ def record_location_change(parcel, latitude, longitude, changed_by_id, notes=Non
     parcel's current status (status itself is unchanged). Commits the
     transaction.
     """
+    old_location = {
+        "latitude": parcel.present_latitude,
+        "longitude": parcel.present_longitude,
+    }
     parcel.present_latitude = latitude
     parcel.present_longitude = longitude
 
@@ -101,6 +129,14 @@ def record_location_change(parcel, latitude, longitude, changed_by_id, notes=Non
         notes=notes,
     )
     db.session.add(entry)
+    record_audit_log(
+        user_id=changed_by_id,
+        action="parcel.location_updated",
+        entity_type="parcel",
+        entity_id=parcel.id,
+        old_value=old_location,
+        new_value={"latitude": latitude, "longitude": longitude},
+    )
     db.session.commit()
     return entry
 
@@ -116,5 +152,13 @@ def record_destination_change(parcel, old_address, new_address, changed_by_id):
         notes=f"Destination updated from '{old_address}' to '{new_address}'",
     )
     db.session.add(entry)
+    record_audit_log(
+        user_id=changed_by_id,
+        action="parcel.destination_updated",
+        entity_type="parcel",
+        entity_id=parcel.id,
+        old_value={"address": old_address},
+        new_value={"address": new_address},
+    )
     db.session.commit()
     return entry
