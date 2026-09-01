@@ -86,6 +86,9 @@ export default function Login() {
           onChange={set('password')}
           disabled={submitting}
         />
+        <p style={{ margin: '-8px 0 20px', textAlign: 'right', fontSize: '13.5px' }}>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         <Button type="submit" full disabled={submitting}>
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>

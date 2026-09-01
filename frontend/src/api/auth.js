@@ -63,6 +63,32 @@ export async function login({ email, password }) {
   return acceptSession(data);
 }
 
+/** Request a reset email. The server deliberately gives the same response for every email. */
+export function requestPasswordReset({ email }) {
+  return post(
+    '/auth/forgot-password',
+    { email: email?.trim().toLowerCase() },
+    { auth: false },
+  );
+}
+
+/** Replace a password using the opaque token delivered in a reset email. */
+export function resetPassword({ token, newPassword }) {
+  return post(
+    '/auth/reset-password',
+    { token, new_password: newPassword },
+    { auth: false },
+  );
+}
+
+/** Change the current signed-in user's password. */
+export function changePassword({ currentPassword, newPassword }) {
+  return post('/auth/change-password', {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+}
+
 /** The current user, used to restore a session from a stored token on page load. */
 export async function me() {
   const data = await get('/auth/me');

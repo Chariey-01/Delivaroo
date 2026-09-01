@@ -20,6 +20,9 @@ import AdminSettings from "./routes/admin/AdminSettings";
 import NotFound from "./routes/NotFound";
 import Login from "./routes/Login";
 import Signup from "./routes/Signup";
+import ForgotPassword from "./routes/ForgotPassword";
+import ResetPassword from "./routes/ResetPassword";
+import SecuritySettings from "./routes/SecuritySettings";
 import Dashboard from "./routes/Dashboard";
 import Notifications from "./routes/Notifications";
 import Unauthorized from "./routes/Unauthorized";
@@ -39,6 +42,8 @@ export function AppRoutes() {
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/orders/:id" element={<OrderDetails />} />
         <Route path="/orders/:id/confirmation" element={<Confirmation />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -46,6 +51,7 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings/security" element={<SecuritySettings />} />
         </Route>
         {/* §27 — the admin portal: one gated shell, one section per job. */}
         <Route element={<AdminRoute />}>
