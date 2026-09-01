@@ -46,6 +46,12 @@ jobs:
     name: Backend Tests and Build
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: ci-secret-key-not-used-outside-tests
+      JWT_SECRET_KEY: ci-jwt-secret-key-not-used-outside-tests
+      DATABASE_URL: postgresql://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test
+      TEST_DATABASE_URL: postgresql://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test
+
     defaults:
       run:
         working-directory: backend
@@ -81,13 +87,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Config.validate() raises unless both secrets are present; the values are
-      # irrelevant to the assertions, they only have to exist.
+      - name: Verify migrations
+        run: flask --app run:app db upgrade
+
       - name: Run backend tests
-        env:
-          SECRET_KEY: ci-secret-key-not-used-outside-tests
-          JWT_SECRET_KEY: ci-jwt-secret-key-not-used-outside-tests
-          TEST_DATABASE_URL: postgresql://deliveroo_user:deliveroo_pass@localhost:5432/deliveroo_test
         run: pytest
 
       - name: Verify Python compilation
