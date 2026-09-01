@@ -1,0 +1,344 @@
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { showToast, toggleMobileMenu } from '../store/uiSlice';
+import { selectIsSignedIn, selectUser, signOut } from '../store/authSlice';
+import useStartBooking, { BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
+import { getUnreadNotificationCount } from '../api/notifications';
+import { usingMockBackend } from '../api';
+import { color, ease, hover, layout, radius } from '../theme';
+import HoverLink from './HoverLink';
+import NavDropdown from './NavDropdown';
+import Wordmark from './Wordmark';
+import Icon from './Icon';
+
+// Three grouped menus, each one listing what the site actually has.
+//
+// Services names the five services on the landing page and jumps to the card for
+// that one, so the menu is the catalogue rather than a paraphrase of it. Track
+// Delivery covers both ways in: a lookup by order number, and the list of your own
+// deliveries. Contact carries the real phone, email and address from the footer,
+// which is the only contact detail we publish, so the menu dials and mails directly
+// instead of pretending there is a sales desk or a help centre behind it.
+// eslint-disable-next-line react-refresh/only-export-components -- static navigation data shared with mobile navigation
+export const NAV_MENUS = [
+  {
+    label: 'Services',
+    items: [
+      { label: 'Same Day Delivery', to: '/#service-same-day' },
+      { label: 'Business Delivery', to: '/#service-business' },
+      { label: 'Bulk & Package Delivery', to: '/#service-bulk' },
+      { label: 'Express Courier', to: '/#service-express' },
+      { label: 'Drone Delivery', to: '/#service-drone' }
+    ]
+  },
+  {
+    label: 'Track Delivery',
+    items: [
+      { label: 'Track by order number', to: '/track' },
+      { label: 'My deliveries', to: '/orders' }
+    ]
+  },
+  {
+    label: 'Contact',
+    items: [
+      { label: 'Call +254 700 000 000', href: 'tel:+254700000000' },
+      { label: 'Email hello@deliveroo.co', href: 'mailto:hello@deliveroo.co' },
+      { label: 'Where to find us', to: '/#footer' }
+    ]
+  }
+];
+
+const topLink = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontSize: '16.5px',
+  fontWeight: 600,
+  color: color.white,
+  letterSpacing: '-.012em',
+  textShadow: '0 1px 12px rgba(28,32,31,.45)'
+};
+
+const initialOf = (name) => (name || '').trim().charAt(0).toUpperCase() || '?';
+
+/** Signed-in replacement for the Get Started CTA. */
+function ProfileMenu({ user }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // The live backend returns `fullName` (and always an email); the demo fixtures use
+  // `name`. Fall through all three so the button is never blank.
+  const name = user.name || user.fullName || user.email;
+
+  // The backend reports admin as `is_admin` or a role string; the demo fixtures use
+  // `isAdmin`. All three are accepted so the menu is right against either backend.
+  const admin = user.isAdmin || user.is_admin || String(user.role || '').toUpperCase() === 'ADMIN';
+
+  const items = [
+    { label: 'My deliveries', to: '/orders' },
+    { label: 'Security settings', to: '/settings/security' },
+    { label: 'Notifications', to: '/notifications' },
+    ...(admin ? [{ label: 'Admin portal', to: '/admin' }] : []),
+    {
+      label: 'Sign out',
+      tone: 'quiet',
+      onSelect: async () => {
+        await dispatch(signOut());
+        dispatch(showToast({ message: 'Signed out.', tone: 'info' }));
+        // The account routes gate themselves, so leaving the user on one would
+        // just swap the page for a sign-in prompt.
+        navigate('/');
+      }
+    }
+  ];
+
+  return (
+    <NavDropdown
+      label={name}
+      items={items}
+      align="right"
+      triggerContent={
+        <>
+          <span
+            aria-hidden="true"
+            style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: radius.pill,
+              background: color.orange,
+              color: color.ink,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              fontWeight: 600,
+              letterSpacing: 0
+            }}
+          >
+            {initialOf(name)}
+          </span>
+          <span style={{ maxWidth: '15ch', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {name}
+          </span>
+        </>
+      }
+      triggerStyle={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '9px',
+        height: '44px',
+        padding: '0 14px 0 7px',
+        marginLeft: '8px',
+        borderRadius: radius.pill,
+        background: 'rgba(255,255,255,.13)',
+        border: '1px solid rgba(255,255,255,.3)',
+        color: color.white,
+        fontSize: '14.5px',
+        fontWeight: 600,
+        letterSpacing: '-.012em'
+      }}
+    />
+  );
+}
+
+/** Unread count, polled once a minute. The mock backend has no such endpoint. */
+function NotificationBell() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (usingMockBackend) return undefined;
+    const load = () => getUnreadNotificationCount().then((data) => setCount(data?.count || 0)).catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Link
+      to="/notifications"
+      aria-label={count ? `${count} unread notifications` : 'Notifications'}
+      style={{ position: 'relative', display: 'inline-flex', width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center', color: color.white }}
+    >
+      <Icon name="notifications" size={22} />
+      {count > 0 && (
+        <span style={{ position: 'absolute', top: '1px', right: 0, minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: radius.pill, display: 'grid', placeItems: 'center', background: color.orange, color: color.white, fontSize: '10px', fontWeight: 600 }}>
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+export default function Nav() {
+  const dispatch = useDispatch();
+  const { scrolled, narrow, mobileMenuOpen } = useSelector((state) => state.ui);
+  const signedIn = useSelector(selectIsSignedIn);
+  const user = useSelector(selectUser);
+  const startBooking = useStartBooking();
+  const { pathname } = useLocation();
+  // The booking shortcut is hidden where it would point at the page you are already
+  // on, or at a flow you have just finished.
+  const showBookingCta = showsBookingCta(pathname);
+
+  return (
+    <nav aria-label="Main navigation" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 900, height: '80px' }}>
+      {/* Unchanged from the approved design: transparent over the hero, dark once scrolled. */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          opacity: scrolled ? 1 : 0,
+          transition: 'opacity .35s ease',
+          background: 'rgba(28,32,31,.88)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,.14)'
+        }}
+      />
+      <div
+        style={{
+          position: 'relative',
+          maxWidth: layout.maxWidth,
+          margin: '0 auto',
+          padding: `0 ${layout.gutter}`,
+          height: '80px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'clamp(14px,3vw,40px)'
+        }}
+      >
+        <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '3px' }}>
+          <Link to="/" aria-label="Deliveroo — home" style={{ display: 'flex' }}>
+            <Wordmark dot />
+          </Link>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '.5em',
+              marginTop: '-2px',
+              paddingLeft: '.1em',
+              fontSize: 'clamp(9.5px,.78vw,11.5px)',
+              fontWeight: 600,
+              letterSpacing: '.19em',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+              color: color.white,
+              textShadow: '0 1px 10px rgba(28,32,31,.6)'
+            }}
+          >
+            {/*
+              Two clauses, so the dot separators the three-part strapline needed are
+              gone: the sentences punctuate themselves. Rendered uppercase by the
+              textTransform above.
+            */}
+            <span>You request.</span>
+            <span style={{ color: color.orange }}>We move.</span>
+          </div>
+        </div>
+
+        {!narrow && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px,2vw,34px)', marginLeft: 'auto' }}>
+            {NAV_MENUS.map((menu) => (
+              <NavDropdown key={menu.label} label={menu.label} items={menu.items} triggerStyle={topLink} />
+            ))}
+
+            {/*
+              Signed in, the profile takes the CTA slot: someone with an account does
+              not need to be told to get started, and the account is what they came to
+              the top-right corner looking for.
+            */}
+            {signedIn ? (
+              <>
+                {/* Signed in, the CTA changes job: not "get started" but the action
+                    the account exists for. It is dropped on the routes where that
+                    action is the page itself. */}
+                {showBookingCta && (
+                  <HoverLink
+                    as={Link}
+                    to={BOOKING_PATH}
+                    onClick={startBooking}
+                    hoverStyle={hover.yellow}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      height: '44px',
+                      padding: '0 20px',
+                      borderRadius: radius.pill,
+                      background: color.orange,
+                      color: color.ink,
+                      fontSize: '14.5px',
+                      fontWeight: 600,
+                      transition: `transform .2s ${ease.out}, box-shadow .2s`
+                    }}
+                  >
+                    <Icon name="add" size={17} />
+                    Request delivery
+                  </HoverLink>
+                )}
+                <NotificationBell />
+                <ProfileMenu user={user} />
+              </>
+            ) : (
+              <>
+                {/* The group project has real sign-in and sign-up pages, so the nav
+                    links to them rather than opening the demo modal. */}
+                <Link to="/login" style={{ ...topLink, fontSize: '14.5px' }}>
+                  Sign in
+                </Link>
+              <HoverLink
+                as={Link}
+                to={BOOKING_PATH}
+                onClick={startBooking}
+                hoverStyle={hover.yellow}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  height: '44px',
+                  padding: '0 22px',
+                  borderRadius: radius.pill,
+                  background: color.orange,
+                  color: color.ink,
+                  fontSize: '14.5px',
+                  fontWeight: 600,
+                  transition: `transform .2s ${ease.out}, box-shadow .2s`
+                }}
+              >
+                Get Started
+                <Icon name="arrow_outward" size={17} />
+              </HoverLink>
+              </>
+            )}
+          </div>
+        )}
+
+        {narrow && (
+          <button
+            type="button"
+            aria-label="Menu"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => dispatch(toggleMobileMenu())}
+            style={{
+              marginLeft: 'auto',
+              width: '46px',
+              height: '46px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255,255,255,.34)',
+              background: 'rgba(28,32,31,.32)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            <Icon name={mobileMenuOpen ? 'close' : 'menu'} size={24} color={color.white} />
+          </button>
+        )}
+      </div>
+    </nav>
+  );
+}

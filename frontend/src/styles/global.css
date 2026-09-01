@@ -1,0 +1,121 @@
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #C8D1D1;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-weight: 400;
+  color: #1C201F;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; }
+a { color: #1C201F; text-decoration: none; }
+a:hover { color: #F88735; }
+button { font-family: inherit; }
+::selection { background: #B4C66A; color: #1C201F; }
+
+@keyframes dashmove { to { stroke-dashoffset: -56; } }
+@keyframes pulsering {
+  0% { transform: scale(.65); opacity: .5; }
+  75% { transform: scale(2.4); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #C8D1D1; }
+::-webkit-scrollbar-thumb {
+  background: #AAB5AA;
+  border-radius: 20px;
+  border: 3px solid #C8D1D1;
+  background-clip: content-box;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* §24 — a visible focus ring on every interactive element, including dark surfaces. */
+:focus-visible {
+  outline: 2px solid #F88735;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* §25 — motion for the live states: a searching radar, a pulsing "in transit" dot,
+   cards that acknowledge a tap, and skeletons while a quote is being worked out. */
+@keyframes popIn {
+  from { transform: scale(.55); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: 130% 0; }
+  to { background-position: -130% 0; }
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.82); }
+}
+@keyframes radar {
+  0% { transform: scale(.3); opacity: .55; }
+  80% { opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes drawRoute { to { stroke-dashoffset: 0; } }
+
+/* Nothing here is load-bearing: if the visitor asks for less movement, they get it. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* The route draws itself in rather than appearing — Leaflet takes a className on the
+   path. Only solid lines get it: a CSS dasharray would overwrite the dashed pattern
+   that marks an estimated route or a schematic air/sea arc. */
+.route-line {
+  stroke-dasharray: 3000;
+  stroke-dashoffset: 3000;
+  animation: drawRoute 1.1s cubic-bezier(.16,1,.3,1) forwards;
+}
+.route-fade { animation: fadeIn .7s ease both; }
+
+/* §25 — the vehicle marker. useJourneyClock repositions it a handful of times a
+   second; this carries it between those positions so the journey reads as a glide
+   rather than as a series of hops. Leaflet writes the transform, so the transition
+   goes on the marker element it writes to, and the reduced-motion block above
+   flattens it to nothing along with everything else. */
+.leaflet-marker-icon.vehicle-marker {
+  transition: transform .16s linear;
+}
+
+/* §4 — the services catalogue. Five cards, so the column count is stated rather than
+   left to auto-fit: auto-fit would put four across and leave the fifth alone in a row
+   of holes. One up on a phone, two on a tablet, then a 3 + 2 layout on the desktop
+   grid — every row full at every width. */
+.services-grid {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 28px);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 620px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 940px) {
+  .services-grid { grid-template-columns: repeat(6, 1fr); }
+  .services-grid > * { grid-column: span 2; }
+  .services-grid > *:nth-child(4),
+  .services-grid > *:nth-child(5) { grid-column: span 3; }
+}

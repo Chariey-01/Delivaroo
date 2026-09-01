@@ -226,6 +226,34 @@ Never commit:
 .env
 ```
 
+## Demo Data
+
+From `backend`, seed the local admin-dashboard dataset after migrations have run:
+
+```bash
+python seed.py
+```
+
+The command is idempotent and creates 84 fictional parcels, a demo administrator,
+and regular demo users at the reserved `demo.delivaroo.test` domain. The demo admin
+email defaults to `admin@demo.delivaroo.test`. Set `DEMO_ADMIN_EMAIL`,
+`DEMO_ADMIN_PASSWORD`, and `DEMO_USER_PASSWORD` in the local backend `.env` file
+to choose credentials; the seed command never prints either password.
+
+To replace only records created by the demo seed, use:
+
+```bash
+python seed.py --reset-demo-data
+```
+
+The reset command refuses to run when `FLASK_ENV=production`.
+
+## Deployment
+
+Deploy the Flask API to Render and the Vite frontend to Vercel. The exact build
+commands, environment variables, migration step, CORS setup, and verification
+checks are documented in [docs/deployment.md](docs/deployment.md).
+
 ## Development Timeline
 
 ### Week 1 — Foundation
