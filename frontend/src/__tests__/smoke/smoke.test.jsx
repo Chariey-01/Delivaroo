@@ -37,7 +37,7 @@ describe('smoke: the app stands up', () => {
 
 describe('smoke: every public route renders', () => {
   const routes = [
-    ['/', /the future of delivery is here/i],
+    ['/', /from anywhere to your door/i],
     ['/login', /welcome back/i],
     ['/signup', /create your account/i],
     ['/unauthorized', /don't have access/i],
