@@ -18,6 +18,17 @@ from app.services.token_service import (
     get_valid_refresh_token,
     revoke_refresh_token,
 )
+from app.utils.security import hash_password, verify_password
+
+
+PASSWORD_MIN_LENGTH = 8
+
+
+def validate_new_password(password):
+    if not isinstance(password, str) or len(password) < PASSWORD_MIN_LENGTH:
+        raise ValueError(
+            f"Password must be at least {PASSWORD_MIN_LENGTH} characters"
+        )
 
 
 def bearer_token_from_header():
@@ -189,14 +200,14 @@ class LogoutResource(Resource):
 
 class ForgotPasswordResource(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
-        if not data:
+        if not isinstance(data, dict):
             return {"message": "Request body is required"}, 400
 
         email = data.get("email")
 
-        if not email:
+        if not isinstance(email, str) or not email.strip():
             return {"message": "Email is required"}, 400
 
         user = User.query.filter_by(email=email.strip().lower()).first()
@@ -228,23 +239,61 @@ class ForgotPasswordResource(Resource):
 
 class ResetPasswordResource(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
-        if not data:
+        if not isinstance(data, dict):
             return {"message": "Request body is required"}, 400
 
         token = data.get("token")
         new_password = data.get("new_password")
 
-        if not token or not new_password:
+        if not isinstance(token, str) or not token or not isinstance(new_password, str) or not new_password:
             return {"message": "Token and new password are required"}, 400
 
-        if len(new_password) < 8:
-            return {"message": "Password must be at least 8 characters"}, 400
-
         try:
+            validate_new_password(new_password)
             reset_password(raw_token=token, new_password=new_password)
         except ValueError as error:
             return {"message": str(error)}, 400
 
         return {"message": "Password reset successfully"}, 200
+
+
+class ChangePasswordResource(Resource):
+    @jwt_required()
+    def post(self):
+        data = request.get_json(silent=True)
+
+        if not isinstance(data, dict):
+            return {"message": "Request body is required"}, 400
+
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
+
+        if (
+            not isinstance(current_password, str)
+            or not current_password
+            or not isinstance(new_password, str)
+            or not new_password
+        ):
+            return {
+                "message": "Current password and new password are required"
+            }, 400
+
+        try:
+            validate_new_password(new_password)
+            user_id = UUID(get_jwt_identity())
+        except ValueError as error:
+            return {"message": str(error)}, 400
+
+        user = db.session.get(User, user_id)
+        if not user or not user.is_active:
+            return {"message": "User not found"}, 404
+
+        if not verify_password(current_password, user.password_hash):
+            return {"message": "Current password is incorrect"}, 400
+
+        user.password_hash = hash_password(new_password)
+        db.session.commit()
+
+        return {"message": "Password changed successfully"}, 200

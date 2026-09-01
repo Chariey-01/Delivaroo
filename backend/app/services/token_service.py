@@ -69,3 +69,20 @@ def revoke_refresh_token(raw_token: str) -> None:
 
     refresh_token.revoked_at = datetime.now(timezone.utc)
     db.session.commit()
+
+
+def revoke_user_refresh_tokens(user_id) -> None:
+    """Revoke every active refresh token belonging to a user."""
+
+    revoked_at = datetime.now(timezone.utc)
+    refresh_tokens = (
+        db.session.query(RefreshToken)
+        .filter(
+            RefreshToken.user_id == user_id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        .all()
+    )
+
+    for refresh_token in refresh_tokens:
+        refresh_token.revoked_at = revoked_at

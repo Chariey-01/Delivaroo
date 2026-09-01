@@ -205,6 +205,34 @@ Success: `200`
 
 Errors: `400` when the body, token, or new password is missing, the password is too short, or the reset token is invalid, expired, or already used.
 
+Successful resets revoke every existing refresh token for the account. The reset
+link is assembled from the backend `PASSWORD_RESET_URL` environment variable, with
+the opaque token added as its `token` query parameter.
+
+### POST /auth/change-password
+
+Authentication: JWT access token required.
+
+Request JSON:
+
+```json
+{
+  "current_password": "CurrentPassword123!",
+  "new_password": "NewPassword123!"
+}
+```
+
+Success: `200`
+
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+Errors: `400` when either password is missing, the new password is too short, or
+the current password is incorrect. `401` when the access token is missing or invalid.
+
 ## Parcels
 
 ### POST /api/parcels

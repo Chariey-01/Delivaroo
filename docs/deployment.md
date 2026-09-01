@@ -39,6 +39,12 @@ Set these Render environment variables:
 | `GOOGLE_MAPS_API_KEY` | Server-restricted Google key for Geocoding API and Routes API |
 | `GOOGLE_MAPS_TIMEOUT_SECONDS` | `5` |
 | `GOOGLE_MAPS_DEFAULT_REGION` | `KE` |
+| `SMTP_HOST` | SMTP hostname used for password-reset email |
+| `SMTP_PORT` | SMTP port, usually `587` |
+| `SMTP_USERNAME` | SMTP account username |
+| `SMTP_PASSWORD` | SMTP account password or provider app password |
+| `SMTP_SENDER_EMAIL` | Verified sender address for password-reset email |
+| `PASSWORD_RESET_URL` | Public frontend reset route, for example `https://delivaroo.vercel.app/reset-password` |
 
 Do not include a trailing slash in `CORS_ORIGINS`. Multiple origins can be
 comma-separated. After the first deploy, verify:
