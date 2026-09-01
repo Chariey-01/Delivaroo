@@ -22,7 +22,7 @@ export default function BookPage() {
     return (
       <PageShell eyebrow="Book a delivery" title="Sign in to send a package.">
         <p style={{ margin: '0 0 24px', maxWidth: '46ch', fontSize: '16px', lineHeight: 1.6, color: color.body }}>
-          We need to know who is sending, so we can keep you posted on the handover and the drop-off.
+          We need to know who is sending, so we can keep you posted on the handover and the delivery.
         </p>
         <Button onClick={() => dispatch(openAuthModal('/book'))} icon="arrow_forward">
           Sign in to continue
@@ -39,7 +39,7 @@ export default function BookPage() {
         provide: the fixed nav is white text sized for the hero photo, and this
         section starts on light paper.
       */}
-      <div style={{ background: color.ink, height: '80px' }} />
+      <div style={{ background: color.greenDeep, height: '80px' }} />
       <BookDelivery />
     </>
   );
