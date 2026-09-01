@@ -1,41 +1,50 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, toggleMobileMenu } from '../store/uiSlice';
 import { selectIsSignedIn, selectUser, signOut } from '../store/authSlice';
-import useStartBooking, { BOOKING_PATH } from '../hooks/useStartBooking';
+import useStartBooking, { BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
+import { getUnreadNotificationCount } from '../api/notifications';
+import { usingMockBackend } from '../api';
 import { color, ease, hover, layout, radius } from '../theme';
 import HoverLink from './HoverLink';
 import NavDropdown from './NavDropdown';
 import Wordmark from './Wordmark';
 import Icon from './Icon';
-import { getUnreadNotificationCount } from '../api/notifications';
-import { usingMockBackend } from '../api';
 
-// Three grouped menus. Section links carry the leading "/" so they work from the
-// tracking and admin routes too; ScrollToHash does the scrolling. "Talk to sales",
-// "About us" and "Help centre" have no pages of their own yet, so they point at the
-// footer (which carries the phone, email and address) and the services section.
+// Three grouped menus, each one listing what the site actually has.
+//
+// Services names the five services on the landing page and jumps to the card for
+// that one, so the menu is the catalogue rather than a paraphrase of it. Track
+// Delivery covers both ways in: a lookup by order number, and the list of your own
+// deliveries. Contact carries the real phone, email and address from the footer,
+// which is the only contact detail we publish, so the menu dials and mails directly
+// instead of pretending there is a sales desk or a help centre behind it.
 // eslint-disable-next-line react-refresh/only-export-components -- static navigation data shared with mobile navigation
 export const NAV_MENUS = [
   {
     label: 'Services',
     items: [
-      { label: 'Same-day courier', to: '/#services' },
-      { label: 'Package delivery', to: '/#services' },
-      { label: 'Business logistics', to: '/#services' }
+      { label: 'Same Day Delivery', to: '/#service-same-day' },
+      { label: 'Business Delivery', to: '/#service-business' },
+      { label: 'Bulk & Package Delivery', to: '/#service-bulk' },
+      { label: 'Express Courier', to: '/#service-express' },
+      { label: 'Drone Delivery', to: '/#service-drone' }
     ]
   },
   {
     label: 'Track Delivery',
-    items: [{ label: 'Track a parcel', to: '/track' }]
+    items: [
+      { label: 'Track by order number', to: '/track' },
+      { label: 'My deliveries', to: '/orders' }
+    ]
   },
   {
     label: 'Contact',
     items: [
-      { label: 'Talk to sales', to: '/#footer' },
-      { label: 'About us', to: '/#services' },
-      { label: 'Help centre', to: '/#footer' }
+      { label: 'Call +254 700 000 000', href: 'tel:+254700000000' },
+      { label: 'Email hello@deliveroo.co', href: 'mailto:hello@deliveroo.co' },
+      { label: 'Where to find us', to: '/#footer' }
     ]
   }
 ];
@@ -44,10 +53,10 @@ const topLink = {
   display: 'inline-flex',
   alignItems: 'center',
   fontSize: '16.5px',
-  fontWeight: 700,
+  fontWeight: 600,
   color: color.white,
   letterSpacing: '-.012em',
-  textShadow: '0 1px 12px rgba(17,17,17,.45)'
+  textShadow: '0 1px 12px rgba(28,32,31,.45)'
 };
 
 const initialOf = (name) => (name || '').trim().charAt(0).toUpperCase() || '?';
@@ -56,7 +65,13 @@ const initialOf = (name) => (name || '').trim().charAt(0).toUpperCase() || '?';
 function ProfileMenu({ user }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // The live backend returns `fullName` (and always an email); the demo fixtures use
+  // `name`. Fall through all three so the button is never blank.
   const name = user.name || user.fullName || user.email;
+
+  // The backend reports admin as `is_admin` or a role string; the demo fixtures use
+  // `isAdmin`. All three are accepted so the menu is right against either backend.
   const admin = user.isAdmin || user.is_admin || String(user.role || '').toUpperCase() === 'ADMIN';
 
   const items = [
@@ -96,7 +111,7 @@ function ProfileMenu({ user }) {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '14px',
-              fontWeight: 800,
+              fontWeight: 600,
               letterSpacing: 0
             }}
           >
@@ -119,13 +134,14 @@ function ProfileMenu({ user }) {
         border: '1px solid rgba(255,255,255,.3)',
         color: color.white,
         fontSize: '14.5px',
-        fontWeight: 700,
+        fontWeight: 600,
         letterSpacing: '-.012em'
       }}
     />
   );
 }
 
+/** Unread count, polled once a minute. The mock backend has no such endpoint. */
 function NotificationBell() {
   const [count, setCount] = useState(0);
 
@@ -138,9 +154,17 @@ function NotificationBell() {
   }, []);
 
   return (
-    <Link to="/notifications" aria-label={count ? `${count} unread notifications` : 'Notifications'} style={{ position: 'relative', display: 'inline-flex', width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center', color: color.white }}>
+    <Link
+      to="/notifications"
+      aria-label={count ? `${count} unread notifications` : 'Notifications'}
+      style={{ position: 'relative', display: 'inline-flex', width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center', color: color.white }}
+    >
       <Icon name="notifications" size={22} />
-      {count > 0 && <span style={{ position: 'absolute', top: '1px', right: '0', minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: radius.pill, display: 'grid', placeItems: 'center', background: color.orange, color: color.ink, fontSize: '10px', fontWeight: 800 }}>{count > 99 ? '99+' : count}</span>}
+      {count > 0 && (
+        <span style={{ position: 'absolute', top: '1px', right: 0, minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: radius.pill, display: 'grid', placeItems: 'center', background: color.orange, color: color.white, fontSize: '10px', fontWeight: 600 }}>
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
     </Link>
   );
 }
@@ -151,6 +175,10 @@ export default function Nav() {
   const signedIn = useSelector(selectIsSignedIn);
   const user = useSelector(selectUser);
   const startBooking = useStartBooking();
+  const { pathname } = useLocation();
+  // The booking shortcut is hidden where it would point at the page you are already
+  // on, or at a flow you have just finished.
+  const showBookingCta = showsBookingCta(pathname);
 
   return (
     <nav aria-label="Main navigation" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 900, height: '80px' }}>
@@ -162,7 +190,7 @@ export default function Nav() {
           pointerEvents: 'none',
           opacity: scrolled ? 1 : 0,
           transition: 'opacity .35s ease',
-          background: 'rgba(17,17,17,.88)',
+          background: 'rgba(28,32,31,.88)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,.14)'
@@ -182,7 +210,7 @@ export default function Nav() {
       >
         <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '3px' }}>
           <Link to="/" aria-label="Deliveroo — home" style={{ display: 'flex' }}>
-            <Wordmark />
+            <Wordmark dot />
           </Link>
           <div
             style={{
@@ -192,19 +220,21 @@ export default function Nav() {
               marginTop: '-2px',
               paddingLeft: '.1em',
               fontSize: 'clamp(9.5px,.78vw,11.5px)',
-              fontWeight: 700,
+              fontWeight: 600,
               letterSpacing: '.19em',
               textTransform: 'uppercase',
               whiteSpace: 'nowrap',
               color: color.white,
-              textShadow: '0 1px 10px rgba(17,17,17,.6)'
+              textShadow: '0 1px 10px rgba(28,32,31,.6)'
             }}
           >
-            <span>Ship It</span>
-            <span aria-hidden="true" style={{ width: '3px', height: '3px', borderRadius: '999px', background: 'rgba(255,255,255,.5)' }} />
-            <span style={{ color: color.orange }}>Watch It</span>
-            <span aria-hidden="true" style={{ width: '3px', height: '3px', borderRadius: '999px', background: 'rgba(255,255,255,.5)' }} />
-            <span>Land It</span>
+            {/*
+              Two clauses, so the dot separators the three-part strapline needed are
+              gone: the sentences punctuate themselves. Rendered uppercase by the
+              textTransform above.
+            */}
+            <span>You request.</span>
+            <span style={{ color: color.orange }}>We move.</span>
           </div>
         </div>
 
@@ -222,59 +252,64 @@ export default function Nav() {
             {signedIn ? (
               <>
                 {/* Signed in, the CTA changes job: not "get started" but the action
-                    the account exists for. */}
-                <HoverLink
-                  as={Link}
-                  to={BOOKING_PATH}
-                  onClick={startBooking}
-                  hoverStyle={hover.yellow}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    height: '44px',
-                    padding: '0 20px',
-                    borderRadius: radius.pill,
-                    background: color.orange,
-                    color: color.ink,
-                    fontSize: '14.5px',
-                    fontWeight: 700,
-                    transition: `transform .2s ${ease.out}, box-shadow .2s`
-                  }}
-                >
-                  <Icon name="add" size={17} />
-                  Request delivery
-                </HoverLink>
+                    the account exists for. It is dropped on the routes where that
+                    action is the page itself. */}
+                {showBookingCta && (
+                  <HoverLink
+                    as={Link}
+                    to={BOOKING_PATH}
+                    onClick={startBooking}
+                    hoverStyle={hover.yellow}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      height: '44px',
+                      padding: '0 20px',
+                      borderRadius: radius.pill,
+                      background: color.orange,
+                      color: color.ink,
+                      fontSize: '14.5px',
+                      fontWeight: 600,
+                      transition: `transform .2s ${ease.out}, box-shadow .2s`
+                    }}
+                  >
+                    <Icon name="add" size={17} />
+                    Request delivery
+                  </HoverLink>
+                )}
                 <NotificationBell />
                 <ProfileMenu user={user} />
               </>
             ) : (
               <>
+                {/* The group project has real sign-in and sign-up pages, so the nav
+                    links to them rather than opening the demo modal. */}
                 <Link to="/login" style={{ ...topLink, fontSize: '14.5px' }}>
                   Sign in
                 </Link>
-                <HoverLink
-                  as={Link}
-                  to={BOOKING_PATH}
-                  onClick={startBooking}
-                  hoverStyle={hover.yellow}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    height: '44px',
-                    padding: '0 22px',
-                    borderRadius: radius.pill,
-                    background: color.orange,
-                    color: color.ink,
-                    fontSize: '14.5px',
-                    fontWeight: 700,
-                    transition: `transform .2s ${ease.out}, box-shadow .2s`
-                  }}
-                >
-                  Get Started
-                  <Icon name="arrow_outward" size={17} />
-                </HoverLink>
+              <HoverLink
+                as={Link}
+                to={BOOKING_PATH}
+                onClick={startBooking}
+                hoverStyle={hover.yellow}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  height: '44px',
+                  padding: '0 22px',
+                  borderRadius: radius.pill,
+                  background: color.orange,
+                  color: color.ink,
+                  fontSize: '14.5px',
+                  fontWeight: 600,
+                  transition: `transform .2s ${ease.out}, box-shadow .2s`
+                }}
+              >
+                Get Started
+                <Icon name="arrow_outward" size={17} />
+              </HoverLink>
               </>
             )}
           </div>
@@ -292,7 +327,7 @@ export default function Nav() {
               height: '46px',
               borderRadius: '14px',
               border: '1px solid rgba(255,255,255,.34)',
-              background: 'rgba(17,17,17,.32)',
+              background: 'rgba(28,32,31,.32)',
               backdropFilter: 'blur(8px)',
               display: 'flex',
               alignItems: 'center',

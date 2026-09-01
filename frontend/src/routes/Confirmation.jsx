@@ -13,7 +13,7 @@ import PageShell from './PageShell';
 import { TrackingSkeleton } from '../components/ui/Skeleton';
 import { STATUS, agentHasArrived, statusLabelFor } from '../lib/orderStatus';
 import { formatDuration, formatKes, formatKm, isWeightVerified } from '../lib/pricing';
-import { agentNoun, agentNounTitle, modeMeta, priorityOf, transportOf } from '../lib/transport';
+import { agentNounFor, agentNounTitle, collectingMode, modeMeta, priorityOf, transportOf } from '../lib/transport';
 import { color, eyebrow, font, layout, radius } from '../theme';
 
 /** How long the search runs before an agent is matched. Long enough to read. */
@@ -51,13 +51,16 @@ export default function Confirmation() {
   const meta = modeMeta(mode);
   const weighed = isWeightVerified(order.parcel);
   const justAssigned = order.status === STATUS.ASSIGNED;
-  const noun = agentNoun(mode);
+  // Named after whoever is actually coming: once an agent is assigned that is their
+  // vehicle, not the mode the parcel travels on afterwards, so the headline, the card
+  // and the timeline all say the same word.
+  const noun = agentNounFor(order);
   const arrived = agentHasArrived(order);
 
   const headline = awaitingAgent
     ? `Finding your ${noun}.`
     : justAssigned
-      ? `${agentNounTitle(mode)} assigned.`
+      ? `${agentNounTitle(collectingMode(order))} assigned.`
       : order.status === STATUS.CANCELLED
         ? 'Delivery cancelled.'
         : 'Delivery confirmed';
@@ -76,7 +79,7 @@ export default function Confirmation() {
   ];
 
   return (
-    <div style={{ background: color.ink, paddingTop: '80px' }}>
+    <div style={{ background: color.greenDeep, paddingTop: '80px' }}>
       <div
         style={{
           maxWidth: layout.maxWidth,
@@ -98,11 +101,10 @@ export default function Confirmation() {
             style={{
               margin: '0 0 26px',
               fontFamily: font.display,
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 'clamp(32px,4.6vw,62px)',
-              lineHeight: 0.94,
-              letterSpacing: '-.015em',
-              textTransform: 'uppercase',
+              lineHeight: 1.04,
+              letterSpacing: '-.025em',
               color: color.paper
             }}
           >
@@ -118,10 +120,10 @@ export default function Confirmation() {
               style={{
                 padding: '16px',
                 borderRadius: radius.card,
-                background: 'rgba(243,241,237,.06)',
-                border: '1px solid rgba(243,241,237,.1)',
+                background: 'rgba(243,243,241,.06)',
+                border: '1px solid rgba(243,243,241,.1)',
                 fontSize: '14.5px',
-                color: 'rgba(243,241,237,.7)'
+                color: 'rgba(243,243,241,.7)'
               }}
             >
               {order.status === STATUS.CANCELLED
@@ -139,8 +141,8 @@ export default function Confirmation() {
             </Button>
           </div>
 
-          <div style={{ marginTop: '30px', paddingTop: '26px', borderTop: '1px solid rgba(243,241,237,.16)' }}>
-            <div style={{ ...eyebrow, color: 'rgba(243,241,237,.5)', marginBottom: '20px' }}>
+          <div style={{ marginTop: '30px', paddingTop: '26px', borderTop: '1px solid rgba(243,243,241,.16)' }}>
+            <div style={{ ...eyebrow, color: 'rgba(243,243,241,.5)', marginBottom: '20px' }}>
               Status · {statusLabelFor(order)}
             </div>
             <StatusTimeline order={order} tone="dark" />
@@ -154,15 +156,15 @@ export default function Confirmation() {
             route={order.route}
             courier={order.courier}
             mode={mode}
-            moving={order.status === STATUS.IN_TRANSIT}
+            journey={order}
             height="clamp(260px,34vw,380px)"
           />
 
           <div
             style={{
               borderRadius: radius.card,
-              border: '1px solid rgba(243,241,237,.12)',
-              background: 'rgba(243,241,237,.05)',
+              border: '1px solid rgba(243,243,241,.12)',
+              background: 'rgba(243,243,241,.05)',
               padding: 'clamp(18px,2.2vw,26px)'
             }}
           >
@@ -175,18 +177,18 @@ export default function Confirmation() {
                   justifyContent: 'space-between',
                   gap: '18px',
                   padding: '12px 0',
-                  borderTop: index ? '1px solid rgba(243,241,237,.12)' : 'none',
+                  borderTop: index ? '1px solid rgba(243,243,241,.12)' : 'none',
                   fontSize: '14.5px'
                 }}
               >
-                <span style={{ color: 'rgba(243,241,237,.6)', flex: 'none' }}>{label}</span>
+                <span style={{ color: 'rgba(243,243,241,.6)', flex: 'none' }}>{label}</span>
                 <strong style={{ color: color.paper, textAlign: 'right' }}>{value}</strong>
               </div>
             ))}
           </div>
 
           {!weighed && (
-            <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.55, color: 'rgba(243,241,237,.6)' }}>
+            <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.55, color: 'rgba(243,243,241,.6)' }}>
               We&apos;ll weigh the package when your {noun} collects it, and confirm the final fee
               from the measured weight. Keep order <span style={{ fontFamily: font.mono, letterSpacing: '.04em', color: color.paper }}>#{order.id}</span> to
               track this delivery later.

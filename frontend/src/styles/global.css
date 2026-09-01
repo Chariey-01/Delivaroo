@@ -1,15 +1,18 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  background: #F3F1ED;
+  background: #C8D1D1;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-weight: 400;
+  color: #1C201F;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 * { box-sizing: border-box; }
-a { color: #141414; text-decoration: none; }
-a:hover { color: #C4700F; }
+a { color: #1C201F; text-decoration: none; }
+a:hover { color: #F88735; }
 button { font-family: inherit; }
-::selection { background: #F5911E; color: #141414; }
+::selection { background: #B4C66A; color: #1C201F; }
 
 @keyframes dashmove { to { stroke-dashoffset: -56; } }
 @keyframes pulsering {
@@ -27,11 +30,11 @@ button { font-family: inherit; }
 }
 
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #E9E6E1; }
+::-webkit-scrollbar-track { background: #C8D1D1; }
 ::-webkit-scrollbar-thumb {
-  background: #C2BCB4;
+  background: #AAB5AA;
   border-radius: 20px;
-  border: 3px solid #E9E6E1;
+  border: 3px solid #C8D1D1;
   background-clip: content-box;
 }
 
@@ -39,9 +42,9 @@ button { font-family: inherit; }
 
 /* §24 — a visible focus ring on every interactive element, including dark surfaces. */
 :focus-visible {
-  outline: 2px solid #F5911E;
+  outline: 2px solid #F88735;
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 /* §25 — motion for the live states: a searching radar, a pulsing "in transit" dot,
@@ -89,15 +92,30 @@ button { font-family: inherit; }
 }
 .route-fade { animation: fadeIn .7s ease both; }
 
-/* §2 — the hero carousel. Slides crossfade with opacity; the photo behind the active
-   one drifts and scales a little while it is on screen, and the indicator under the
-   active mode fills over the slide's own duration. Both are turned off by the
-   prefers-reduced-motion block above. */
-@keyframes heroDrift {
-  from { transform: scale(1.02) translate3d(0, 0, 0); }
-  to { transform: scale(1.09) translate3d(-1.1%, -.8%, 0); }
+/* §25 — the vehicle marker. useJourneyClock repositions it a handful of times a
+   second; this carries it between those positions so the journey reads as a glide
+   rather than as a series of hops. Leaflet writes the transform, so the transition
+   goes on the marker element it writes to, and the reduced-motion block above
+   flattens it to nothing along with everything else. */
+.leaflet-marker-icon.vehicle-marker {
+  transition: transform .16s linear;
 }
-@keyframes heroProgress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+
+/* §4 — the services catalogue. Five cards, so the column count is stated rather than
+   left to auto-fit: auto-fit would put four across and leave the fifth alone in a row
+   of holes. One up on a phone, two on a tablet, then a 3 + 2 layout on the desktop
+   grid — every row full at every width. */
+.services-grid {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 28px);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 620px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 940px) {
+  .services-grid { grid-template-columns: repeat(6, 1fr); }
+  .services-grid > * { grid-column: span 2; }
+  .services-grid > *:nth-child(4),
+  .services-grid > *:nth-child(5) { grid-column: span 3; }
 }

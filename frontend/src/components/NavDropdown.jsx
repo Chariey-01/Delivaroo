@@ -25,7 +25,17 @@ function MenuItem({ item, onNavigate }) {
     ...(hovered ? hover.drop : null)
   };
 
-  // Items either go somewhere (a link) or do something (sign out).
+  // A phone number or an email address is not a route: it hands off to the dialler
+  // or the mail client, so it stays a plain anchor rather than a router link.
+  if (item.href) {
+    return (
+      <a href={item.href} role="menuitem" onClick={onNavigate} {...bind} style={style}>
+        {item.label}
+      </a>
+    );
+  }
+
+  // The rest either go somewhere (a link) or do something (sign out).
   if (!item.to) {
     return (
       <button
@@ -170,8 +180,8 @@ export default function NavDropdown({ label, items, triggerStyle, triggerContent
               padding: '8px',
               borderRadius: radius.field,
               background: color.paper,
-              border: '1px solid rgba(17,17,17,.1)',
-              boxShadow: '0 26px 46px -22px rgba(17,17,17,.6)',
+              border: `1px solid ${color.border}`,
+              boxShadow: '0 26px 46px -22px rgba(28,32,31,.6)',
               animation: `riseIn .2s ${ease.out} both`
             }}
           >

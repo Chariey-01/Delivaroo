@@ -61,7 +61,7 @@ export default function AdminAudit() {
 
       <Panel
         title={`Actions · ${visible.length}`}
-        note="Newest first, capped at the last 300. A real deployment would keep these server-side and keep them for good."
+        note="Newest first, capped at the last 300. A real deployment would keep these on the server, and keep them for good."
       >
         {visible.length === 0 ? (
           <EmptyState
@@ -100,7 +100,7 @@ export default function AdminAudit() {
                     <td
                       style={{
                         padding: '12px 10px',
-                        borderTop: '1px solid rgba(17,17,17,.09)',
+                        borderTop: `1px solid ${color.border}`,
                         fontFamily: font.mono,
                         fontSize: '11.5px',
                         letterSpacing: '.04em',
@@ -110,8 +110,8 @@ export default function AdminAudit() {
                     >
                       {stamp(entry.at)}
                     </td>
-                    <td style={{ padding: '12px 10px', borderTop: '1px solid rgba(17,17,17,.09)', fontSize: '13.5px' }}>
-                      <span style={{ fontWeight: 700, color: color.ink }}>{entry.actor}</span>
+                    <td style={{ padding: '12px 10px', borderTop: `1px solid ${color.border}`, fontSize: '13.5px' }}>
+                      <span style={{ fontWeight: 600, color: color.ink }}>{entry.actor}</span>
                       <span style={{ display: 'block', fontSize: '11.5px', color: color.muted }}>
                         {ROLE_LABEL[entry.actorRole] || entry.actorRole}
                       </span>
@@ -119,7 +119,7 @@ export default function AdminAudit() {
                     <td
                       style={{
                         padding: '12px 10px',
-                        borderTop: '1px solid rgba(17,17,17,.09)',
+                        borderTop: `1px solid ${color.border}`,
                         fontSize: '13.5px',
                         fontWeight: 600,
                         color: color.ink,
@@ -131,7 +131,7 @@ export default function AdminAudit() {
                     <td
                       style={{
                         padding: '12px 10px',
-                        borderTop: '1px solid rgba(17,17,17,.09)',
+                        borderTop: `1px solid ${color.border}`,
                         fontSize: '13.5px',
                         color: color.body,
                         whiteSpace: 'nowrap'
@@ -139,7 +139,7 @@ export default function AdminAudit() {
                     >
                       {entry.target || '—'}
                     </td>
-                    <td style={{ padding: '12px 10px', borderTop: '1px solid rgba(17,17,17,.09)', fontSize: '13.5px', color: color.body }}>
+                    <td style={{ padding: '12px 10px', borderTop: `1px solid ${color.border}`, fontSize: '13.5px', color: color.body }}>
                       {entry.detail || '—'}
                     </td>
                   </tr>

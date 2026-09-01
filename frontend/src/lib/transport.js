@@ -84,7 +84,7 @@ export const TRANSPORT_MODES = [
     // Drives the road network, so it uses the router's own driving time (§25) and
     // draws the real polyline rather than a schematic arc.
     roadNetwork: true,
-    agentNoun: 'pickup agent',
+    agentNoun: 'driver',
     capacity: { units: 38, offline: 5 },
     limits: { maxDistanceKm: 1500, maxWeightKg: 2000 }
   },
@@ -148,8 +148,8 @@ export const TRANSPORT_MODES = [
     glyph: '🚁',
     icon: 'drone',
     freightLabel: 'Drone delivery',
-    tagline: 'Ultra-fast local delivery',
-    blurb: 'Small, light, short hops — straight over the traffic.',
+    tagline: 'The quickest way across town',
+    blurb: 'Small, light, short hops, straight over the traffic.',
     tariff: { base: 350, perKm: 60, perKg: 110, minimum: 700 },
     speedKmh: 48,
     handlingSeconds: 8 * 60,
@@ -173,10 +173,11 @@ export const modeLabel = (mode) => modeMeta(mode).label;
 export const usesRoadNetwork = (mode) => Boolean(modeMeta(mode).roadNetwork);
 
 /**
- * What we call the person coming to collect the parcel. A motorbike delivery sends a
- * rider — that is the word the customer is expecting from every other on-demand app —
- * while everything else sends a pickup agent. Defined here so "Finding a rider near
- * you…", the timeline and the notifications cannot drift apart.
+ * What we call the person coming to collect the parcel — and the word follows what
+ * they are actually turning up in. Someone on a bike is a rider, someone in a van or
+ * a car is a driver; only where the collecting vehicle is genuinely unknown does it
+ * fall back to the neutral "pickup agent". Defined here so "Finding a rider near
+ * you…", the card, the timeline and the notifications cannot drift apart.
  */
 export const agentNoun = (mode) => modeMeta(mode).agentNoun || 'pickup agent';
 
@@ -185,6 +186,17 @@ export const agentNounTitle = (mode) => {
   const noun = agentNoun(mode);
   return noun.charAt(0).toUpperCase() + noun.slice(1);
 };
+
+/**
+ * The vehicle that is actually coming to the pickup, which is not always the mode the
+ * parcel travels on: air and sea freight are collected by a road courier who hands the
+ * parcel on at the depot, so the agent assigned carries their own `vehicleMode`. Read
+ * this — not transportOf — wherever the wording is about the person at the door.
+ */
+export const collectingMode = (order) => order?.courier?.vehicleMode || transportOf(order);
+
+/** The noun for whoever is collecting this particular order. */
+export const agentNounFor = (order) => agentNoun(collectingMode(order));
 
 /** Mode of an order, defaulting to road — orders placed before §25 have no mode. */
 export const transportOf = (order) => order?.transport?.mode || DEFAULT_MODE;
@@ -313,7 +325,7 @@ export function modeAvailability({
   const { limits } = meta;
 
   if (fleetStatus === FLEET_STATUS.OFFLINE) {
-    return { available: false, reason: `${meta.freightLabel} is offline right now — no capacity on this route.` };
+    return { available: false, reason: `${meta.freightLabel} is offline right now. There is no capacity on this route.` };
   }
 
   if (!distanceKm) {
@@ -323,28 +335,28 @@ export function modeAvailability({
   if (limits.maxDistanceKm && distanceKm > limits.maxDistanceKm) {
     return {
       available: false,
-      reason: `${meta.freightLabel} covers routes up to ${km(limits.maxDistanceKm)} — this one is ${km(distanceKm)}.`
+      reason: `${meta.freightLabel} covers routes up to ${km(limits.maxDistanceKm)}, and this one is ${km(distanceKm)}.`
     };
   }
 
   if (limits.minDistanceKm && distanceKm < limits.minDistanceKm) {
     return {
       available: false,
-      reason: `${meta.freightLabel} starts at ${km(limits.minDistanceKm)} — road covers this ${km(distanceKm)} hop faster.`
+      reason: `${meta.freightLabel} starts at ${km(limits.minDistanceKm)}, and road covers this ${km(distanceKm)} hop faster.`
     };
   }
 
   if (limits.maxWeightKg && weightKg > limits.maxWeightKg) {
     return {
       available: false,
-      reason: `${meta.freightLabel} carries up to ${limits.maxWeightKg} kg — this parcel prices at ${Math.round(weightKg * 10) / 10} kg.`
+      reason: `${meta.freightLabel} carries up to ${limits.maxWeightKg} kg, and this parcel prices at ${Math.round(weightKg * 10) / 10} kg.`
     };
   }
 
   if (limits.maxLongestSideCm && longest > limits.maxLongestSideCm) {
     return {
       available: false,
-      reason: `${meta.freightLabel} takes parcels up to ${limits.maxLongestSideCm} cm on the longest side — this one is ${Math.round(longest)} cm.`
+      reason: `${meta.freightLabel} takes parcels up to ${limits.maxLongestSideCm} cm on the longest side, and this one is ${Math.round(longest)} cm.`
     };
   }
 
@@ -353,7 +365,7 @@ export function modeAvailability({
     if (!port) {
       return {
         available: false,
-        reason: 'Sea freight runs between ports — neither end of this route reaches one.'
+        reason: 'Sea freight runs between ports, and neither end of this route reaches one.'
       };
     }
     return { available: true, reason: null, via: port.name, busy: fleetStatus === FLEET_STATUS.BUSY };

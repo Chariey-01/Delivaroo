@@ -36,7 +36,7 @@ describe('unauthenticated users', () => {
 
   test('public routes stay reachable', async () => {
     renderApp({ route: '/', preloadedState: signedOutState });
-    expect(await screen.findByRole('heading', { name: /the future of delivery is here/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /from anywhere to your door/i })).toBeInTheDocument();
   });
 });
 
