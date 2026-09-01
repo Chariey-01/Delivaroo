@@ -68,7 +68,8 @@ describe('smoke: the auth forms are usable', () => {
     renderApp({ route: '/login', preloadedState: signedOutState });
 
     expect(await screen.findByLabelText(/email address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
