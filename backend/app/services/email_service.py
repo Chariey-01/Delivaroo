@@ -1,6 +1,7 @@
 import os
 import smtplib
 from email.message import EmailMessage
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
 def _send_email(recipient_email: str, subject: str, body: str) -> None:
@@ -30,15 +31,29 @@ def _send_email(recipient_email: str, subject: str, body: str) -> None:
         server.send_message(message)
 
 
+def password_reset_url(reset_token: str) -> str:
+    """Build a frontend reset link from deployment configuration."""
+
+    configured_url = os.getenv("PASSWORD_RESET_URL")
+    if not configured_url:
+        raise RuntimeError("Password reset URL is not configured")
+
+    parts = urlsplit(configured_url)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    query["token"] = reset_token
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+
+
 def send_password_reset_email(recipient_email: str, reset_token: str) -> None:
     """Send a password reset email."""
     subject = "Delivaroo password reset"
+    reset_url = password_reset_url(reset_token)
     body = f"""
 You requested a password reset for your Delivaroo account.
 
-Your password reset token is:
+Set a new password using this link:
 
-{reset_token}
+{reset_url}
 
 This token expires in 30 minutes.
 

@@ -61,6 +61,7 @@ function ProfileMenu({ user }) {
 
   const items = [
     { label: 'My deliveries', to: '/orders' },
+    { label: 'Security settings', to: '/settings/security' },
     { label: 'Notifications', to: '/notifications' },
     ...(admin ? [{ label: 'Admin portal', to: '/admin' }] : []),
     {

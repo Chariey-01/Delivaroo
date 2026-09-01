@@ -114,6 +114,9 @@ export default function MobileMenu() {
             <Link to="/orders" onClick={close} style={outlineControl}>
               {user.name} · My deliveries
             </Link>
+            <Link to="/settings/security" onClick={close} style={outlineControl}>
+              Security settings
+            </Link>
             <Link to="/notifications" onClick={close} style={outlineControl}>
               Notifications
             </Link>

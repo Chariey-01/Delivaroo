@@ -225,3 +225,107 @@ def test_password_reset_token_cannot_be_reused(client):
 
     assert first.status_code == 200
     assert second.status_code == 400
+
+
+def test_password_reset_rejects_an_invalid_token(client):
+    response = client.post(
+        "/auth/reset-password",
+        json={"token": "not-a-real-token", "new_password": "NewPassword123!"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["message"] == "Invalid password reset token"
+
+
+def test_new_password_reset_request_invalidates_previous_token(client):
+    client.post(
+        "/auth/register",
+        json={"email": "reset-latest@example.com", "password": "Password123!"},
+    )
+
+    first = client.post("/auth/forgot-password", json={"email": "reset-latest@example.com"})
+    second = client.post("/auth/forgot-password", json={"email": "reset-latest@example.com"})
+
+    response = client.post(
+        "/auth/reset-password",
+        json={"token": first.get_json()["reset_token"], "new_password": "NewPassword123!"},
+    )
+
+    assert response.status_code == 400
+    assert second.get_json()["reset_token"] != first.get_json()["reset_token"]
+
+
+def test_password_reset_updates_password_and_revokes_refresh_tokens(client):
+    client.post(
+        "/auth/register",
+        json={"email": "reset-complete@example.com", "password": "Password123!"},
+    )
+    first_login = client.post(
+        "/auth/login",
+        json={"email": "reset-complete@example.com", "password": "Password123!"},
+    )
+    second_login = client.post(
+        "/auth/login",
+        json={"email": "reset-complete@example.com", "password": "Password123!"},
+    )
+    forgot = client.post(
+        "/auth/forgot-password",
+        json={"email": "reset-complete@example.com"},
+    )
+
+    response = client.post(
+        "/auth/reset-password",
+        json={"token": forgot.get_json()["reset_token"], "new_password": "NewPassword123!"},
+    )
+
+    assert response.status_code == 200
+    assert client.post(
+        "/auth/login",
+        json={"email": "reset-complete@example.com", "password": "Password123!"},
+    ).status_code == 401
+    assert client.post(
+        "/auth/login",
+        json={"email": "reset-complete@example.com", "password": "NewPassword123!"},
+    ).status_code == 200
+    assert client.post(
+        "/auth/refresh",
+        json={"refresh_token": first_login.get_json()["refresh_token"]},
+    ).status_code == 401
+    assert client.post(
+        "/auth/refresh",
+        json={"refresh_token": second_login.get_json()["refresh_token"]},
+    ).status_code == 401
+
+
+def test_change_password_requires_current_password_and_saves_new_hash(client):
+    client.post(
+        "/auth/register",
+        json={"email": "change-password@example.com", "password": "Password123!"},
+    )
+    login = client.post(
+        "/auth/login",
+        json={"email": "change-password@example.com", "password": "Password123!"},
+    )
+    headers = {"Authorization": f"Bearer {login.get_json()['access_token']}"}
+
+    wrong_current = client.post(
+        "/auth/change-password",
+        headers=headers,
+        json={"current_password": "WrongPassword123!", "new_password": "NewPassword123!"},
+    )
+    changed = client.post(
+        "/auth/change-password",
+        headers=headers,
+        json={"current_password": "Password123!", "new_password": "NewPassword123!"},
+    )
+
+    assert wrong_current.status_code == 400
+    assert changed.status_code == 200
+    assert client.post(
+        "/auth/login",
+        json={"email": "change-password@example.com", "password": "Password123!"},
+    ).status_code == 401
+    assert client.post(
+        "/auth/login",
+        json={"email": "change-password@example.com", "password": "NewPassword123!"},
+    ).status_code == 200

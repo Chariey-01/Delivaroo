@@ -1,6 +1,7 @@
 from flask_restful import Api
 
 from app.resources.auth import (
+    ChangePasswordResource,
     ForgotPasswordResource,
     LoginResource,
     LogoutResource,
@@ -46,6 +47,11 @@ def init_resources(app):
     api.add_resource(LoginResource, "/auth/login", "/api/auth/login")
     api.add_resource(RefreshResource, "/auth/refresh", "/api/auth/refresh")
     api.add_resource(LogoutResource, "/auth/logout", "/api/auth/logout")
+    api.add_resource(
+        ChangePasswordResource,
+        "/auth/change-password",
+        "/api/auth/change-password",
+    )
     api.add_resource(MeResource, "/auth/me", "/api/auth/me")
     api.add_resource(
         ForgotPasswordResource,
