@@ -1,8 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeMobileMenu, openAuthModal, selectMobileMenuOpen, showToast } from '../store/uiSlice';
 import { selectIsSignedIn, selectUser, signOut } from '../store/authSlice';
-import useStartBooking, { BOOKING_PATH } from '../hooks/useStartBooking';
+import useStartBooking, { BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
 import { color, ease, eyebrow, font, layout, radius } from '../theme';
 import { NAV_MENUS } from './Nav';
 import Icon from './Icon';
@@ -13,10 +13,10 @@ const outlineControl = {
   justifyContent: 'center',
   height: '56px',
   borderRadius: radius.pill,
-  border: '1.5px solid rgba(17,17,17,.2)',
+  border: `1px solid ${color.border}`,
   fontFamily: font.body,
   fontSize: '16px',
-  fontWeight: 700,
+  fontWeight: 600,
   color: color.ink
 };
 
@@ -29,6 +29,9 @@ export default function MobileMenu() {
   const signedIn = useSelector(selectIsSignedIn);
   const user = useSelector(selectUser);
   const startBooking = useStartBooking();
+  const { pathname } = useLocation();
+  // Same rule as the desktop nav: no shortcut to the page you are already on.
+  const showBookingCta = showsBookingCta(pathname);
 
   if (!open) return null;
   const close = () => dispatch(closeMobileMenu());
@@ -48,77 +51,78 @@ export default function MobileMenu() {
       }}
     >
       {/*
-        The desktop nav collapses its menus into click-to-open panels; on mobile a
-        nested dropdown inside a full-screen panel is one tap too many, so each menu
-        becomes a labelled group with its items listed flat beneath it.
+        The desktop nav collapses its menus into panels that open on click; on
+        mobile a nested dropdown inside a full screen panel is one tap too many, so
+        each menu becomes a labelled group with its items listed flat beneath it.
       */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
         {NAV_MENUS.map((menu) => (
           <div key={menu.label}>
             <div style={{ ...eyebrow, marginBottom: '4px' }}>{menu.label}</div>
-            {menu.items.map((item, index) => (
-              <Link
+            {menu.items.map((item, index) => {
+              // Phone and email items hand off to the dialler or mail client, so
+              // they are plain anchors; everything else is a route.
+              const Tag = item.href ? 'a' : Link;
+              const target = item.href ? { href: item.href } : { to: item.to };
+              return (
+              <Tag
                 key={item.label}
-                to={item.to}
+                {...target}
                 onClick={close}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '15px 0',
-                  borderBottom: index < menu.items.length - 1 ? '1px solid rgba(17,17,17,.09)' : undefined,
+                  borderBottom: index < menu.items.length - 1 ? `1px solid ${color.border}` : undefined,
                   fontFamily: font.display,
-                  fontWeight: 700,
+                  fontWeight: 600,
                   fontSize: 'clamp(23px,6vw,32px)',
-                  textTransform: 'uppercase',
                   letterSpacing: '.005em',
                   color: color.ink
                 }}
               >
                 {item.label}
                 <Icon name="arrow_outward" size={22} color={color.orange} />
-              </Link>
-            ))}
+              </Tag>
+              );
+            })}
           </div>
         ))}
       </nav>
 
       <div style={{ marginTop: 'auto', paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {/* Signed in, the account replaces the Get Started CTA — same rule as the
-            desktop nav. */}
+        {/* Signed in, the account replaces the Get Started CTA, the same rule the
+            desktop nav follows. */}
         {signedIn ? (
           <>
-            <Link
-              to={BOOKING_PATH}
-              onClick={(event) => {
-                close();
-                startBooking(event);
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                height: '58px',
-                borderRadius: radius.pill,
-                background: color.orange,
-                color: color.ink,
-                fontSize: '16.5px',
-                fontWeight: 700,
-                fontFamily: font.body
-              }}
-            >
-              <Icon name="add" size={20} />
-              Request delivery
-            </Link>
+            {showBookingCta && (
+              <Link
+                to={BOOKING_PATH}
+                onClick={(event) => {
+                  close();
+                  startBooking(event);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  height: '58px',
+                  borderRadius: radius.pill,
+                  background: color.orange,
+                  color: color.ink,
+                  fontSize: '16.5px',
+                  fontWeight: 600,
+                  fontFamily: font.body
+                }}
+              >
+                <Icon name="add" size={20} />
+                Request delivery
+              </Link>
+            )}
             <Link to="/orders" onClick={close} style={outlineControl}>
               {user.name} · My deliveries
-            </Link>
-            <Link to="/settings/security" onClick={close} style={outlineControl}>
-              Security settings
-            </Link>
-            <Link to="/notifications" onClick={close} style={outlineControl}>
-              Notifications
             </Link>
             {/* §27 — staff get the portal here too: the desktop profile menu offers
                 it, and a phone is where a shift lead actually reads the board. */}
@@ -168,7 +172,7 @@ export default function MobileMenu() {
                 background: color.orange,
                 color: color.ink,
                 fontSize: '16.5px',
-                fontWeight: 700,
+                fontWeight: 600,
                 fontFamily: font.body
               }}
             >
