@@ -4,7 +4,7 @@
 
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { routeBetween } from '../api/geo';
-import { createOrder } from '../api';
+import { createOrder, usingMockBackend } from '../api';
 import { priceOrder } from '../lib/pricing';
 import { DEFAULT_FLEET, DEFAULT_PRIORITY, defaultModeFor, transportOptions } from '../lib/transport';
 
@@ -172,8 +172,10 @@ export const selectTransportOptions = createSelector(
     (state) => state.booking.transport.priority,
     (state) => state.fleet?.status || DEFAULT_FLEET
   ],
-  (pickup, destination, route, parcel, priority, fleet) =>
-    transportOptions({ pickup, destination, route, parcel, priority, fleet })
+  (pickup, destination, route, parcel, priority, fleet) => {
+    const options = transportOptions({ pickup, destination, route, parcel, priority, fleet });
+    return usingMockBackend ? options : options.filter((option) => option.mode !== 'DRONE');
+  }
 );
 
 /** The option the customer is actually on, once they have chosen one. */
