@@ -1,13 +1,26 @@
+cat > src/pages/parcels/CreateParcel.jsx <<'EOF'
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createParcelStart,
+  createParcelSuccess,
+  createParcelFailure,
+} from "../../store/slices/parcelsSlice";
+import { createParcel } from "../../services/parcelService";
 
 function CreateParcel() {
+  const dispatch = useDispatch();
+
+  const { loading, error, success } = useSelector(
+    (state) => state.parcels.create
+  );
+
   const [formData, setFormData] = useState({
     destination: "",
     weightCategory: "",
   });
 
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -37,7 +50,7 @@ function CreateParcel() {
     return newErrors;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const validationErrors = validateForm();
@@ -47,12 +60,20 @@ function CreateParcel() {
       return;
     }
 
-    setIsLoading(true);
+    dispatch(createParcelStart());
 
-    setTimeout(() => {
-      console.log("Parcel submitted:", formData);
-      setIsLoading(false);
-    }, 1000);
+    try {
+      const newParcel = await createParcel(formData);
+
+      dispatch(createParcelSuccess(newParcel));
+    } catch (requestError) {
+      const message =
+        requestError.response?.data?.message ||
+        requestError.message ||
+        "Failed to create parcel";
+
+      dispatch(createParcelFailure(message));
+    }
   };
 
   return (
@@ -106,8 +127,12 @@ function CreateParcel() {
           </p>
         </div>
 
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Parcel"}
+        {error && <p className="error">{error}</p>}
+
+        {success && <p>Parcel created successfully!</p>}
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Creating..." : "Create Parcel"}
         </button>
       </form>
     </div>
@@ -115,3 +140,4 @@ function CreateParcel() {
 }
 
 export default CreateParcel;
+EOF
