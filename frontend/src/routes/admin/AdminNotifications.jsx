@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { selectNotifications } from '../../store/adminSlice';
 import { color, control, font, radius } from '../../theme';
 import Panel from '../../components/admin/Panel';
 import EmptyState from '../../components/ui/EmptyState';
 import Icon from '../../components/Icon';
+import useRouteSearch from '../../hooks/useRouteSearch';
 
 const stamp = (iso) =>
   new Date(iso).toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
@@ -19,7 +20,7 @@ const stamp = (iso) =>
  */
 export default function AdminNotifications() {
   const notifications = useSelector(selectNotifications);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useRouteSearch();
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();

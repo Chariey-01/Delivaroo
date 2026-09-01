@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { selectCustomers, selectStaff, selectUsers } from '../../store/adminSlice';
 import { selectAllOrders } from '../../store/ordersSlice';
@@ -10,6 +10,7 @@ import UserTable from '../../components/admin/UserTable';
 import EmptyState from '../../components/ui/EmptyState';
 import StatTile from '../../components/ui/StatTile';
 import Icon from '../../components/Icon';
+import useRouteSearch from '../../hooks/useRouteSearch';
 
 /** §27 — people and access: who has an account, and what it lets them do. */
 export default function AdminAccounts() {
@@ -18,7 +19,7 @@ export default function AdminAccounts() {
   const customers = useSelector(selectCustomers);
   const orders = useSelector(selectAllOrders);
   const me = useSelector(selectUser);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useRouteSearch();
 
   const orderCounts = useMemo(() => {
     const counts = {};
