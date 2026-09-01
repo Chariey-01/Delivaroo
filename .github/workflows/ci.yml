@@ -45,9 +45,6 @@ jobs:
 
   backend:
     name: Backend Tests and Build
-    # feature/deployment deliberately carries only the frontend baseline. The backend
-    # still runs for every PR and on main/develop, where its source and migrations live.
-    if: github.ref != 'refs/heads/feature/deployment'
     runs-on: ubuntu-latest
 
     env:

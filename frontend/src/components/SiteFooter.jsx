@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { color, font, hover, layout, radius } from '../theme';
 import HoverLink from './HoverLink';
+import SocialIcon, { SOCIAL_NETWORKS } from './SocialIcon';
 import Wordmark from './Wordmark';
 
-// §20 — four columns under a closing line, nothing more.
+// §20. Four columns under a closing line, nothing more.
 const COLUMNS = [
   {
     title: 'Company',
@@ -33,53 +34,35 @@ const colTitle = {
   marginBottom: '18px'
 };
 
-const footLink = { fontSize: '14.5px', color: 'rgba(243,241,237,.7)' };
+const footLink = { fontSize: '14.5px', color: 'rgba(243,243,241,.7)' };
 
 export default function SiteFooter({ brand = 'Deliveroo' }) {
   return (
-    <footer id="footer" style={{ background: color.ink, padding: 'clamp(64px,7vw,104px) 0 34px' }}>
+    <footer id="footer" style={{ background: color.greenDeep, padding: 'clamp(64px,7vw,104px) 0 34px' }}>
       <div style={{ maxWidth: layout.maxWidth, margin: '0 auto', padding: `0 ${layout.gutter}` }}>
         <h2
           data-reveal=""
           style={{
             margin: '0 0 clamp(48px,6vw,86px)',
             fontFamily: font.display,
-            fontWeight: 700,
+            fontWeight: 600,
             fontSize: 'clamp(38px,7.4vw,116px)',
-            lineHeight: 0.9,
-            letterSpacing: '-.015em',
-            textTransform: 'uppercase',
+            lineHeight: 1.04,
+            letterSpacing: '-.025em',
             color: color.paper,
             maxWidth: '14ch'
           }}
         >
-          Move it. <span style={{ color: color.orange }}>We&apos;ll handle the rest.</span>
+          Wherever it needs to go, <span style={{ color: color.orange }}>we&apos;ll get it there.</span>
         </h2>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(32px,4vw,72px)' }}>
           <div style={{ flex: '1 1 240px', maxWidth: '320px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '11px', marginBottom: '18px' }}>
-              <span
-                aria-hidden="true"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '11px',
-                  background: color.orange,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <span style={{ width: '11px', height: '11px', background: color.ink, transform: 'rotate(45deg)', borderRadius: '2px' }} />
-              </span>
-              <span style={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Wordmark fontSize="25px" tone={color.paper} shadow={false} />
-                <span style={{ fontFamily: font.display, fontWeight: 700, fontSize: '25px', color: color.orange, lineHeight: 1 }}>.</span>
-              </span>
+              <Wordmark fontSize="25px" tone={color.paper} shadow={false} dot />
             </div>
-            <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: 'rgba(243,241,237,.55)', textWrap: 'pretty' }}>
-              Same-day courier delivery, door to door, tracked every mile.
+            <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: 'rgba(243,243,241,.55)', textWrap: 'pretty' }}>
+              Same day courier delivery, door to door, tracked every mile.
             </p>
           </div>
 
@@ -105,7 +88,7 @@ export default function SiteFooter({ brand = 'Deliveroo' }) {
               <HoverLink href="mailto:hello@deliveroo.co" style={footLink} hoverStyle={hover.foot}>
                 hello@deliveroo.co
               </HoverLink>
-              <span style={{ fontSize: '14.5px', color: 'rgba(243,241,237,.5)', lineHeight: 1.5 }}>
+              <span style={{ fontSize: '14.5px', color: 'rgba(243,243,241,.5)', lineHeight: 1.5 }}>
                 Westlands
                 <br />
                 Nairobi, Kenya
@@ -116,14 +99,9 @@ export default function SiteFooter({ brand = 'Deliveroo' }) {
           <div style={{ flex: '1 1 140px' }}>
             <div style={colTitle}>Social</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
-              {[
-                { tag: 'IG', label: 'Instagram' },
-                { tag: 'FB', label: 'Facebook' },
-                { tag: 'LI', label: 'LinkedIn' },
-                { tag: 'X', label: 'X' }
-              ].map((social) => (
+              {SOCIAL_NETWORKS.map((social) => (
                 <HoverLink
-                  key={social.tag}
+                  key={social.id}
                   href="#footer"
                   aria-label={social.label}
                   hoverStyle={hover.social}
@@ -131,18 +109,15 @@ export default function SiteFooter({ brand = 'Deliveroo' }) {
                     width: '44px',
                     height: '44px',
                     borderRadius: radius.pill,
-                    border: '1px solid rgba(243,241,237,.2)',
+                    border: '1px solid rgba(243,243,241,.2)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontFamily: font.mono,
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: 'rgba(243,241,237,.75)',
+                    color: 'rgba(243,243,241,.75)',
                     transition: 'background .2s, color .2s'
                   }}
                 >
-                  {social.tag}
+                  <SocialIcon network={social.id} size={18} />
                 </HoverLink>
               ))}
             </div>
@@ -157,10 +132,10 @@ export default function SiteFooter({ brand = 'Deliveroo' }) {
             gap: '16px',
             marginTop: 'clamp(48px,6vw,80px)',
             paddingTop: '26px',
-            borderTop: '1px solid rgba(243,241,237,.14)'
+            borderTop: '1px solid rgba(243,243,241,.14)'
           }}
         >
-          <span style={{ fontFamily: font.mono, fontSize: '11.5px', letterSpacing: '.06em', color: 'rgba(243,241,237,.45)' }}>
+          <span style={{ fontFamily: font.mono, fontSize: '11.5px', letterSpacing: '.06em', color: 'rgba(243,243,241,.45)' }}>
             © 2026 {brand}. All rights reserved.
           </span>
         </div>

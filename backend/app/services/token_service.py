@@ -14,6 +14,13 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _as_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+
+    return value.astimezone(timezone.utc)
+
+
 def create_refresh_token(user_id):
     """Create and persist a refresh token for a user."""
 
@@ -49,7 +56,7 @@ def get_valid_refresh_token(raw_token: str):
     if refresh_token.revoked_at is not None:
         raise ValueError("Refresh token has been revoked")
 
-    if refresh_token.expires_at <= datetime.now(timezone.utc):
+    if _as_aware_utc(refresh_token.expires_at) <= datetime.now(timezone.utc):
         raise ValueError("Refresh token has expired")
 
     return refresh_token
@@ -61,4 +68,21 @@ def revoke_refresh_token(raw_token: str) -> None:
     refresh_token = get_valid_refresh_token(raw_token)
 
     refresh_token.revoked_at = datetime.now(timezone.utc)
-    db.session.commit()   
+    db.session.commit()
+
+
+def revoke_user_refresh_tokens(user_id) -> None:
+    """Revoke every active refresh token belonging to a user."""
+
+    revoked_at = datetime.now(timezone.utc)
+    refresh_tokens = (
+        db.session.query(RefreshToken)
+        .filter(
+            RefreshToken.user_id == user_id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        .all()
+    )
+
+    for refresh_token in refresh_tokens:
+        refresh_token.revoked_at = revoked_at

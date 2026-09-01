@@ -16,11 +16,10 @@ const withStore = (ui, store = makeStore()) => ({
 const renderNav = (store = makeStore()) => withStore(<MemoryRouter><Nav /></MemoryRouter>, store);
 
 describe('landing page', () => {
-  it('opens on the first hero slide', () => {
+  it('opens on the hero, headline and strapline in place', () => {
     withStore(<App />);
-    // The carousel starts on the drone: it is the slide that says "technology" first.
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('The future ofdelivery is here');
-    expect(screen.getByText('Watch It')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('From anywhere toyour door');
+    expect(screen.getByText('We move.')).toBeInTheDocument();
   });
 
   it('renders the landing sections, booking now living on its own route', () => {
@@ -63,7 +62,7 @@ describe('landing page', () => {
     await userEvent.hover(screen.getByRole('button', { name: /^Services/ }));
 
     expect(await screen.findByRole('menu', { name: 'Services' })).toBeInTheDocument();
-    for (const label of ['Same-day courier', 'Package delivery', 'Business logistics']) {
+    for (const label of ['Same Day Delivery', 'Business Delivery', 'Bulk & Package Delivery']) {
       expect(screen.getByRole('menuitem', { name: label })).toBeInTheDocument();
     }
   });
@@ -71,7 +70,7 @@ describe('landing page', () => {
   it('keeps the menu open while the pointer moves onto its items', async () => {
     renderNav();
     await userEvent.hover(screen.getByRole('button', { name: /^Contact/ }));
-    const item = await screen.findByRole('menuitem', { name: 'Talk to sales' });
+    const item = await screen.findByRole('menuitem', { name: 'Where to find us' });
 
     // The gap between trigger and panel is padding inside the hover area, so
     // travelling to an item must not close the menu.

@@ -13,7 +13,7 @@ import { PERMISSION, can } from '../../lib/roles';
 import { STATUS, STATUS_LABEL, agentHasArrived, allowedTransitions, isTerminal, statusLabelFor } from '../../lib/orderStatus';
 import { formatDelta, formatDuration, formatKes, formatKm, isWeightVerified, weightDiscrepancy } from '../../lib/pricing';
 import { modeMeta, priorityOf, transportOf } from '../../lib/transport';
-import { color, control, eyebrow, font, radius } from '../../theme';
+import { color, control, eyebrow, font, radius, shadow } from '../../theme';
 import RouteMap from '../../components/booking/RouteMap';
 import StatusTimeline from '../../components/tracking/StatusTimeline';
 import CourierCard from '../../components/tracking/CourierCard';
@@ -49,8 +49,9 @@ const SORTS = [
 
 const card = {
   borderRadius: radius.card,
-  border: '1px solid rgba(17,17,17,.12)',
-  background: color.white,
+  border: `1px solid ${color.border}`,
+  background: color.card,
+  boxShadow: shadow.card,
   padding: 'clamp(18px,2.2vw,26px)'
 };
 
@@ -215,7 +216,7 @@ export default function AdminDeliveries() {
             />
             {selected.courier && mayDispatch && (
               <p style={{ margin: 0, fontSize: '12.5px', lineHeight: 1.5, color: color.muted }}>
-                Drag the vehicle marker to update {selected.courier.name}&apos;s position — the customer&apos;s
+                Drag the vehicle marker to update {selected.courier.name}&apos;s position. The customer&apos;s
                 tracking screen follows immediately.
               </p>
             )}
@@ -243,7 +244,7 @@ export default function AdminDeliveries() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
                 {allowedTransitions(selected.status).length === 0 ? (
                   <span style={{ fontSize: '14px', color: color.muted }}>
-                    {STATUS_LABEL[selected.status]} is final — no further changes.
+                    {STATUS_LABEL[selected.status]} is final, so nothing further changes.
                   </span>
                 ) : (
                   allowedTransitions(selected.status).map((status) => (
@@ -278,7 +279,7 @@ export default function AdminDeliveries() {
                     formatKes(selected.pricing.total)
                   ]
                 ].map(([label, value]) => (
-                  <div key={label} style={{ paddingTop: '12px', borderTop: '1px solid rgba(17,17,17,.1)' }}>
+                  <div key={label} style={{ paddingTop: '12px', borderTop: `1px solid ${color.border}` }}>
                     <div style={{ ...eyebrow, fontSize: '9.5px', marginBottom: '6px' }}>{label}</div>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: color.ink }}>{value}</div>
                   </div>

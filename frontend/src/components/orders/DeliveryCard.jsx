@@ -30,9 +30,9 @@ export default function DeliveryCard({ order, actions }) {
         gap: '14px',
         padding: 'clamp(16px,2vw,20px)',
         borderRadius: radius.card,
-        border: `1.5px solid ${hovered ? 'rgba(17,17,17,.28)' : 'rgba(17,17,17,.1)'}`,
-        background: color.white,
-        boxShadow: hovered ? '0 22px 40px -32px rgba(17,17,17,.55)' : 'none',
+        border: `1px solid ${hovered ? 'rgba(28,32,31,.28)' : 'rgba(28,32,31,.1)'}`,
+        background: color.card,
+        boxShadow: hovered ? '0 22px 40px -32px rgba(28,32,31,.55)' : 'none',
         transform: hovered ? 'translateY(-2px)' : 'none',
         transition: `transform .22s ${ease.out}, box-shadow .22s, border-color .2s`,
         overflowWrap: 'anywhere'
@@ -52,12 +52,12 @@ export default function DeliveryCard({ order, actions }) {
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '5px', flex: 'none' }}
         >
           <span style={{ width: '8px', height: '8px', borderRadius: '999px', border: `2px solid ${color.ink}` }} />
-          <span style={{ flex: 1, width: '2px', minHeight: '18px', background: 'rgba(17,17,17,.18)', margin: '3px 0' }} />
+          <span style={{ flex: 1, width: '2px', minHeight: '18px', background: 'rgba(28,32,31,.18)', margin: '3px 0' }} />
           <span style={{ width: '8px', height: '8px', borderRadius: '999px', background: color.orange }} />
         </span>
         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span style={{ fontSize: '15.5px', fontWeight: 700, letterSpacing: 0 }}>{order.pickup.name}</span>
-          <span style={{ fontSize: '15.5px', fontWeight: 700, letterSpacing: 0 }}>{order.destination.name}</span>
+          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: 0 }}>{order.pickup.name}</span>
+          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: 0 }}>{order.destination.name}</span>
         </span>
       </Link>
 
@@ -68,14 +68,14 @@ export default function DeliveryCard({ order, actions }) {
           flexWrap: 'wrap',
           gap: '6px 16px',
           paddingTop: '12px',
-          borderTop: '1px solid rgba(17,17,17,.09)',
+          borderTop: `1px solid ${color.border}`,
           fontSize: '13.5px',
           color: color.muted
         }}
       >
         <span>{formatKm(order.route.distanceKm)}</span>
         <span>{dateLabel(order.createdAt)}</span>
-        <span style={{ marginLeft: 'auto', fontSize: '15px', fontWeight: 700, color: color.ink }}>
+        <span style={{ marginLeft: 'auto', fontSize: '15px', fontWeight: 600, color: color.ink }}>
           {formatKes(order.pricing.total)}
           {!isWeightVerified(order.parcel) && (
             <span style={{ marginLeft: '5px', fontWeight: 500, fontSize: '11.5px', color: color.muted }}>est.</span>
@@ -96,9 +96,9 @@ export default function DeliveryCard({ order, actions }) {
                 padding: '0 16px',
                 borderRadius: radius.pill,
                 background: live ? color.orange : 'transparent',
-                border: live ? 'none' : '1.5px solid rgba(17,17,17,.16)',
+                border: live ? 'none' : `1px solid ${color.border}`,
                 fontSize: '13.5px',
-                fontWeight: 700,
+                fontWeight: 600,
                 color: color.ink
               }}
             >
@@ -115,9 +115,9 @@ export default function DeliveryCard({ order, actions }) {
                   height: '40px',
                   padding: '0 16px',
                   borderRadius: radius.pill,
-                  border: '1.5px solid rgba(17,17,17,.16)',
+                  border: `1px solid ${color.border}`,
                   fontSize: '13.5px',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   color: color.ink
                 }}
               >

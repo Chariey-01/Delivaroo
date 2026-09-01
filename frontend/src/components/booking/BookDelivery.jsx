@@ -31,7 +31,7 @@ import { reverseGeocode } from '../../api/geo';
 import { usingMockBackend } from '../../api';
 import { formatDuration, formatKes, formatKm } from '../../lib/pricing';
 import { PACKAGE_TYPES, modeMeta, volumetricWeightKg } from '../../lib/transport';
-import { color, eyebrow, font, layout } from '../../theme';
+import { color, eyebrow, font, layout, shadow } from '../../theme';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
 import Field from '../ui/Field';
@@ -43,6 +43,35 @@ import PriceCard from './PriceCard';
 import OrderSummary from './OrderSummary';
 import TransportOptions from './TransportOptions';
 import StepShell from './StepShell';
+
+/** The fixed nav sits over the top of the page, so an auto-scrolled block has to clear it. */
+const SCROLL_OFFSET = 108;
+/** Breathing room under a revealed block, and clearance for the phone's fixed price bar. */
+const BOTTOM_GAP = 28;
+
+/** Every control Enter should be able to walk through, in document order. */
+const FOCUSABLE = 'input:not([type="hidden"]):not([disabled]), textarea, select';
+
+const stillPage = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+
+/** Walk the page down so `node` sits just below the nav. */
+const scrollToBlock = (node) => {
+  const top = node.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET;
+  window.scrollTo({ top: Math.max(top, 0), behavior: stillPage() ? 'auto' : 'smooth' });
+};
+
+/**
+ * Answering one question should put the next one in front of the customer — but only
+ * when it isn't already. Chip rows sit close together, and yanking the page around a
+ * block that was fully on screen anyway reads as a glitch rather than as help.
+ */
+const revealBlock = (node, bottomInset = 0) => {
+  if (!node) return;
+  const { top, bottom } = node.getBoundingClientRect();
+  const alreadyVisible = top >= SCROLL_OFFSET && bottom <= window.innerHeight - bottomInset - BOTTOM_GAP;
+  if (alreadyVisible) return;
+  scrollToBlock(node);
+};
 
 const WEIGHTS = [0.5, 1, 2, 5, 10];
 const DIMENSIONS = [
@@ -77,6 +106,64 @@ export default function BookDelivery() {
   const [showDimensions, setShowDimensions] = useState(false);
   /** Set when the customer hit Confirm while signed out (§12). */
   const awaitingAuth = useRef(false);
+  /** One entry per StepShell, so the wizard can bring the open step to the customer. */
+  const stepRefs = useRef([]);
+  const lastStep = useRef(step);
+  /**
+   * The package and transport steps ask several things in a row, so their blocks are
+   * addressable too: choosing a weight should bring up the package types, and choosing
+   * a type should bring up the description, without anyone reaching for the scrollbar.
+   */
+  const packageTypeRef = useRef(null);
+  const packageDetailsRef = useRef(null);
+  const transportActionRef = useRef(null);
+
+  /** The phone's fixed quote bar covers the bottom of the viewport (§23). */
+  const bottomInset = narrow && route ? 84 : 0;
+  const reveal = (node) => revealBlock(node, bottomInset);
+
+  // The wizard is taller than the viewport, so answering one question used to leave
+  // the next one somewhere below the fold. Opening a step now walks the page down to
+  // it and puts the cursor in the field it asks for, so the question and the typing
+  // are in the same place. The initial render is skipped on purpose: landing on /book
+  // should show the heading, not a page already scrolled past it with a keyboard up.
+  useEffect(() => {
+    if (lastStep.current === step) return;
+    lastStep.current = step;
+
+    const node = stepRefs.current[step];
+    if (!node) return;
+
+    // Unconditional here, unlike reveal(): a new step's heading belongs at the top of
+    // the page whether or not it happened to be on screen already.
+    scrollToBlock(node);
+
+    // The step's controls mount with it, so wait a frame before reaching for one, and
+    // only take a field that asked for the cursor — steps that open on a row of chips
+    // have nothing worth typing into. preventScroll keeps the browser's own
+    // scroll-into-view from fighting the smooth scroll above.
+    const frame = requestAnimationFrame(() => {
+      node.querySelector('[data-autofocus] input, [data-autofocus] textarea')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [step]);
+
+  // Enter moves down the step rather than doing nothing: to the next field, or from the
+  // last one to the same Continue button a mouse would press — which reopens the effect
+  // above on the next step. Nothing here is inside a <form>, so no submit to suppress.
+  const onFieldEnter = (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const container = event.currentTarget.closest('[data-step]');
+    if (!container) return;
+    const fields = Array.from(container.querySelectorAll(FOCUSABLE));
+    const next = fields[fields.indexOf(event.currentTarget) + 1];
+    if (next) {
+      next.focus();
+      return;
+    }
+    container.querySelector('[data-continue]:not(:disabled)')?.click();
+  };
 
   // §6 — the route redraws itself whenever either endpoint changes.
   useEffect(() => {
@@ -159,11 +246,10 @@ export default function BookDelivery() {
             style={{
               margin: '0 0 18px',
               fontFamily: font.display,
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 'clamp(38px,6.6vw,104px)',
-              lineHeight: 0.9,
-              letterSpacing: '-.015em',
-              textTransform: 'uppercase',
+              lineHeight: 1.04,
+              letterSpacing: '-.025em',
               color: color.ink
             }}
           >
@@ -171,7 +257,7 @@ export default function BookDelivery() {
           </h2>
           <p style={{ margin: 0, maxWidth: '48ch', fontSize: 'clamp(15.5px,1.4vw,18px)', lineHeight: 1.6, color: color.body }}>
             Tell us where to pick it up, where to take it, and how fast you need it there.
-            We&apos;ll come and collect it — you don&apos;t need to work out the logistics.
+            We&apos;ll come and collect it, so you don&apos;t need to work out the logistics.
           </p>
 
           {/* §27 — staff can pause bookings platform-wide. The backend refuses the
@@ -186,8 +272,8 @@ export default function BookDelivery() {
                 margin: '22px 0 0',
                 padding: '14px 18px',
                 borderRadius: '16px',
-                border: `1.5px solid ${color.orangeDeep}`,
-                background: 'rgba(196,112,15,.1)',
+                border: `1px solid ${color.orangeDeep}`,
+                background: 'rgba(173,84,21,.1)',
                 fontSize: '14.5px',
                 lineHeight: 1.55,
                 color: color.ink
@@ -195,8 +281,8 @@ export default function BookDelivery() {
             >
               <Icon name="pause_circle" size={19} color={color.orangeDeep} style={{ flex: 'none', marginTop: '1px' }} />
               <span>
-                We have paused new pickups for the moment. You can still work out a price here — the
-                request itself will be turned away until we are taking bookings again.
+                We have paused new pickups for the moment. You can still work out a price here,
+                but the request itself will be turned away until we are taking bookings again.
               </span>
             </p>
           )}
@@ -206,6 +292,7 @@ export default function BookDelivery() {
           {/* Steps */}
           <div style={{ flex: '1 1 440px', minWidth: 'min(100%,300px)' }}>
             <StepShell
+              containerRef={(node) => { stepRefs.current[0] = node; }}
               index={0}
               title="Pickup"
               question="Where should we pick it up?"
@@ -214,10 +301,12 @@ export default function BookDelivery() {
               summary={pickup?.label}
               onOpen={() => open(0)}
             >
-              <PlaceSearch value={pickup} onChange={(place) => dispatch(setPickup(place))} placeholder="Enter pickup location" />
+              <div data-autofocus="">
+                <PlaceSearch value={pickup} onChange={(place) => dispatch(setPickup(place))} placeholder="Enter pickup location" />
+              </div>
               {pickup && (
                 <div style={{ marginTop: '18px' }}>
-                  <Button onClick={advance} icon="arrow_forward">
+                  <Button onClick={advance} icon="arrow_forward" data-continue="">
                     Continue
                   </Button>
                 </div>
@@ -225,6 +314,7 @@ export default function BookDelivery() {
             </StepShell>
 
             <StepShell
+              containerRef={(node) => { stepRefs.current[1] = node; }}
               index={1}
               title="Destination"
               question="Where should we deliver it?"
@@ -233,14 +323,16 @@ export default function BookDelivery() {
               summary={destination?.label}
               onOpen={() => open(1)}
             >
-              <PlaceSearch
-                value={destination}
-                onChange={(place) => dispatch(setDestination(place))}
-                placeholder="Enter destination"
-              />
+              <div data-autofocus="">
+                <PlaceSearch
+                  value={destination}
+                  onChange={(place) => dispatch(setDestination(place))}
+                  placeholder="Enter destination"
+                />
+              </div>
               {destination && (
                 <div style={{ marginTop: '18px' }}>
-                  <Button onClick={advance} icon="arrow_forward" disabled={routeStatus === 'loading'}>
+                  <Button onClick={advance} icon="arrow_forward" disabled={routeStatus === 'loading'} data-continue="">
                     {routeStatus === 'loading' ? 'Working out the route…' : 'Continue'}
                   </Button>
                 </div>
@@ -248,6 +340,7 @@ export default function BookDelivery() {
             </StepShell>
 
             <StepShell
+              containerRef={(node) => { stepRefs.current[2] = node; }}
               index={2}
               title="Package"
               question="What are you sending?"
@@ -261,7 +354,7 @@ export default function BookDelivery() {
                 {/* §9 — this figure only buys an estimate; the fare is settled on our
                     scale at pickup, so an optimistic guess here changes nothing. */}
                 <p style={{ margin: '0 0 14px', fontSize: '13.5px', lineHeight: 1.5, color: color.muted }}>
-                  A rough figure is fine — we weigh the package at pickup and the final price is
+                  A rough figure is fine. We weigh the package at pickup and the final price is
                   worked out from that.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -272,6 +365,7 @@ export default function BookDelivery() {
                       onClick={() => {
                         setCustomWeight('');
                         dispatch(setWeight(weight));
+                        reveal(packageTypeRef.current);
                       }}
                     >
                       {weight} kg
@@ -284,6 +378,7 @@ export default function BookDelivery() {
                     value={customWeight}
                     placeholder="Custom"
                     aria-label="Custom weight in kilograms"
+                    onKeyDown={onFieldEnter}
                     onChange={(event) => {
                       const next = event.target.value;
                       setCustomWeight(next);
@@ -295,8 +390,9 @@ export default function BookDelivery() {
                       height: '46px',
                       padding: '0 14px',
                       borderRadius: '999px',
-                      border: `1.5px solid ${customWeight ? color.ink : 'rgba(17,17,17,.14)'}`,
-                      background: color.white,
+                      border: `1px solid ${customWeight ? color.ink : 'rgba(28,32,31,.14)'}`,
+                      background: color.card,
+                      boxShadow: shadow.card,
                       fontFamily: font.body,
                       fontSize: '15px',
                       fontWeight: 600,
@@ -307,7 +403,7 @@ export default function BookDelivery() {
                 </div>
               </fieldset>
 
-              <fieldset style={{ border: 'none', padding: 0, margin: '0 0 24px' }}>
+              <fieldset ref={packageTypeRef} style={{ border: 'none', padding: 0, margin: '0 0 24px' }}>
                 <legend style={{ ...eyebrow, marginBottom: '12px', padding: 0 }}>What kind of package?</legend>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {PACKAGE_TYPES.map((type) => (
@@ -321,6 +417,7 @@ export default function BookDelivery() {
                         if (!parcel.description || PACKAGE_TYPES.some((t) => t.label === parcel.description)) {
                           dispatch(setDescription(next ? type.label : ''));
                         }
+                        reveal(packageDetailsRef.current);
                       }}
                       style={{ gap: '8px' }}
                     >
@@ -331,69 +428,82 @@ export default function BookDelivery() {
                 </div>
               </fieldset>
 
-              <Field
-                label="Description · optional"
-                value={parcel.description}
-                placeholder="Two laptops, handle with care"
-                onChange={(value) => dispatch(setDescription(value))}
-              />
+              {/* Description, dimensions and Continue travel together: once a package type
+                  is chosen there is nothing left to answer, so the whole tail of the step
+                  should come into view at once rather than a line at a time. */}
+              <div ref={packageDetailsRef}>
+                <Field
+                  label="Description · optional"
+                  value={parcel.description}
+                  placeholder="Two laptops, handle with care"
+                  onKeyDown={onFieldEnter}
+                  onChange={(value) => dispatch(setDescription(value))}
+                />
 
-              <div style={{ marginTop: '18px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowDimensions((open_) => !open_)}
-                  aria-expanded={showDimensions || dimensionsGiven}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    height: '44px',
-                    padding: 0,
-                    border: 'none',
-                    background: 'transparent',
-                    fontFamily: font.body,
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: color.ink,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Icon name={showDimensions || dimensionsGiven ? 'expand_less' : 'straighten'} size={18} color={color.orange} />
-                  Add dimensions · optional
-                </button>
+                <div style={{ marginTop: '18px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDimensions((open_) => !open_);
+                      // Opening the boxes grows the step downwards, past the fold on a
+                      // short window. Reveal after the browser has laid the new rows out.
+                      requestAnimationFrame(() => reveal(packageDetailsRef.current));
+                    }}
+                    aria-expanded={showDimensions || dimensionsGiven}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      height: '44px',
+                      padding: 0,
+                      border: 'none',
+                      background: 'transparent',
+                      fontFamily: font.body,
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: color.ink,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Icon name={showDimensions || dimensionsGiven ? 'expand_less' : 'straighten'} size={18} color={color.orange} />
+                    Add dimensions · optional
+                  </button>
 
-                {(showDimensions || dimensionsGiven) && (
-                  <>
-                    <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fit,minmax(96px,1fr))', marginTop: '8px' }}>
-                      {DIMENSIONS.map(({ field, label }) => (
-                        <Field
-                          key={field}
-                          label={`${label} (cm)`}
-                          type="number"
-                          inputMode="decimal"
-                          value={parcel[field]}
-                          placeholder="0"
-                          onChange={(value) => dispatch(setDimension({ field, value }))}
-                        />
-                      ))}
-                    </div>
-                    <p style={{ margin: '10px 0 0', fontSize: '12.5px', lineHeight: 1.5, color: color.muted }}>
-                      {volumetric > 0
-                        ? `A parcel this size prices as ${volumetric} kg volumetric — we charge the higher of that and its real weight, the way every carrier does.`
-                        : 'Large, light parcels take up space that heavier ones would. Dimensions let us price that honestly, and tell us whether a drone can take it.'}
-                    </p>
-                  </>
-                )}
-              </div>
+                  {(showDimensions || dimensionsGiven) && (
+                    <>
+                      <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fit,minmax(96px,1fr))', marginTop: '8px' }}>
+                        {DIMENSIONS.map(({ field, label }) => (
+                          <Field
+                            key={field}
+                            label={`${label} (cm)`}
+                            type="number"
+                            inputMode="decimal"
+                            value={parcel[field]}
+                            placeholder="0"
+                            onKeyDown={onFieldEnter}
+                            onChange={(value) => dispatch(setDimension({ field, value }))}
+                          />
+                        ))}
+                      </div>
+                      <p style={{ margin: '10px 0 0', fontSize: '12.5px', lineHeight: 1.5, color: color.muted }}>
+                        {volumetric > 0
+                          ? `A parcel this size prices as ${volumetric} kg volumetric. We charge the higher of that and its real weight, the way every carrier does.`
+                          : 'Large, light parcels take up space that heavier ones would. Dimensions let us price that honestly, and tell us whether a drone can take it.'}
+                      </p>
+                    </>
+                  )}
+                </div>
 
-              <div style={{ marginTop: '22px' }}>
-                <Button onClick={advance} icon="arrow_forward" disabled={!complete.parcel}>
-                  Continue
-                </Button>
+                <div style={{ marginTop: '22px' }}>
+                  <Button onClick={advance} icon="arrow_forward" disabled={!complete.parcel} data-continue="">
+                    Continue
+                  </Button>
+                </div>
               </div>
             </StepShell>
 
             <StepShell
+              containerRef={(node) => { stepRefs.current[3] = node; }}
               index={3}
               title="Transport"
               question="How should it be transported?"
@@ -409,20 +519,24 @@ export default function BookDelivery() {
               <TransportOptions
                 options={options}
                 selected={transport.mode}
-                onSelect={(mode) => dispatch(setTransportMode(mode))}
+                onSelect={(mode) => {
+                  dispatch(setTransportMode(mode));
+                  reveal(transportActionRef.current);
+                }}
                 priority={transport.priority}
                 onPriority={(value) => dispatch(setPriority(value))}
                 loading={routeStatus === 'loading' || !route}
               />
 
-              <div style={{ marginTop: '22px' }}>
-                <Button onClick={advance} icon="arrow_forward" disabled={!complete.transport}>
+              <div ref={transportActionRef} style={{ marginTop: '22px' }}>
+                <Button onClick={advance} icon="arrow_forward" disabled={!complete.transport} data-continue="">
                   Continue
                 </Button>
               </div>
             </StepShell>
 
             <StepShell
+              containerRef={(node) => { stepRefs.current[4] = node; }}
               index={4}
               title="Details"
               question="Who's sending and receiving?"
@@ -434,9 +548,11 @@ export default function BookDelivery() {
               <div style={{ display: 'grid', gap: '16px' }}>
                 <div style={{ ...eyebrow, marginBottom: '-4px' }}>Pickup details</div>
                 <Field
+                  data-autofocus=""
                   label="Your name"
                   value={sender.name}
                   autoComplete="name"
+                  onKeyDown={onFieldEnter}
                   onChange={(value) => dispatch(setSenderField({ field: 'name', value }))}
                 />
                 <Field
@@ -446,6 +562,7 @@ export default function BookDelivery() {
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="+254 700 000 000"
+                  onKeyDown={onFieldEnter}
                   onChange={(value) => dispatch(setSenderField({ field: 'phone', value }))}
                 />
 
@@ -453,6 +570,7 @@ export default function BookDelivery() {
                 <Field
                   label="Recipient name"
                   value={recipient.name}
+                  onKeyDown={onFieldEnter}
                   onChange={(value) => dispatch(setRecipientField({ field: 'name', value }))}
                 />
                 <Field
@@ -461,18 +579,20 @@ export default function BookDelivery() {
                   type="tel"
                   inputMode="tel"
                   placeholder="+254 700 000 000"
+                  onKeyDown={onFieldEnter}
                   onChange={(value) => dispatch(setRecipientField({ field: 'phone', value }))}
                 />
               </div>
 
               <div style={{ marginTop: '22px' }}>
-                <Button onClick={advance} icon="arrow_forward" disabled={!complete.details}>
+                <Button onClick={advance} icon="arrow_forward" disabled={!complete.details} data-continue="">
                   Review delivery
                 </Button>
               </div>
             </StepShell>
 
             <StepShell
+              containerRef={(node) => { stepRefs.current[5] = node; }}
               index={5}
               title="Confirm"
               question="Ready to send?"
@@ -502,7 +622,7 @@ export default function BookDelivery() {
                   onClick={confirm}
                   disabled={!canSubmit || submitStatus === 'loading'}
                 >
-                  {submitStatus === 'loading' ? 'Requesting…' : `Request Pickup — ${formatKes(quote.total)}`}
+                  {submitStatus === 'loading' ? 'Requesting…' : `Request Pickup · ${formatKes(quote.total)}`}
                 </Button>
               </div>
               <p style={{ margin: '12px 0 0', fontSize: '12.5px', color: color.muted }}>
@@ -556,12 +676,13 @@ export default function BookDelivery() {
                       flex: 1,
                       padding: '16px 18px',
                       borderRadius: '18px',
-                      background: color.white,
-                      border: '1px solid rgba(17,17,17,.1)'
+                      background: color.card,
+                      boxShadow: shadow.card,
+                      border: `1px solid ${color.border}`
                     }}
                   >
                     <div style={{ ...eyebrow, fontSize: '10px', marginBottom: '8px' }}>{stat.label}</div>
-                    <div style={{ fontFamily: font.display, fontWeight: 700, fontSize: 'clamp(22px,2.4vw,30px)', lineHeight: 1, color: color.ink }}>
+                    <div style={{ fontFamily: font.display, fontWeight: 600, fontSize: 'clamp(22px,2.4vw,30px)', lineHeight: 1, color: color.ink }}>
                       {stat.value}
                     </div>
                   </div>
@@ -594,17 +715,17 @@ export default function BookDelivery() {
             alignItems: 'center',
             gap: '14px',
             padding: `12px ${layout.gutter} calc(12px + env(safe-area-inset-bottom,0px))`,
-            background: 'rgba(17,17,17,.94)',
+            background: 'rgba(28,32,31,.94)',
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
-            borderTop: '1px solid rgba(243,241,237,.14)'
+            borderTop: '1px solid rgba(243,243,241,.14)'
           }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ ...eyebrow, fontSize: '9.5px', color: 'rgba(243,241,237,.55)', marginBottom: '3px' }}>
+            <div style={{ ...eyebrow, fontSize: '9.5px', color: 'rgba(243,243,241,.55)', marginBottom: '3px' }}>
               {selectedMeta ? `${selectedMeta.label} · ${formatDuration(quote.durationSeconds)}` : 'Estimated'}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: font.display, fontWeight: 700, fontSize: '24px', lineHeight: 1, color: color.paper }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: font.display, fontWeight: 600, fontSize: '24px', lineHeight: 1, color: color.paper }}>
               {selectedMeta && <TransportGlyph mode={selectedMeta.id} size={19} color={color.orange} />}
               {formatKes(quote.total)}
             </div>

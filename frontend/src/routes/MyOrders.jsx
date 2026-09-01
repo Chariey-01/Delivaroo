@@ -90,7 +90,7 @@ export default function MyOrders() {
         <EmptyState
           icon="local_shipping"
           title="Nothing on the road yet"
-          body="Tell us where to collect a parcel and where it's going. We'll come and get it — motorbike, road, air, sea or drone, whichever suits the route."
+          body="Tell us where to collect a parcel and where it's going. We'll come and get it by motorbike, road, air, sea or drone, whichever suits the route."
           action={
             <Button as={Link} to="/book" icon="arrow_forward">
               Request your first delivery
@@ -148,7 +148,7 @@ export default function MyOrders() {
                   background: 'transparent',
                   fontFamily: font.body,
                   fontSize: '13.5px',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   color: color.muted,
                   cursor: 'pointer'
                 }}

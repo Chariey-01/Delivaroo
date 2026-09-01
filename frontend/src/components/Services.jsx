@@ -1,23 +1,32 @@
 import { Link } from 'react-router-dom';
 import useHover from '../hooks/useHover';
 import useStartBooking, { BOOKING_PATH } from '../hooks/useStartBooking';
+import { TRANSPORT } from '../lib/transport';
 import { color, ease, eyebrow, font, layout, radius } from '../theme';
 import Icon from './Icon';
+import TransportGlyph from './transport/TransportGlyph';
 
-// §4 — four equal photo cards. Each service carries its own image so the grid reads
-// as a catalogue rather than one hero plus a list of runners-up. Photos are the local
-// mode shots, mapped to the service that actually uses that vehicle.
+// §4. Five equal photo cards, one per vehicle we actually run. Each service carries
+// its own image so the grid reads as a catalogue rather than one hero plus a list of
+// runners-up. Photos are the local mode shots, mapped to the service that actually
+// uses that vehicle, which is why drone earns a card here as much as ship does: it
+// is a bookable mode in §25, not a slide.
+//
+// Each card carries an id, because the Services menu in the nav links straight to
+// the one it names.
 const SERVICES = [
   {
     number: '01',
+    id: 'service-same-day',
     icon: 'bolt',
-    title: 'Same-Day Delivery',
-    copy: 'Fast door-to-door delivery for packages that cannot wait.',
+    title: 'Same Day Delivery',
+    copy: 'Fast door to door delivery for packages that cannot wait.',
     photo: '/photos/hero-motorbike-city.jpeg',
     alt: 'Rider on a motorbike carrying a delivery box through city traffic'
   },
   {
     number: '02',
+    id: 'service-business',
     icon: 'storefront',
     title: 'Business Delivery',
     copy: 'Reliable courier solutions for businesses, shops and growing brands.',
@@ -26,6 +35,7 @@ const SERVICES = [
   },
   {
     number: '03',
+    id: 'service-bulk',
     icon: 'inventory_2',
     title: 'Bulk & Package Delivery',
     copy: 'Safe transportation for larger or multiple packages.',
@@ -34,11 +44,23 @@ const SERVICES = [
   },
   {
     number: '04',
+    id: 'service-express',
     icon: 'bolt',
     title: 'Express Courier',
-    copy: 'Priority delivery for time-sensitive packages.',
+    copy: 'Priority delivery for packages that are running against a clock.',
     photo: '/photos/hero-air-freight.jpeg',
     alt: 'Cargo aircraft being loaded for an air freight run'
+  },
+  {
+    number: '05',
+    id: 'service-drone',
+    // The icon set has no dependable drone ligature, so this card names the mode and
+    // lets TransportGlyph draw the quadcopter rather than printing the word.
+    mode: TRANSPORT.DRONE,
+    title: 'Drone Delivery',
+    copy: 'Small, light parcels flown across the city, straight over the traffic.',
+    photo: '/photos/hero-drone-city.jpeg',
+    alt: 'Delivery drone carrying a parcel above the city'
   }
 ];
 
@@ -49,8 +71,8 @@ const numeral = {
   color: color.muted
 };
 
-const restShadow = '0 1px 2px rgba(17,17,17,.05), 0 14px 28px -22px rgba(17,17,17,.4)';
-const liftShadow = '0 2px 4px rgba(17,17,17,.05), 0 30px 50px -30px rgba(17,17,17,.45)';
+const restShadow = '0 1px 2px rgba(28,32,31,.05), 0 14px 28px -22px rgba(28,32,31,.4)';
+const liftShadow = '0 2px 4px rgba(28,32,31,.05), 0 30px 50px -30px rgba(28,32,31,.45)';
 
 function ServiceCard({ service, delay }) {
   const [hovered, bind] = useHover();
@@ -58,6 +80,7 @@ function ServiceCard({ service, delay }) {
 
   return (
     <Link
+      id={service.id}
       to={BOOKING_PATH}
       onClick={startBooking}
       {...bind}
@@ -70,7 +93,10 @@ function ServiceCard({ service, delay }) {
         minWidth: 0,
         borderRadius: radius.card,
         overflow: 'hidden',
-        background: color.white,
+        // The nav is fixed at 80px, so a card jumped to from the Services menu has
+        // to stop clear of it rather than under it.
+        scrollMarginTop: '104px',
+        background: color.card,
         color: color.ink,
         boxShadow: hovered ? liftShadow : restShadow,
         transform: hovered ? 'translateY(-6px)' : 'none',
@@ -104,12 +130,16 @@ function ServiceCard({ service, delay }) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-          <Icon name={service.icon} size={20} color={color.ink} />
+          {service.mode ? (
+            <TransportGlyph mode={service.mode} size={20} color={color.ink} />
+          ) : (
+            <Icon name={service.icon} size={20} color={color.ink} />
+          )}
           <span style={numeral}>{service.number}</span>
           <Icon
             name="arrow_outward"
             size={18}
-            color={hovered ? color.orange : 'rgba(17,17,17,.22)'}
+            color={hovered ? color.orange : 'rgba(28,32,31,.22)'}
             style={{
               marginLeft: 'auto',
               transform: hovered ? 'translate(3px,-3px)' : 'none',
@@ -121,7 +151,7 @@ function ServiceCard({ service, delay }) {
           style={{
             margin: '0 0 8px',
             fontSize: 'clamp(19px,1.7vw,23px)',
-            fontWeight: 800,
+            fontWeight: 600,
             letterSpacing: 0,
             lineHeight: 1.15,
             color: color.ink,
@@ -149,11 +179,10 @@ export default function Services() {
             style={{
               margin: '0 0 20px',
               fontFamily: font.display,
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 'clamp(38px,6.6vw,104px)',
-              lineHeight: 0.9,
-              letterSpacing: '-.015em',
-              textTransform: 'uppercase',
+              lineHeight: 1.04,
+              letterSpacing: '-.025em',
               color: color.ink
             }}
           >
@@ -168,14 +197,7 @@ export default function Services() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))',
-            gap: 'clamp(18px,2.2vw,28px)',
-            alignItems: 'stretch'
-          }}
-        >
+        <div className="services-grid" style={{ alignItems: 'stretch' }}>
           {SERVICES.map((service, index) => (
             <ServiceCard key={service.number} service={service} delay={`${80 + index * 80}ms`} />
           ))}
