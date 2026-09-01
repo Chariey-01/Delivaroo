@@ -212,7 +212,7 @@ export default function AdminReports() {
                           fontSize: '13.5px',
                           color: index === 0 ? color.ink : color.body,
                           fontWeight: index === 0 ? 700 : 400,
-                          borderTop: '1px solid rgba(17,17,17,.09)',
+                          borderTop: `1px solid ${color.border}`,
                           whiteSpace: 'nowrap'
                         }}
                       >
@@ -228,7 +228,7 @@ export default function AdminReports() {
       </Panel>
 
       <p style={{ margin: 0, maxWidth: '62ch', fontSize: '12.5px', lineHeight: 1.6, color: color.muted }}>
-        Revenue counts every delivery that was not cancelled, at the fare currently on the order — the
+        Revenue counts every delivery that was not cancelled, at the fare currently on the order: the
         measured one where the parcel has been weighed, the estimate where it has not. On time compares
         the delivery against the duration it was quoted, counted from collection.
       </p>
