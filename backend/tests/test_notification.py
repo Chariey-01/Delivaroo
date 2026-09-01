@@ -1,60 +1,12 @@
-import time
 from unittest.mock import patch
 
+from app.models import Notification
 from tests.conftest import auth_headers_for
 
 
-def test_status_change_triggers_notification(client, app, sample_admin, sample_parcel, db_session):
-    headers = auth_headers_for(app, sample_admin)
-
-    with patch("app.resources.admin_status.notify_status_change_async") as mock_notify:
-        response = client.patch(
-            f"/admin/parcels/{sample_parcel.id}/status",
-            json={"status": "PICKED_UP"},
-            headers=headers,
-        )
-
-        assert response.status_code == 200
-        mock_notify.assert_called_once()
-
-        call_args = mock_notify.call_args
-        assert call_args[0][2] == sample_parcel.tracking_number
-        assert call_args[0][3] == "PICKED_UP"
-
-
-def test_status_change_succeeds_even_if_owner_not_found(client, app, sample_admin, sample_parcel, db_session):
-    """
-    If the owning user can't be found for some reason, the status
-    change itself must still succeed - notification is best-effort.
-    """
-    headers = auth_headers_for(app, sample_admin)
-
-    from app.models.parcel import Parcel
-
-    with patch("app.resources.admin_status.db.session.get") as mock_get:
-        def side_effect(model, id_):
-            if model is Parcel:
-                return sample_parcel
-            return None  # simulate owner not found
-
-        mock_get.side_effect = side_effect
-
-        response = client.patch(
-            f"/admin/parcels/{sample_parcel.id}/status",
-            json={"status": "PICKED_UP"},
-            headers=headers,
-        )
-
-        assert response.status_code == 200
-
-
-def test_email_send_failure_does_not_break_status_change_response(client, app, sample_admin, sample_parcel, db_session):
-    """
-    In the test environment SMTP env vars aren't set, so the real
-    send_status_change_email call will raise RuntimeError inside the
-    background thread. This confirms that never affects the
-    synchronous API response.
-    """
+def test_status_change_creates_a_persisted_notification(
+    client, app, sample_admin, sample_parcel, db_session
+):
     headers = auth_headers_for(app, sample_admin)
 
     response = client.patch(
@@ -64,36 +16,26 @@ def test_email_send_failure_does_not_break_status_change_response(client, app, s
     )
 
     assert response.status_code == 200
+    notification = Notification.query.filter_by(event_type="PARCEL_STATUS_CHANGED").one()
+    assert notification.recipient_user_id == sample_parcel.user_id
+    assert notification.actor_user_id == sample_admin.id
+    assert notification.parcel_id == sample_parcel.id
+    assert notification.metadata_json == {
+        "tracking_number": sample_parcel.tracking_number,
+        "status": "PICKED_UP",
+    }
 
 
-def test_worker_catches_and_logs_send_failure(app, sample_user):
-    """
-    Directly tests the background worker function: if the underlying
-    send raises, the worker must catch it and never propagate.
-    """
-    from app.services.notification_service import _send_status_change_email_worker
+def test_status_change_succeeds_when_notification_creation_fails(
+    client, app, sample_admin, sample_parcel
+):
+    headers = auth_headers_for(app, sample_admin)
 
-    with app.app_context():
-        with patch(
-            "app.services.notification_service.send_status_change_email",
-            side_effect=RuntimeError("SMTP not configured"),
-        ):
-            _send_status_change_email_worker(app, sample_user.email, "TRK123", "PICKED_UP")
+    with patch("app.resources.admin_status.notify_event", side_effect=RuntimeError("database unavailable")):
+        response = client.patch(
+            f"/admin/parcels/{sample_parcel.id}/status",
+            json={"status": "PICKED_UP"},
+            headers=headers,
+        )
 
-
-def test_notify_status_change_async_returns_immediately(app, sample_user):
-    """
-    Confirms notify_status_change_async starts a thread and returns
-    without waiting for the send to complete (non-blocking).
-    """
-    from app.services.notification_service import notify_status_change_async
-
-    with patch(
-        "app.services.notification_service.send_status_change_email",
-        side_effect=lambda *a, **kw: time.sleep(0.5),
-    ):
-        start = time.time()
-        notify_status_change_async(app, sample_user.email, "TRK123", "PICKED_UP")
-        elapsed = time.time() - start
-
-        assert elapsed < 0.1
+    assert response.status_code == 200

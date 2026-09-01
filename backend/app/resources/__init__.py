@@ -28,6 +28,13 @@ from app.resources.address import (
 from app.resources.profile import ProfileResource
 from app.resources.maps import GeocodeResource, ReverseGeocodeResource, RouteResource
 from app.resources.health import HealthResource
+from app.resources.notification import (
+    NotificationListResource,
+    NotificationPreferenceResource,
+    NotificationReadAllResource,
+    NotificationReadResource,
+    NotificationUnreadCountResource,
+)
 
 
 def init_resources(app):
@@ -90,6 +97,11 @@ def init_resources(app):
     )
 
     api.add_resource(ProfileResource, "/profile", "/api/profile")
+    api.add_resource(NotificationListResource, "/api/notifications")
+    api.add_resource(NotificationUnreadCountResource, "/api/notifications/unread-count")
+    api.add_resource(NotificationReadAllResource, "/api/notifications/read-all")
+    api.add_resource(NotificationReadResource, "/api/notifications/<uuid:notification_id>/read")
+    api.add_resource(NotificationPreferenceResource, "/api/notification-preferences")
     api.add_resource(GeocodeResource, "/api/maps/geocode")
     api.add_resource(ReverseGeocodeResource, "/api/maps/reverse-geocode")
     api.add_resource(RouteResource, "/api/maps/route")

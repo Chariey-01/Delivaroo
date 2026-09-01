@@ -519,3 +519,56 @@ PENDING -> PICKED_UP -> IN_TRANSIT -> OUT_FOR_DELIVERY -> DELIVERED
 
 `CANCELLED` is reachable from any non-terminal status. `DELIVERED` and
 `CANCELLED` are terminal — no further transitions are allowed from either.
+
+---
+
+## Notifications
+
+All notification endpoints require a JWT and return only notifications owned by
+the authenticated user. One logical notification can have in-app, email, and
+SMS delivery records; email and SMS delivery are controlled by preferences and
+environment configuration.
+
+### GET /api/notifications
+
+Returns the authenticated user's notification inbox, newest first.
+
+Query parameters: `page` (default `1`), `per_page` (default `20`, maximum
+`100`), and `unread=true`.
+
+Success: `200`
+
+```json
+{
+  "data": [{
+    "id": "uuid",
+    "event_type": "PARCEL_STATUS_CHANGED",
+    "title": "Parcel status updated",
+    "message": "Your parcel DLV-ABC is now PICKED_UP.",
+    "parcel_id": "uuid",
+    "metadata": {"tracking_number": "DLV-ABC"},
+    "read_at": null,
+    "created_at": "iso-8601"
+  }],
+  "pagination": {"page": 1, "per_page": 20, "total_items": 1, "total_pages": 1}
+}
+```
+
+### GET /api/notifications/unread-count
+
+Returns `{ "data": { "count": number } }`.
+
+### PATCH /api/notifications/:id/read
+
+Marks one owned notification as read. Returns `404` for another user's
+notification.
+
+### PATCH /api/notifications/read-all
+
+Marks every notification in the authenticated user's inbox as read.
+
+### GET and PATCH /api/notification-preferences
+
+Reads or updates boolean `email_enabled`, `sms_enabled`, `status_updates`, and
+`location_updates` preferences. SMS is safe-disabled unless `SMS_ENABLED=true`
+and a provider is explicitly configured. No real provider call runs in tests.
