@@ -26,6 +26,7 @@ export default function DeliveryCard({ order, actions }) {
       style={{
         display: 'flex',
         flexDirection: 'column',
+        minWidth: 0,
         gap: '14px',
         padding: 'clamp(16px,2vw,20px)',
         borderRadius: radius.card,
@@ -33,7 +34,8 @@ export default function DeliveryCard({ order, actions }) {
         background: color.card,
         boxShadow: hovered ? '0 22px 40px -32px rgba(28,32,31,.55)' : 'none',
         transform: hovered ? 'translateY(-2px)' : 'none',
-        transition: `transform .22s ${ease.out}, box-shadow .22s, border-color .2s`
+        transition: `transform .22s ${ease.out}, box-shadow .22s, border-color .2s`,
+        overflowWrap: 'anywhere'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -44,7 +46,7 @@ export default function DeliveryCard({ order, actions }) {
         <TransportBadge mode={transportOf(order)} priority={priorityOf(order)} size="sm" style={{ marginLeft: 'auto' }} />
       </div>
 
-      <Link to={`/orders/${order.id}`} style={{ display: 'flex', gap: '12px', color: color.ink }}>
+      <Link to={`/orders/${order.id}`} style={{ display: 'flex', minWidth: 0, gap: '12px', color: color.ink }}>
         <span
           aria-hidden="true"
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '5px', flex: 'none' }}
@@ -54,8 +56,8 @@ export default function DeliveryCard({ order, actions }) {
           <span style={{ width: '8px', height: '8px', borderRadius: '999px', background: color.orange }} />
         </span>
         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: '-.02em' }}>{order.pickup.name}</span>
-          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: '-.02em' }}>{order.destination.name}</span>
+          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: 0 }}>{order.pickup.name}</span>
+          <span style={{ fontSize: '15.5px', fontWeight: 600, letterSpacing: 0 }}>{order.destination.name}</span>
         </span>
       </Link>
 

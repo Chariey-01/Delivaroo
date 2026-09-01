@@ -35,6 +35,7 @@ export default function ResetPassword() {
     setSubmitting(true);
     try {
       await authApi.resetPassword({ token, newPassword: form.password });
+      setForm({ password: '', confirm: '' });
       setComplete(true);
     } catch (requestError) {
       setServerError(requestError.message || 'Unable to reset your password. Please try again.');
@@ -57,7 +58,7 @@ export default function ResetPassword() {
         <>
           {!token && <FormError message="This reset link is missing its token. Request a new password reset link to continue." />}
           <FormError message={serverError} />
-          <form onSubmit={submit} noValidate>
+          <form onSubmit={submit} noValidate aria-busy={submitting}>
             <Field
               label="New password"
               name="password"
@@ -68,6 +69,8 @@ export default function ResetPassword() {
               error={errors.password}
               onChange={set('password')}
               disabled={submitting || !token}
+              required
+              minLength={8}
             />
             <Field
               label="Confirm new password"
@@ -79,6 +82,8 @@ export default function ResetPassword() {
               error={errors.confirm}
               onChange={set('confirm')}
               disabled={submitting || !token}
+              required
+              minLength={8}
             />
             <Button type="submit" full disabled={submitting || !token}>
               {submitting ? 'Resetting password...' : 'Reset password'}

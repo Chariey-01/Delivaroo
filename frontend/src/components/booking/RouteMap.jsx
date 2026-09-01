@@ -112,7 +112,9 @@ export default function RouteMap({
 
   const path = useMemo(() => {
     if (flies && pickup && destination) return arcBetween(pickup, destination);
-    return route?.coordinates?.length > 1 ? route.coordinates : null;
+    return route?.coordinates?.length > 1
+      ? route.coordinates.map((point) => (Array.isArray(point) ? point : [point.lat, point.lng]))
+      : null;
   }, [flies, pickup, destination, route]);
 
   // §25 — the vehicle walks the journey rather than sitting where the API last saw it.

@@ -19,7 +19,7 @@ export default function Field({
   onKeyDown,
   inputRef,
   disabled,
-  ...rest
+  ...inputProps
 }) {
   const id = useId();
   const [focused, setFocused] = useState(false);
@@ -28,10 +28,11 @@ export default function Field({
   const inputType = isPassword && passwordVisible ? 'text' : type;
 
   return (
-    <div style={{ display: 'block' }} {...rest}>
+    <div style={{ display: 'block' }}>
       {label && <label htmlFor={id} style={control.label}>{label}</label>}
       <span style={{ position: 'relative', display: 'block' }}>
         <input
+          {...inputProps}
           id={id}
           ref={inputRef}
           type={inputType}
@@ -46,6 +47,8 @@ export default function Field({
           aria-invalid={Boolean(error)}
           aria-describedby={error || hint ? `${id}-note` : undefined}
           disabled={disabled}
+          autoCapitalize={isPassword ? 'none' : inputProps.autoCapitalize}
+          spellCheck={isPassword ? false : inputProps.spellCheck}
           style={{
             ...control.field,
             ...(isPassword ? { paddingRight: '56px' } : null),

@@ -28,6 +28,7 @@ import { fetchFleet } from '../../store/fleetSlice';
 import { selectSettings } from '../../store/adminSlice';
 import { openAuthModal, showToast } from '../../store/uiSlice';
 import { reverseGeocode } from '../../api/geo';
+import { usingMockBackend } from '../../api';
 import { formatDuration, formatKes, formatKm } from '../../lib/pricing';
 import { PACKAGE_TYPES, modeMeta, volumetricWeightKg } from '../../lib/transport';
 import { color, eyebrow, font, layout, shadow } from '../../theme';
@@ -171,6 +172,7 @@ export default function BookDelivery() {
 
   // §26 — which modes dispatch can actually book today.
   useEffect(() => {
+    if (!usingMockBackend) return;
     dispatch(fetchFleet());
   }, [dispatch]);
 

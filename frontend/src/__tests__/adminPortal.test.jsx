@@ -2,7 +2,7 @@
 // that are administrator-only. The rules live in the backend (adminAccess.test.js);
 // these are the screens that have to obey them.
 
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -11,6 +11,7 @@ import { AppRoutes } from '../App';
 import { verifyOtp } from '../store/authSlice';
 import { MOCK_OTP, seedIfEmpty, updateSettings, verifyOtp as apiVerifyOtp } from '../api/mockBackend';
 import { ROLE } from '../lib/roles';
+import { setNarrow } from '../store/uiSlice';
 
 const seeded = () => {
   seedIfEmpty();
@@ -91,6 +92,32 @@ describe('sections', () => {
 
     expect(await screen.findByText('Dispatch console')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: orders[0].id }, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('finds a record globally and carries the search into its section', async () => {
+    seeded();
+    await renderPortal('/admin');
+
+    const search = await screen.findByRole('combobox', { name: 'Search admin records' });
+    await userEvent.type(search, 'James K.');
+    const result = await screen.findByRole('option', { name: /James K\./ });
+    await userEvent.click(result);
+
+    expect(await screen.findByText('Courier roster')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: 'Search couriers' })).toHaveValue('James K.');
+    expect(screen.getByText(/Roster · 1/)).toBeInTheDocument();
+  });
+
+  it('uses a compact section menu on a narrow admin screen', async () => {
+    seeded();
+    const store = await renderPortal('/admin');
+    act(() => store.dispatch(setNarrow(true)));
+
+    const menu = await screen.findByRole('combobox', { name: 'Admin section' });
+    await userEvent.selectOptions(menu, '/admin/accounts');
+
+    expect(await screen.findByText('People and access')).toBeInTheDocument();
+    expect(menu).toHaveValue('/admin/accounts');
   });
 
   it('takes a courier off shift from the roster', async () => {
@@ -187,5 +214,16 @@ describe('platform settings', () => {
 
     await renderPortal('/admin/reports');
     expect(await screen.findByText('Drone capacity is grounded until 14:00.')).toBeInTheDocument();
+  });
+
+  it('validates support contacts before saving them', async () => {
+    await renderPortal('/admin/settings');
+
+    const email = await screen.findByRole('textbox', { name: 'Support email' });
+    await userEvent.clear(email);
+    await userEvent.type(email, 'not-an-email');
+    await userEvent.click(screen.getByRole('button', { name: 'Save contacts' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Enter a valid email address.');
   });
 });

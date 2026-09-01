@@ -10,11 +10,11 @@ export default function FormError({ message }) {
         marginBottom: '18px',
         padding: '12px 15px',
         borderRadius: radius.field,
-        border: `1.5px solid ${color.danger}`,
+        border: `1.5px solid ${color.orangeDeep}`,
         background: 'rgba(179,38,30,.08)',
         fontSize: '14px',
         lineHeight: 1.5,
-        color: color.danger,
+        color: color.orangeDeep,
       }}
     >
       {message}

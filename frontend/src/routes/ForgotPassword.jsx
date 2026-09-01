@@ -46,7 +46,7 @@ export default function ForgotPassword() {
       ) : (
         <>
           <FormError message={error} />
-          <form onSubmit={submit} noValidate>
+          <form onSubmit={submit} noValidate aria-busy={submitting}>
             <Field
               label="Email address"
               name="email"
@@ -60,6 +60,7 @@ export default function ForgotPassword() {
                 setFieldError(null);
               }}
               disabled={submitting}
+              required
             />
             <Button type="submit" full disabled={submitting}>
               {submitting ? 'Sending reset link...' : 'Send reset link'}

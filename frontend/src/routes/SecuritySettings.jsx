@@ -57,10 +57,10 @@ export default function SecuritySettings() {
         </p>
         <FormError message={serverError} />
         {success && <div role="status" style={{ marginBottom: '18px', padding: '12px 15px', borderRadius: radius.field, background: 'rgba(31,122,84,.1)', color: color.ink, fontSize: '14px' }}>{success}</div>}
-        <form onSubmit={submit} noValidate>
-          <Field label="Current password" name="currentPassword" type="password" autoComplete="current-password" value={form.currentPassword} error={errors.currentPassword} onChange={set('currentPassword')} disabled={submitting} />
-          <Field label="New password" name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={form.password} error={errors.password} onChange={set('password')} disabled={submitting} />
-          <Field label="Confirm new password" name="confirm" type="password" autoComplete="new-password" placeholder="Repeat your new password" value={form.confirm} error={errors.confirm} onChange={set('confirm')} disabled={submitting} />
+        <form onSubmit={submit} noValidate aria-busy={submitting}>
+          <Field label="Current password" name="currentPassword" type="password" autoComplete="current-password" value={form.currentPassword} error={errors.currentPassword} onChange={set('currentPassword')} disabled={submitting} required />
+          <Field label="New password" name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={form.password} error={errors.password} onChange={set('password')} disabled={submitting} required minLength={8} />
+          <Field label="Confirm new password" name="confirm" type="password" autoComplete="new-password" placeholder="Repeat your new password" value={form.confirm} error={errors.confirm} onChange={set('confirm')} disabled={submitting} required minLength={8} />
           <Button type="submit" disabled={submitting}>
             {submitting ? 'Updating password...' : 'Update password'}
           </Button>

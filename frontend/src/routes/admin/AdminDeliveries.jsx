@@ -28,6 +28,7 @@ import Chip from '../../components/ui/Chip';
 import EmptyState from '../../components/ui/EmptyState';
 import StatTile from '../../components/ui/StatTile';
 import Icon from '../../components/Icon';
+import useRouteSearch from '../../hooks/useRouteSearch';
 
 const FILTERS = [
   { id: 'ALL', label: 'All' },
@@ -66,7 +67,7 @@ export default function AdminDeliveries() {
   const stats = useSelector(selectOrderStats);
   const selectedId = useSelector((state) => state.orders.selectedId);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useRouteSearch();
   const [filter, setFilter] = useState('ALL');
   const [sort, setSort] = useState(SORTS[0].id);
 
@@ -79,7 +80,7 @@ export default function AdminDeliveries() {
       .filter((order) => {
         if (filter !== 'ALL' && order.status !== filter) return false;
         if (!needle) return true;
-        return [order.id, order.pickup.label, order.destination.label, order.sender?.name, order.courier?.name]
+        return [order.id, order.trackingNumber, order.pickup.label, order.destination.label, order.sender?.name, order.courier?.name]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(needle));
       })
