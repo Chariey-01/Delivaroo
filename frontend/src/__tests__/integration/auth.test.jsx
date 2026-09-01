@@ -95,7 +95,7 @@ describe('login', () => {
     renderApp({ route: '/login', preloadedState: signedOutState });
 
     await type(user, /email address/i, 'customer@delivaroo.test');
-    await type(user, /password/i, 'supersecret');
+    await type(user, /^password$/i, 'supersecret');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     expect(await screen.findByText(/hello, cassie/i)).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('login', () => {
     renderApp({ route: '/login', preloadedState: signedOutState });
 
     await type(user, /email address/i, 'customer@delivaroo.test');
-    await type(user, /password/i, 'wrong-password');
+    await type(user, /^password$/i, 'wrong-password');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email or password');
@@ -128,11 +128,11 @@ describe('login', () => {
     expect(await screen.findByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
 
     await type(user, /email address/i, 'admin@delivaroo.test');
-    await type(user, /password/i, 'supersecret');
+    await type(user, /^password$/i, 'supersecret');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     // ...and afterwards they land on /admin, not on the generic dashboard.
-    expect(await screen.findByRole('heading', { name: /admin portal/i })).toBeInTheDocument();
+    expect(await screen.findByText('Operations at a glance')).toBeInTheDocument();
   });
 });
 
@@ -147,13 +147,14 @@ describe('logout', () => {
     renderApp({ route: '/login', preloadedState: signedOutState });
 
     await type(user, /email address/i, 'customer@delivaroo.test');
-    await type(user, /password/i, 'supersecret');
+    await type(user, /^password$/i, 'supersecret');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
     await screen.findByText(/hello, cassie/i);
 
-    await user.click(screen.getByRole('button', { name: /sign out/i }));
+    await user.click(screen.getByRole('button', { name: /cassie customer/i }));
+    await user.click(screen.getByRole('menuitem', { name: /sign out/i }));
 
     await waitFor(() => expect(getAccessToken()).toBeNull());
-    expect(await screen.findByRole('link', { name: /sign up/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /sign in/i })).toBeInTheDocument();
   });
 });
