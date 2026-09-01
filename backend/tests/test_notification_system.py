@@ -6,9 +6,11 @@ from app.services.notification_service import (
     CHANNEL_IN_APP,
     CHANNEL_SMS,
     DELIVERY_DELIVERED,
+    DELIVERY_PENDING,
     DELIVERY_SKIPPED,
     _send_email_delivery,
     create_notification,
+    process_pending_email_deliveries,
 )
 from tests.conftest import auth_headers_for
 
@@ -61,6 +63,34 @@ def test_notification_email_delivery_is_mocked_and_recorded(app, db_session, sam
     send_email.assert_called_once_with(sample_user.email, notification.title, notification.message)
     assert saved.status == DELIVERY_DELIVERED
     assert saved.attempt_count == 1
+
+
+def test_pending_email_delivery_can_be_retried(app, db_session, sample_user):
+    notification, _ = create_notification(
+        recipient_user_id=sample_user.id,
+        event_type="WELCOME",
+        idempotency_key="welcome:retry-test",
+    )
+    delivery = next(item for item in notification.deliveries if item.channel == CHANNEL_EMAIL)
+
+    with patch(
+        "app.services.notification_service._send_email",
+        side_effect=[RuntimeError("provider unavailable"), {}],
+    ):
+        assert process_pending_email_deliveries(app) == 1
+        db_session.expire_all()
+        first_attempt = db_session.get(NotificationDelivery, delivery.id)
+        assert first_attempt.status == DELIVERY_PENDING
+        assert first_attempt.attempt_count == 1
+        assert first_attempt.last_error == "email delivery failed"
+
+        assert process_pending_email_deliveries(app) == 1
+
+    db_session.expire_all()
+    delivered = db_session.get(NotificationDelivery, delivery.id)
+    assert delivered.status == DELIVERY_DELIVERED
+    assert delivered.attempt_count == 2
+    assert delivered.last_error is None
 
 
 def test_inbox_is_paginated_owned_and_marked_read(client, app, db_session, sample_user, sample_admin):

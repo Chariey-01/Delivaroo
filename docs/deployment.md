@@ -41,8 +41,11 @@ Set these Render environment variables:
 | `GOOGLE_MAPS_DEFAULT_REGION` | `KE` |
 | `SMTP_HOST` | SMTP hostname used for password-reset email |
 | `SMTP_PORT` | SMTP port, usually `587` |
+| `SMTP_USE_TLS` | `true` for STARTTLS providers such as Gmail |
+| `SMTP_TIMEOUT_SECONDS` | Provider connection timeout, for example `10` |
 | `SMTP_USERNAME` | SMTP account username |
-| `SMTP_PASSWORD` | SMTP account password or provider app password |
+| `SMTP_PASSWORD` | Provider app password or SMTP credential, never the normal account password |
+| `SMTP_SENDER_NAME` | Transactional sender identity, normally `Delivaroo` |
 | `SMTP_SENDER_EMAIL` | Verified sender address for password-reset email |
 | `PASSWORD_RESET_URL` | Public frontend reset route, for example `https://delivaroo.vercel.app/reset-password` |
 
@@ -96,3 +99,25 @@ https://YOUR-RENDER-SERVICE.onrender.com/api/...
 A CORS error means the current frontend origin is missing from Render's
 `CORS_ORIGINS`. A 404 whose response is Vercel HTML usually means `VITE_API_URL`
 was blank when the frontend was built; set it and redeploy the frontend.
+
+## 4. Notification delivery operations
+
+Pending email deliveries are persisted when an SMTP attempt fails. Run a bounded
+retry pass from the backend service environment with:
+
+```bash
+python process_notification_deliveries.py
+```
+
+To send exactly one explicitly approved test email, configure
+`ALLOW_REAL_NOTIFICATION_TESTS=true` and `TEST_NOTIFICATION_EMAIL` outside Git,
+then run:
+
+```bash
+python notification_smoke.py --confirm
+```
+
+The command masks the recipient before sending and reports only whether SMTP
+accepted the message. It refuses to send without both the environment flag and
+the command-line confirmation. SMS remains disabled until the team selects and
+configures a provider and adds verified phone-number support.

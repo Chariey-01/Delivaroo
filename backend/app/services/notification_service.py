@@ -142,6 +142,28 @@ def dispatch_notification_deliveries(app, notification):
             threading.Thread(target=_send_email_delivery, args=(app, delivery.id), daemon=True).start()
 
 
+def process_pending_email_deliveries(app, limit=100):
+    """Retry a bounded batch of persisted email deliveries once."""
+
+    with app.app_context():
+        delivery_ids = [
+            delivery.id
+            for delivery in NotificationDelivery.query.filter(
+                NotificationDelivery.channel == CHANNEL_EMAIL,
+                NotificationDelivery.status == DELIVERY_PENDING,
+                NotificationDelivery.attempt_count < MAX_DELIVERY_ATTEMPTS,
+            )
+            .order_by(NotificationDelivery.created_at, NotificationDelivery.id)
+            .limit(limit)
+            .all()
+        ]
+
+    for delivery_id in delivery_ids:
+        _send_email_delivery(app, delivery_id)
+
+    return len(delivery_ids)
+
+
 def notify_event(app, *, recipient_user_id, actor_user_id=None, event_type, parcel=None, metadata=None, idempotency_key):
     notification, created = create_notification(
         recipient_user_id=recipient_user_id,

@@ -7,7 +7,7 @@ class NotificationPreference(db.Model):
     __tablename__ = "notification_preferences"
 
     id = db.Column(db.UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False, unique=True, index=True)
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False, unique=True)
     email_enabled = db.Column(db.Boolean, nullable=False, default=True)
     sms_enabled = db.Column(db.Boolean, nullable=False, default=False)
     status_updates = db.Column(db.Boolean, nullable=False, default=True)
