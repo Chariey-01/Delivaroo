@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./routes/AppLayout";
 import LandingPage from "./routes/LandingPage";
 import BookPage from "./routes/BookPage";
@@ -18,6 +18,17 @@ import AdminNotifications from "./routes/admin/AdminNotifications";
 import AdminAudit from "./routes/admin/AdminAudit";
 import AdminSettings from "./routes/admin/AdminSettings";
 import NotFound from "./routes/NotFound";
+import Login from "./routes/Login";
+import Signup from "./routes/Signup";
+import ForgotPassword from "./routes/ForgotPassword";
+import ResetPassword from "./routes/ResetPassword";
+import SecuritySettings from "./routes/SecuritySettings";
+import Dashboard from "./routes/Dashboard";
+import Notifications from "./routes/Notifications";
+import Unauthorized from "./routes/Unauthorized";
+import ProtectedRoute from "./components/routing/ProtectedRoute";
+import AdminRoute from "./components/routing/AdminRoute";
+import PublicOnlyRoute from "./components/routing/PublicOnlyRoute";
 
 /** Split out so tests can mount the same route table inside a MemoryRouter. */
 export function AppRoutes() {
@@ -31,18 +42,33 @@ export function AppRoutes() {
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/orders/:id" element={<OrderDetails />} />
         <Route path="/orders/:id/confirmation" element={<Confirmation />} />
-        {/* §27 — the admin portal: one gated shell, one section per job. */}
-        <Route path="/admin" element={<AdminPortal />}>
-          <Route index element={<AdminOverview />} />
-          <Route path="deliveries" element={<AdminDeliveries />} />
-          <Route path="couriers" element={<AdminCouriers />} />
-          <Route path="capacity" element={<AdminCapacity />} />
-          <Route path="accounts" element={<AdminAccounts />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="notifications" element={<AdminNotifications />} />
-          <Route path="audit" element={<AdminAudit />} />
-          <Route path="settings" element={<AdminSettings />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
         </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings/security" element={<SecuritySettings />} />
+        </Route>
+        {/* §27 — the admin portal: one gated shell, one section per job. */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminPortal />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="deliveries" element={<AdminDeliveries />} />
+            <Route path="couriers" element={<AdminCouriers />} />
+            <Route path="capacity" element={<AdminCapacity />} />
+            <Route path="accounts" element={<AdminAccounts />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="audit" element={<AdminAudit />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+        </Route>
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

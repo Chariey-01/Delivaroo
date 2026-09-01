@@ -86,8 +86,12 @@ describe('routes', () => {
   });
 
   it('gates the admin console behind an admin session', async () => {
+    localStorage.setItem(
+      'deliveroo.session',
+      JSON.stringify({ id: 'u-customer', name: 'Cassie', role: 'CUSTOMER', isAdmin: false })
+    );
     renderAt('/admin');
-    expect(await screen.findByText('Admin access required.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /don't have access/i })).toBeInTheDocument();
   });
 
   it('asks for sign-in before listing personal deliveries', async () => {
