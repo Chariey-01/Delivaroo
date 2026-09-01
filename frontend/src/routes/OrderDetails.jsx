@@ -17,7 +17,7 @@ import {
 } from '../lib/orderStatus';
 import { etaClock, formatDuration, formatKes, formatKm, isWeightVerified, priceOrder } from '../lib/pricing';
 import { modeMeta, priorityOf, priorityOption, transportOf } from '../lib/transport';
-import { color, eyebrow, font, radius } from '../theme';
+import { color, eyebrow, font, radius, shadow } from '../theme';
 import PageShell from './PageShell';
 import { TrackingSkeleton } from '../components/ui/Skeleton';
 import RouteMap from '../components/booking/RouteMap';
@@ -36,14 +36,15 @@ const detailRow = (index) => ({
   justifyContent: 'space-between',
   gap: '18px',
   padding: '12px 0',
-  borderTop: index ? '1px solid rgba(17,17,17,.1)' : 'none',
+  borderTop: index ? `1px solid ${color.border}` : 'none',
   fontSize: '14.5px'
 });
 
 const card = {
   borderRadius: radius.card,
-  border: '1px solid rgba(17,17,17,.12)',
-  background: color.white,
+  border: `1px solid ${color.border}`,
+  background: color.card,
+  boxShadow: shadow.card,
   padding: 'clamp(18px,2.2vw,26px)'
 };
 
@@ -126,10 +127,16 @@ export default function OrderDetails() {
   const weighed = isWeightVerified(order.parcel);
   const pricing = order.pricing;
 
+  // The weight the fare was actually charged on, which is the measured one once the
+  // parcel has been on the scale. It goes under the weight charge rather than being
+  // left for the customer to infer from the total.
+  const chargeableKg = pricing.chargeableWeightKg ?? pricing.weightKg;
+  const volumetric = chargeableKg > (order.parcel?.weightKg || 0) + 0.001;
+
   const charges = [
     pricing.baseFare > 0 && ['Base fare', formatKes(pricing.baseFare)],
     ['Distance charge', formatKes(pricing.distanceCost)],
-    ['Weight charge', formatKes(pricing.weightCost)],
+    ['Weight charge', formatKes(pricing.weightCost), `${chargeableKg} kg${volumetric ? ' volumetric' : ''}`],
     pricing.priorityCost > 0 && [`${priorityOption(priority).label} priority`, formatKes(pricing.priorityCost)],
     [
       weighed ? 'Total · final' : 'Total · estimated',
@@ -186,16 +193,19 @@ export default function OrderDetails() {
           </Section>
 
           <Section title={`Price · ${meta.label}`}>
-            {charges.map(([label, value], index) => (
+            {charges.map(([label, value, note], index) => (
               <div key={label} style={detailRow(index)}>
-                <span style={{ color: color.muted, flex: 'none' }}>{label}</span>
+                <span style={{ color: color.muted, flex: 'none' }}>
+                  {label}
+                  {note && <span style={{ display: 'block', marginTop: '2px', fontSize: '12px' }}>{note}</span>}
+                </span>
                 <strong style={{ color: color.ink, textAlign: 'right' }}>{value}</strong>
               </div>
             ))}
             {!weighed && (
               <p style={{ margin: '12px 0 0', fontSize: '12.5px', lineHeight: 1.5, color: color.muted }}>
                 This fee is an estimate based on the weight you gave us. We weigh the package at
-                pickup and confirm the final price then — you can cancel any time before delivery.
+                pickup and confirm the final price then. You can cancel any time before delivery.
               </p>
             )}
           </Section>
@@ -238,7 +248,7 @@ export default function OrderDetails() {
             courier={order.courier}
             presentLocation={order.presentLocation}
             mode={mode}
-            moving={!isTerminal(order.status)}
+            journey={order}
             height="clamp(280px,38vw,420px)"
           />
 
@@ -259,12 +269,12 @@ export default function OrderDetails() {
         maxWidth="540px"
         placement={narrow ? 'sheet' : 'center'}
       >
-        <h2 style={{ margin: '0 0 8px', fontFamily: font.display, fontWeight: 700, fontSize: 'clamp(24px,3.4vw,32px)', textTransform: 'uppercase', color: color.ink }}>
+        <h2 style={{ margin: '0 0 8px', fontFamily: font.display, fontWeight: 600, fontSize: 'clamp(24px,3.4vw,32px)', color: color.ink }}>
           Change destination
         </h2>
         <p style={{ margin: '0 0 20px', fontSize: '14.5px', lineHeight: 1.55, color: color.body }}>
-          We&apos;ll re-route from {order.pickup.name} and re-price it on the {meta.label.toLowerCase()} tariff
-          before anything is confirmed.
+          We&apos;ll plan a new route from {order.pickup.name} and work the price out again on the{' '}
+          {meta.label.toLowerCase()} tariff before anything is confirmed.
         </p>
 
         <div
@@ -274,7 +284,7 @@ export default function OrderDetails() {
             padding: '12px 14px',
             marginBottom: '16px',
             borderRadius: radius.field,
-            background: 'rgba(17,17,17,.04)',
+            background: 'rgba(28,32,31,.04)',
             fontSize: '13.5px',
             color: color.body
           }}
@@ -309,8 +319,8 @@ export default function OrderDetails() {
                 marginTop: '14px',
                 padding: '16px 18px',
                 borderRadius: radius.card,
-                background: 'rgba(17,17,17,.04)',
-                border: '1px solid rgba(17,17,17,.1)'
+                background: 'rgba(28,32,31,.04)',
+                border: `1px solid ${color.border}`
               }}
             >
               {[
@@ -323,15 +333,15 @@ export default function OrderDetails() {
               ].map(([label, next, was]) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '6px 0', fontSize: '14px' }}>
                   <span style={{ color: color.muted }}>{label}</span>
-                  <span style={{ color: color.ink, fontWeight: 700 }}>
+                  <span style={{ color: color.ink, fontWeight: 600 }}>
                     {next} <span style={{ color: color.muted, fontWeight: 500 }}>was {was}</span>
                   </span>
                 </div>
               ))}
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(17,17,17,.12)' }}>
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: `1px solid ${color.border}` }}>
                 <div style={{ ...eyebrow, fontSize: '10px', marginBottom: '8px' }}>Updated delivery price</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: font.display, fontWeight: 700, fontSize: 'clamp(30px,4vw,42px)', lineHeight: 1, color: color.ink }}>
+                  <span style={{ fontFamily: font.display, fontWeight: 600, fontSize: 'clamp(30px,4vw,42px)', lineHeight: 1, color: color.ink }}>
                     {formatKes(updatedQuote.total)}
                   </span>
                   {updatedQuote.total !== pricing.total && (
@@ -361,13 +371,13 @@ export default function OrderDetails() {
         maxWidth="440px"
         placement={narrow ? 'sheet' : 'center'}
       >
-        <h2 style={{ margin: '0 0 10px', fontFamily: font.display, fontWeight: 700, fontSize: 'clamp(24px,3.4vw,32px)', textTransform: 'uppercase', color: color.ink }}>
+        <h2 style={{ margin: '0 0 10px', fontFamily: font.display, fontWeight: 600, fontSize: 'clamp(24px,3.4vw,32px)', color: color.ink }}>
           Cancel this delivery?
         </h2>
         <p style={{ margin: '0 0 8px', fontSize: '15px', lineHeight: 1.55, color: color.body }}>
           Your delivery has not yet been completed. Are you sure you want to cancel it?
         </p>
-        <p style={{ margin: '0 0 22px', fontSize: '14px', fontWeight: 700, color: color.orangeDeep }}>
+        <p style={{ margin: '0 0 22px', fontSize: '14px', fontWeight: 600, color: color.orangeDeep }}>
           This action cannot be undone.
         </p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
