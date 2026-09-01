@@ -42,15 +42,6 @@ from app.resources.notification import (
 def init_resources(app):
     api = Api(app)
 
-    api.add_resource(RegisterResource, "/api/auth/register")
-    api.add_resource(LoginResource, "/api/auth/login")
-    api.add_resource(RefreshResource, "/api/auth/refresh")
-    api.add_resource(LogoutResource, "/api/auth/logout")
-    api.add_resource(ForgotPasswordResource, "/api/auth/forgot-password")
-    api.add_resource(ResetPasswordResource, "/api/auth/reset-password")
-    api.add_resource(ParcelResource, "/api/parcels/<uuid:parcel_id>")
-    api.add_resource(ParcelCancelResource, "/parcels/<uuid:parcel_id>")
-    api.add_resource(MeResource, "/api/auth/me")
     api.add_resource(HealthResource, "/api/health")
     api.add_resource(RegisterResource, "/auth/register", "/api/auth/register")
     api.add_resource(LoginResource, "/auth/login", "/api/auth/login")
