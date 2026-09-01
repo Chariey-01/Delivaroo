@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectNotifications } from '../../store/adminSlice';
-import { color, control, font, radius } from '../../theme';
+import { color, control, font, radius, shadow } from '../../theme';
 import Panel from '../../components/admin/Panel';
 import EmptyState from '../../components/ui/EmptyState';
 import Icon from '../../components/Icon';
@@ -50,7 +50,7 @@ export default function AdminNotifications() {
 
       <Panel
         title={`Outbox · ${notifications.length}`}
-        note="Held locally, newest first. Pointing this at a mail service is a one-function change; until then, this is where a message can be read back to a customer."
+        note="Held locally, newest first. Pointing this at a mail service is a change to a single function; until then, this is where a message can be read back to a customer."
       >
         {visible.length === 0 ? (
           <EmptyState
@@ -59,7 +59,7 @@ export default function AdminNotifications() {
             body={
               notifications.length
                 ? 'Clear the search to see the rest of the outbox.'
-                : 'A message is written whenever a delivery is assigned, weighed, re-routed or completed.'
+                : 'A message is written whenever a delivery is assigned, weighed, rerouted or completed.'
             }
           />
         ) : (
@@ -72,8 +72,9 @@ export default function AdminNotifications() {
                   gap: '6px',
                   padding: '14px 16px',
                   borderRadius: radius.card,
-                  border: '1px solid rgba(17,17,17,.1)',
-                  background: color.white
+                  border: `1px solid ${color.border}`,
+                  background: color.card,
+                  boxShadow: shadow.card
                 }}
               >
                 <span style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', alignItems: 'baseline' }}>
