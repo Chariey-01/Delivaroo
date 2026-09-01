@@ -18,6 +18,7 @@ import { PERMISSION, ROLE_LABEL, can, isStaff, roleOf } from '../../lib/roles';
 import { usingMockBackend } from '../../api';
 import { color, eyebrow, font, radius } from '../../theme';
 import AdminNav from '../../components/admin/AdminNav';
+import AdminSearch from '../../components/admin/AdminSearch';
 import { sectionForPath } from '../../components/admin/adminSections';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/Icon';
@@ -84,6 +85,7 @@ export default function AdminPortal() {
   const refresh = useCallback(() => {
     if (!staff) return;
     dispatch(fetchAllOrders());
+    if (!usingMockBackend) return;
     dispatch(fetchFleet());
     dispatch(fetchSettings());
     dispatch(fetchCouriers());
@@ -138,6 +140,8 @@ export default function AdminPortal() {
           </span>
         </div>
       ) : null}
+
+      <AdminSearch />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(20px,3vw,40px)', alignItems: 'flex-start' }}>
         <AdminNav />
