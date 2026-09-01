@@ -572,3 +572,9 @@ Marks every notification in the authenticated user's inbox as read.
 Reads or updates boolean `email_enabled`, `sms_enabled`, `status_updates`, and
 `location_updates` preferences. SMS is safe-disabled unless `SMS_ENABLED=true`
 and a provider is explicitly configured. No real provider call runs in tests.
+
+### PATCH /api/admin/parcels/:id/delivery-agent
+
+Admin-only endpoint to assign an active delivery agent to a parcel. It accepts
+`delivery_agent_id` (or `deliveryAgentId`) and creates a `PARCEL_AGENT_ASSIGNED`
+notification for the parcel owner when the assignment changes.

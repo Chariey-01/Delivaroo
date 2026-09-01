@@ -12,6 +12,7 @@ from app.resources.auth import (
 from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.admin_status import AdminParcelStatusResource
+from app.resources.admin_delivery_agent import AdminParcelDeliveryAgentResource
 from app.resources.parcel import (
     ParcelHistoryResource,
     ParcelListResource,
@@ -82,6 +83,11 @@ def init_resources(app):
         AdminParcelLocationResource,
         "/admin/parcels/<uuid:parcel_id>/location",
         "/api/admin/parcels/<uuid:parcel_id>/location",
+    )
+    api.add_resource(
+        AdminParcelDeliveryAgentResource,
+        "/admin/parcels/<uuid:parcel_id>/delivery-agent",
+        "/api/admin/parcels/<uuid:parcel_id>/delivery-agent",
     )
 
     api.add_resource(AddressListResource, "/addresses", "/api/addresses")

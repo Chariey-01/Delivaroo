@@ -48,6 +48,8 @@ def _event_content(event_type, parcel=None, metadata=None):
         return "Parcel cancelled", f"Your parcel {tracking_number} has been cancelled."
     if event_type == "PARCEL_DESTINATION_UPDATED":
         return "Destination updated", f"The destination for parcel {tracking_number} has been updated."
+    if event_type == "PARCEL_AGENT_ASSIGNED":
+        return "Delivery agent assigned", f"A delivery agent has been assigned to parcel {tracking_number}."
     return "Delivaroo update", "There is an update on your Delivaroo account."
 
 

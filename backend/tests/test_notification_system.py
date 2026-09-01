@@ -154,3 +154,31 @@ def test_registration_and_parcel_lifecycle_create_notifications(
     cancellation = client.delete(f"/api/parcels/{parcel_id}/cancel", headers=headers)
     assert cancellation.status_code == 200
     assert Notification.query.filter_by(event_type="PARCEL_CANCELLED").count() == 1
+
+
+def test_admin_assignment_creates_a_parcel_notification(
+    client, app, db_session, sample_admin, sample_parcel
+):
+    from app.models import DeliveryAgent
+
+    agent = DeliveryAgent(
+        name="Delivery Agent",
+        email="delivery-agent@example.com",
+        phone="+254700000000",
+        transport_mode="MOTORBIKE",
+        is_active=True,
+    )
+    db_session.add(agent)
+    db_session.commit()
+
+    response = client.patch(
+        f"/api/admin/parcels/{sample_parcel.id}/delivery-agent",
+        json={"delivery_agent_id": str(agent.id)},
+        headers=auth_headers_for(app, sample_admin),
+    )
+
+    assert response.status_code == 200
+    notification = Notification.query.filter_by(event_type="PARCEL_AGENT_ASSIGNED").one()
+    assert notification.parcel_id == sample_parcel.id
+    assert notification.recipient_user_id == sample_parcel.user_id
+    assert notification.actor_user_id == sample_admin.id
