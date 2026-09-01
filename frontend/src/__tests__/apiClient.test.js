@@ -3,7 +3,12 @@
 // tested once here rather than re-asserted in each feature suite.
 
 import { ApiError, api } from '../api/client';
-import { clearTokens, getAccessToken, setTokens } from '../lib/tokenStorage';
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+} from '../lib/tokenStorage';
 
 const respond = (status, body) => ({
   ok: status >= 200 && status < 300,
@@ -107,6 +112,36 @@ describe('api client', () => {
     // The replay must carry the new token, not the stale one.
     expect(global.fetch.mock.calls[2][1].headers.Authorization).toBe('Bearer fresh');
     expect(getAccessToken()).toBe('fresh');
+    expect(getRefreshToken()).toBe('refresh-token');
+  });
+
+  test('concurrent 401 responses share one refresh request', async () => {
+    setTokens({ access: 'stale', refresh: 'refresh-token' });
+    let refreshCalls = 0;
+
+    global.fetch = jest.fn(async (url, options) => {
+      if (url === '/api/auth/refresh') {
+        refreshCalls += 1;
+        await Promise.resolve();
+        return respond(200, { data: { access_token: 'fresh' } });
+      }
+      if (options.headers.Authorization === 'Bearer stale') {
+        return respond(401, { message: 'Token has expired' });
+      }
+      return respond(200, { data: { path: url } });
+    });
+
+    await expect(
+      Promise.all([api('/parcels'), api('/notifications')]),
+    ).resolves.toEqual([
+      { path: '/api/parcels' },
+      { path: '/api/notifications' },
+    ]);
+
+    expect(refreshCalls).toBe(1);
+    expect(global.fetch).toHaveBeenCalledTimes(5);
+    expect(getAccessToken()).toBe('fresh');
+    expect(getRefreshToken()).toBe('refresh-token');
   });
 
   test('a 401 with no refresh token clears the session instead of looping', async () => {

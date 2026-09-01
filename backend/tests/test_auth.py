@@ -128,6 +128,58 @@ def test_refresh_token_works(client):
     assert response.get_json()["access_token"]
 
 
+def test_missing_refresh_token_is_rejected(client):
+    response = client.post("/auth/refresh", json={})
+
+    assert response.status_code == 400
+    assert response.get_json()["message"] == "Refresh token is required"
+
+
+def test_refreshed_access_token_preserves_current_user_role(client):
+    client.post(
+        "/auth/register",
+        json={"email": "refresh-role@example.com", "password": "Password123!"},
+    )
+    user = User.query.filter_by(email="refresh-role@example.com").one()
+    user.role = "admin"
+    db.session.commit()
+    login = client.post(
+        "/auth/login",
+        json={"email": "refresh-role@example.com", "password": "Password123!"},
+    )
+
+    refreshed = client.post(
+        "/auth/refresh",
+        json={"refresh_token": login.get_json()["refresh_token"]},
+    )
+    admin_response = client.get(
+        "/api/admin/parcels",
+        headers={"Authorization": f"Bearer {refreshed.get_json()['access_token']}"},
+    )
+
+    assert refreshed.status_code == 200
+    assert admin_response.status_code == 200
+
+
+def test_regular_user_refresh_does_not_gain_admin_access(client):
+    registration = client.post(
+        "/auth/register",
+        json={"email": "refresh-user@example.com", "password": "Password123!"},
+    )
+    refreshed = client.post(
+        "/auth/refresh",
+        json={"refresh_token": registration.get_json()["refresh_token"]},
+    )
+
+    admin_response = client.get(
+        "/api/admin/parcels",
+        headers={"Authorization": f"Bearer {refreshed.get_json()['access_token']}"},
+    )
+
+    assert refreshed.status_code == 200
+    assert admin_response.status_code == 403
+
+
 def test_revoked_refresh_token_rejected(client):
     client.post(
         "/auth/register",
