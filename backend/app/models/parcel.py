@@ -1,5 +1,8 @@
 from uuid import uuid4
+from datetime import datetime, timezone
+from sqlalchemy.orm import validates
 from app.extensions import db
+from app.models.transport import TRANSPORT_MODES
 
 
 class Parcel(db.Model):
@@ -24,6 +27,16 @@ class Parcel(db.Model):
         db.UUID(as_uuid=True),
         db.ForeignKey("weight_categories.id"),
         nullable=False,
+    )
+    delivery_agent_id = db.Column(
+        db.UUID(as_uuid=True),
+        db.ForeignKey("delivery_agents.id"),
+        nullable=True,
+    )
+    transport_mode = db.Column(
+        db.String(20),
+        nullable=False,
+        default="MOTORBIKE",
     )
     pickup_address = db.Column(
         db.String(255),
@@ -69,12 +82,14 @@ class Parcel(db.Model):
     created_at = db.Column(
         db.DateTime,
         nullable=False,
+        default=lambda: datetime.now(timezone.utc),
         server_default=db.func.now(),
     )
     updated_at = db.Column(
         db.DateTime,
         nullable=False,
         server_default=db.func.now(),
+        onupdate=db.func.now(),
     )
 
     status_history = db.relationship(
@@ -83,6 +98,12 @@ class Parcel(db.Model):
         cascade="all, delete-orphan",
         order_by="StatusHistory.created_at",
     )
+    delivery_agent = db.relationship("DeliveryAgent", back_populates="parcels")
+    @validates("transport_mode")
+    def validate_transport_mode(self, key, transport_mode):
+        if transport_mode not in TRANSPORT_MODES:
+            raise ValueError("Invalid transport mode")
+        return transport_mode
 
     def to_dict(self):
         return {
@@ -90,6 +111,10 @@ class Parcel(db.Model):
             "tracking_number": self.tracking_number,
             "user_id": str(self.user_id),
             "weight_category_id": str(self.weight_category_id),
+            "delivery_agent_id": str(self.delivery_agent_id) if self.delivery_agent_id else None,
+            "delivery_agent": self.delivery_agent.to_dict() if self.delivery_agent else None,
+            "transport_mode": self.transport_mode,
+            "transport_label": TRANSPORT_MODES[self.transport_mode],
             "pickup_address": self.pickup_address,
             "pickup_latitude": float(self.pickup_latitude) if self.pickup_latitude is not None else None,
             "pickup_longitude": float(self.pickup_longitude) if self.pickup_longitude is not None else None,

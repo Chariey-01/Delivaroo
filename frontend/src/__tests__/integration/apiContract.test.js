@@ -99,6 +99,30 @@ describe('auth endpoints', () => {
     await expect(authApi.logout()).resolves.toBeNull();
     expect(getAccessToken()).toBeNull();
   });
+
+  test('password recovery uses the existing auth endpoints without storing a session', async () => {
+    const calls = mockApi({
+      'POST /api/auth/forgot-password': ok(null, 'If the email exists, a password reset link will be sent'),
+      'POST /api/auth/reset-password': ok(null, 'Password reset successfully'),
+    });
+
+    await authApi.requestPasswordReset({ email: '  A@B.C  ' });
+    await authApi.resetPassword({ token: 'opaque-token', newPassword: 'new-password' });
+
+    expect(calls[0].body).toEqual({ email: 'a@b.c' });
+    expect(calls[1].body).toEqual({ token: 'opaque-token', new_password: 'new-password' });
+    expect(getAccessToken()).toBeNull();
+  });
+
+  test('change password uses the signed-in endpoint and field names', async () => {
+    setTokens({ access: 'token' });
+    const calls = mockApi({ 'POST /api/auth/change-password': ok(null, 'Password changed successfully') });
+
+    await authApi.changePassword({ currentPassword: 'old-password', newPassword: 'new-password' });
+
+    expect(calls[0].options.headers.Authorization).toBe('Bearer token');
+    expect(calls[0].body).toEqual({ current_password: 'old-password', new_password: 'new-password' });
+  });
 });
 
 describe('parcel endpoints', () => {
@@ -183,4 +207,5 @@ describe('parcel endpoints', () => {
       'You are not authorized to view this parcel',
     );
   });
+
 });
