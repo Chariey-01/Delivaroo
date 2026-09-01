@@ -8,6 +8,12 @@ from app.models.transport import TRANSPORT_MODES
 
 class DeliveryAgent(db.Model):
     __tablename__ = "delivery_agents"
+    __table_args__ = (
+        db.CheckConstraint(
+            "transport_mode IN ('MOTORBIKE', 'TRUCK', 'SHIP', 'AIR')",
+            name="ck_delivery_agents_transport_mode",
+        ),
+    )
 
     id = db.Column(db.UUID(as_uuid=True), primary_key=True, default=uuid4)
     name = db.Column(db.String(120), nullable=False)

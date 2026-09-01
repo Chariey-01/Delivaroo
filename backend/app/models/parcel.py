@@ -7,6 +7,12 @@ from app.models.transport import TRANSPORT_MODES
 
 class Parcel(db.Model):
     __tablename__ = "parcels"
+    __table_args__ = (
+        db.CheckConstraint(
+            "transport_mode IN ('MOTORBIKE', 'TRUCK', 'SHIP', 'AIR')",
+            name="ck_parcels_transport_mode",
+        ),
+    )
 
     id = db.Column(
         db.UUID(as_uuid=True),
