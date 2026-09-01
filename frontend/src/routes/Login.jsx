@@ -30,6 +30,7 @@ export default function Login() {
   const set = (key) => (value) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: null }));
+    if (serverError) dispatch(clearAuthError());
   };
 
   const submit = async (event) => {
@@ -63,7 +64,7 @@ export default function Login() {
       }
     >
       <FormError message={serverError} />
-      <form onSubmit={submit} noValidate>
+      <form onSubmit={submit} noValidate aria-busy={submitting}>
         <Field
           label="Email address"
           name="email"
@@ -74,6 +75,7 @@ export default function Login() {
           error={errors.email}
           onChange={set('email')}
           disabled={submitting}
+          required
         />
         <Field
           label="Password"
@@ -85,7 +87,11 @@ export default function Login() {
           error={errors.password}
           onChange={set('password')}
           disabled={submitting}
+          required
         />
+        <p style={{ margin: '-8px 0 20px', textAlign: 'right', fontSize: '13.5px' }}>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         <Button type="submit" full disabled={submitting}>
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
