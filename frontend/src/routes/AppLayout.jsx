@@ -7,7 +7,7 @@ import { clearOrderError, selectOrdersError } from '../store/ordersSlice';
 import { clearAdminError, fetchSettings, selectAdminError } from '../store/adminSlice';
 import { showToast } from '../store/uiSlice';
 import useNarrowViewport from '../hooks/useNarrowViewport';
-import { seedIfEmpty } from '../api';
+import { seedIfEmpty, usingMockBackend } from '../api';
 import { color, font } from '../theme';
 import Nav from '../components/Nav';
 import MobileMenu from '../components/MobileMenu';
@@ -60,11 +60,12 @@ export default function AppLayout() {
 
   useEffect(() => {
     dispatch(loadSession());
-    seedIfEmpty();
+    if (!usingMockBackend) return;
     // Transport availability gates what booking may offer, so it is loaded once at
     // the top rather than by each screen that happens to need it. Platform settings
     // are read here for the same reason: a paused platform has to be visible on the
     // booking screen, not only inside the portal that paused it.
+    seedIfEmpty();
     dispatch(fetchFleet());
     dispatch(fetchSettings());
   }, [dispatch]);

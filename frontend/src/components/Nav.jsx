@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, toggleMobileMenu } from '../store/uiSlice';
@@ -8,11 +9,14 @@ import HoverLink from './HoverLink';
 import NavDropdown from './NavDropdown';
 import Wordmark from './Wordmark';
 import Icon from './Icon';
+import { getUnreadNotificationCount } from '../api/notifications';
+import { usingMockBackend } from '../api';
 
 // Three grouped menus. Section links carry the leading "/" so they work from the
 // tracking and admin routes too; ScrollToHash does the scrolling. "Talk to sales",
 // "About us" and "Help centre" have no pages of their own yet, so they point at the
 // footer (which carries the phone, email and address) and the services section.
+// eslint-disable-next-line react-refresh/only-export-components -- static navigation data shared with mobile navigation
 export const NAV_MENUS = [
   {
     label: 'Services',
@@ -52,10 +56,14 @@ const initialOf = (name) => (name || '').trim().charAt(0).toUpperCase() || '?';
 function ProfileMenu({ user }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const name = user.name || user.fullName || user.email;
+  const admin = user.isAdmin || user.is_admin || String(user.role || '').toUpperCase() === 'ADMIN';
 
   const items = [
     { label: 'My deliveries', to: '/orders' },
-    ...(user.isAdmin ? [{ label: 'Admin portal', to: '/admin' }] : []),
+    { label: 'Security settings', to: '/settings/security' },
+    { label: 'Notifications', to: '/notifications' },
+    ...(admin ? [{ label: 'Admin portal', to: '/admin' }] : []),
     {
       label: 'Sign out',
       tone: 'quiet',
@@ -71,7 +79,7 @@ function ProfileMenu({ user }) {
 
   return (
     <NavDropdown
-      label={user.name}
+      label={name}
       items={items}
       align="right"
       triggerContent={
@@ -92,10 +100,10 @@ function ProfileMenu({ user }) {
               letterSpacing: 0
             }}
           >
-            {initialOf(user.name)}
+            {initialOf(name)}
           </span>
           <span style={{ maxWidth: '15ch', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user.name}
+            {name}
           </span>
         </>
       }
@@ -118,6 +126,25 @@ function ProfileMenu({ user }) {
   );
 }
 
+function NotificationBell() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (usingMockBackend) return undefined;
+    const load = () => getUnreadNotificationCount().then((data) => setCount(data?.count || 0)).catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Link to="/notifications" aria-label={count ? `${count} unread notifications` : 'Notifications'} style={{ position: 'relative', display: 'inline-flex', width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center', color: color.white }}>
+      <Icon name="notifications" size={22} />
+      {count > 0 && <span style={{ position: 'absolute', top: '1px', right: '0', minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: radius.pill, display: 'grid', placeItems: 'center', background: color.orange, color: color.ink, fontSize: '10px', fontWeight: 800 }}>{count > 99 ? '99+' : count}</span>}
+    </Link>
+  );
+}
+
 export default function Nav() {
   const dispatch = useDispatch();
   const { scrolled, narrow, mobileMenuOpen } = useSelector((state) => state.ui);
@@ -126,7 +153,7 @@ export default function Nav() {
   const startBooking = useStartBooking();
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 900, height: '80px' }}>
+    <nav aria-label="Main navigation" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 900, height: '80px' }}>
       {/* Unchanged from the approved design: transparent over the hero, dark once scrolled. */}
       <div
         style={{
@@ -218,31 +245,37 @@ export default function Nav() {
                   <Icon name="add" size={17} />
                   Request delivery
                 </HoverLink>
+                <NotificationBell />
                 <ProfileMenu user={user} />
               </>
             ) : (
-              <HoverLink
-                as={Link}
-                to={BOOKING_PATH}
-                onClick={startBooking}
-                hoverStyle={hover.yellow}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  height: '44px',
-                  padding: '0 22px',
-                  borderRadius: radius.pill,
-                  background: color.orange,
-                  color: color.ink,
-                  fontSize: '14.5px',
-                  fontWeight: 700,
-                  transition: `transform .2s ${ease.out}, box-shadow .2s`
-                }}
-              >
-                Get Started
-                <Icon name="arrow_outward" size={17} />
-              </HoverLink>
+              <>
+                <Link to="/login" style={{ ...topLink, fontSize: '14.5px' }}>
+                  Sign in
+                </Link>
+                <HoverLink
+                  as={Link}
+                  to={BOOKING_PATH}
+                  onClick={startBooking}
+                  hoverStyle={hover.yellow}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    height: '44px',
+                    padding: '0 22px',
+                    borderRadius: radius.pill,
+                    background: color.orange,
+                    color: color.ink,
+                    fontSize: '14.5px',
+                    fontWeight: 700,
+                    transition: `transform .2s ${ease.out}, box-shadow .2s`
+                  }}
+                >
+                  Get Started
+                  <Icon name="arrow_outward" size={17} />
+                </HoverLink>
+              </>
             )}
           </div>
         )}
@@ -271,6 +304,6 @@ export default function Nav() {
           </button>
         )}
       </div>
-    </div>
+    </nav>
   );
 }

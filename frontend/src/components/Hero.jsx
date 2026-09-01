@@ -31,6 +31,7 @@ const MODES_PATH = '/#modes';
  * column, and there is no horizontal slack to crop it out of the way), and `meta` adds
  * the small glass chip of at-a-glance facts under the copy.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- stable test data, not component state
 export const HERO_SLIDES = [
   {
     id: 'DRONE',
