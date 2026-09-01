@@ -1,3 +1,11 @@
+import CreateParcel from "./pages/parcels/CreateParcel";
+import "./App.css";
+
+function App() {
+  return <CreateParcel />;
+}
+
+export default App;
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./routes/AppLayout";
 import LandingPage from "./routes/LandingPage";
