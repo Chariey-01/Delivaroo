@@ -8,6 +8,7 @@ function CreateParcel() {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -37,22 +38,22 @@ function CreateParcel() {
   };
 
   const handleSubmit = (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const validationErrors = validateForm();
+    const validationErrors = validateForm();
 
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
-  }
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  setTimeout(() => {
-    console.log("Parcel submitted:", formData);
-    setIsLoading(false);
-  }, 1000);
-};
+    setTimeout(() => {
+      console.log("Parcel submitted:", formData);
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
     <div className="create-parcel">
@@ -105,8 +106,8 @@ function CreateParcel() {
           </p>
         </div>
 
-        <button type="submit">
-          Create Parcel
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Parcel"}
         </button>
       </form>
     </div>
