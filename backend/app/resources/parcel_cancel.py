@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource
 
@@ -8,6 +9,7 @@ from app.services.parcel_cancel_service import (
     NotParcelOwnerError,
     ParcelNotCancellableError,
 )
+from app.services.notification_service import notify_event
 
 
 class ParcelCancelResource(Resource):
@@ -22,6 +24,16 @@ class ParcelCancelResource(Resource):
             cancelled_parcel = cancel_parcel(
                 parcel=parcel,
                 requester_id=requester_id,
+            )
+
+            notify_event(
+                current_app._get_current_object(),
+                recipient_user_id=cancelled_parcel.user_id,
+                actor_user_id=requester_id,
+                event_type="PARCEL_CANCELLED",
+                parcel=cancelled_parcel,
+                metadata={"tracking_number": cancelled_parcel.tracking_number},
+                idempotency_key=f"parcel-cancelled:{cancelled_parcel.id}",
             )
 
             return {

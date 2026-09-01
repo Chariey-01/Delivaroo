@@ -3,14 +3,13 @@ from flask_jwt_extended import get_jwt_identity
 from flask_restful import Resource
 
 from app.models.parcel import Parcel
-from app.models.user import User
 from app.extensions import db
 from app.services.admin_status_service import admin_update_status
 from app.services.status_history_service import (
     InvalidStatusError,
     InvalidStatusTransitionError,
 )
-from app.services.notification_service import notify_status_change_async
+from app.services.notification_service import notify_event
 from app.utils.auth_decorators import admin_required
 
 
@@ -31,21 +30,25 @@ class AdminParcelStatusResource(Resource):
         notes = data.get("notes")
 
         try:
-            admin_update_status(
+            history = admin_update_status(
                 parcel=parcel,
                 new_status=new_status,
                 admin_id=admin_id,
                 notes=notes,
             )
 
-            owner = db.session.get(User, parcel.user_id)
-            if owner:
-                notify_status_change_async(
+            try:
+                notify_event(
                     current_app._get_current_object(),
-                    owner.email,
-                    parcel.tracking_number,
-                    new_status,
+                    recipient_user_id=parcel.user_id,
+                    actor_user_id=admin_id,
+                    event_type="PARCEL_STATUS_CHANGED",
+                    parcel=parcel,
+                    metadata={"tracking_number": parcel.tracking_number, "status": new_status},
+                    idempotency_key=f"parcel-status:{parcel.id}:{history.id}",
                 )
+            except (ValueError, RuntimeError):
+                current_app.logger.exception("Unable to create parcel status notification")
 
             return {
                 "message": "Parcel status updated successfully",

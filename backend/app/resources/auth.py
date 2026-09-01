@@ -8,6 +8,7 @@ from app.extensions import db
 from app.models.user import User
 from app.services.auth_service import authenticate_user, register_user
 from app.services.email_service import send_password_reset_email
+from app.services.notification_service import notify_event
 from app.services.password_reset_service import (
     create_password_reset_token,
     reset_password,
@@ -54,6 +55,13 @@ class RegisterResource(Resource):
             user = register_user(email=email, password=password)
         except ValueError as error:
             return {"message": str(error)}, 409
+
+        notify_event(
+            current_app._get_current_object(),
+            recipient_user_id=user.id,
+            event_type="WELCOME",
+            idempotency_key=f"welcome:{user.id}",
+        )
 
         access_token = create_access_token(
             identity=str(user.id),

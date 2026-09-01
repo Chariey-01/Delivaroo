@@ -4,13 +4,12 @@ from flask_restful import Resource
 
 from app.extensions import db
 from app.models.parcel import Parcel
-from app.models.user import User
 from app.services.admin_location_service import (
     admin_update_location,
     ParcelLocationLockedError,
     InvalidLocationError,
 )
-from app.services.notification_service import notify_location_change_async
+from app.services.notification_service import notify_event
 from app.utils.auth_decorators import admin_required
 
 
@@ -32,7 +31,7 @@ class AdminParcelLocationResource(Resource):
         address = data.get("address")
 
         try:
-            admin_update_location(
+            history = admin_update_location(
                 parcel=parcel,
                 latitude=latitude,
                 longitude=longitude,
@@ -40,16 +39,18 @@ class AdminParcelLocationResource(Resource):
                 admin_id=admin_id,
             )
 
-            owner = db.session.get(User, parcel.user_id)
-            if owner:
-                notify_location_change_async(
+            try:
+                notify_event(
                     current_app._get_current_object(),
-                    owner.email,
-                    parcel.tracking_number,
-                    latitude,
-                    longitude,
-                    address,
+                    recipient_user_id=parcel.user_id,
+                    actor_user_id=admin_id,
+                    event_type="PARCEL_LOCATION_UPDATED",
+                    parcel=parcel,
+                    metadata={"tracking_number": parcel.tracking_number},
+                    idempotency_key=f"parcel-location:{parcel.id}:{history.id}",
                 )
+            except (ValueError, RuntimeError):
+                current_app.logger.exception("Unable to create parcel location notification")
 
             parcel_data = parcel.to_dict()
             return {

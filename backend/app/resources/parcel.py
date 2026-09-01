@@ -19,6 +19,7 @@ from app.services.parcel_update_service import (
     ParcelNotUpdatableError,
     update_parcel_destination,
 )
+from app.services.notification_service import notify_event
 
 
 def _first_value(data, *keys):
@@ -182,6 +183,16 @@ class ParcelListResource(Resource):
         except ValueError as error:
             return {"message": str(error)}, 400
 
+        notify_event(
+            current_app._get_current_object(),
+            recipient_user_id=parcel.user_id,
+            actor_user_id=get_jwt_identity(),
+            event_type="PARCEL_CREATED",
+            parcel=parcel,
+            metadata={"tracking_number": parcel.tracking_number},
+            idempotency_key=f"parcel-created:{parcel.id}",
+        )
+
         return {
             "message": "Parcel created successfully",
             "data": serialize_parcel(parcel),
@@ -264,6 +275,16 @@ class ParcelResource(Resource):
             return {"message": str(error)}, 409
         except InvalidDestinationError as error:
             return {"message": str(error)}, 400
+
+        notify_event(
+            current_app._get_current_object(),
+            recipient_user_id=updated_parcel.user_id,
+            actor_user_id=get_jwt_identity(),
+            event_type="PARCEL_DESTINATION_UPDATED",
+            parcel=updated_parcel,
+            metadata={"tracking_number": updated_parcel.tracking_number},
+            idempotency_key=f"parcel-destination:{updated_parcel.id}:{updated_parcel.updated_at.isoformat()}",
+        )
 
         return {
             "message": "Parcel destination updated successfully",

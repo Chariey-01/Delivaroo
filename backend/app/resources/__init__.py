@@ -12,6 +12,7 @@ from app.resources.auth import (
 from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.admin_status import AdminParcelStatusResource
+from app.resources.admin_delivery_agent import AdminParcelDeliveryAgentResource
 from app.resources.parcel import (
     ParcelHistoryResource,
     ParcelListResource,
@@ -28,6 +29,13 @@ from app.resources.address import (
 from app.resources.profile import ProfileResource
 from app.resources.maps import GeocodeResource, ReverseGeocodeResource, RouteResource
 from app.resources.health import HealthResource
+from app.resources.notification import (
+    NotificationListResource,
+    NotificationPreferenceResource,
+    NotificationReadAllResource,
+    NotificationReadResource,
+    NotificationUnreadCountResource,
+)
 
 
 def init_resources(app):
@@ -76,6 +84,11 @@ def init_resources(app):
         "/admin/parcels/<uuid:parcel_id>/location",
         "/api/admin/parcels/<uuid:parcel_id>/location",
     )
+    api.add_resource(
+        AdminParcelDeliveryAgentResource,
+        "/admin/parcels/<uuid:parcel_id>/delivery-agent",
+        "/api/admin/parcels/<uuid:parcel_id>/delivery-agent",
+    )
 
     api.add_resource(AddressListResource, "/addresses", "/api/addresses")
     api.add_resource(
@@ -90,6 +103,11 @@ def init_resources(app):
     )
 
     api.add_resource(ProfileResource, "/profile", "/api/profile")
+    api.add_resource(NotificationListResource, "/api/notifications")
+    api.add_resource(NotificationUnreadCountResource, "/api/notifications/unread-count")
+    api.add_resource(NotificationReadAllResource, "/api/notifications/read-all")
+    api.add_resource(NotificationReadResource, "/api/notifications/<uuid:notification_id>/read")
+    api.add_resource(NotificationPreferenceResource, "/api/notification-preferences")
     api.add_resource(GeocodeResource, "/api/maps/geocode")
     api.add_resource(ReverseGeocodeResource, "/api/maps/reverse-geocode")
     api.add_resource(RouteResource, "/api/maps/route")

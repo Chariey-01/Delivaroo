@@ -21,6 +21,7 @@ import NotFound from "./routes/NotFound";
 import Login from "./routes/Login";
 import Signup from "./routes/Signup";
 import Dashboard from "./routes/Dashboard";
+import Notifications from "./routes/Notifications";
 import Unauthorized from "./routes/Unauthorized";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import AdminRoute from "./components/routing/AdminRoute";
@@ -44,6 +45,7 @@ export function AppRoutes() {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
         {/* §27 — the admin portal: one gated shell, one section per job. */}
         <Route element={<AdminRoute />}>
