@@ -119,3 +119,131 @@ button { font-family: inherit; }
   .services-grid > *:nth-child(4),
   .services-grid > *:nth-child(5) { grid-column: span 3; }
 }
+
+/* ---------------------------------------------------------------------------
+   §12 — the authentication screens.
+   Inline styles cannot express a breakpoint, a :hover on a nested element or a
+   :focus-within, so the split-screen frame and the states that depend on those
+   live here. Every colour is the same one theme.js holds; nothing new is invented.
+   --------------------------------------------------------------------------- */
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* dvh so the mobile browser chrome cannot crop the submit button off-screen. */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Mobile-first: the decorative column does not exist below the breakpoint, so its
+   photograph is never fetched on the connection least able to afford it. */
+.auth-aside { display: none; }
+
+@media (min-width: 960px) {
+  .auth-shell { grid-template-columns: 1.05fr 1fr; }
+  .auth-aside {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: #1A1C1F;
+  }
+}
+
+.auth-aside-photo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.03);
+}
+.auth-aside-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, rgba(26, 28, 31, 0.42) 0%, rgba(26, 28, 31, 0.82) 58%, rgba(26, 28, 31, 0.95) 100%);
+}
+.auth-aside-body {
+  position: relative;
+  padding: clamp(40px, 5vw, 76px);
+  animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-form-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(28px, 6vw, 56px) clamp(20px, 5vw, 60px);
+}
+.auth-form {
+  width: 100%;
+  max-width: 448px;
+  animation: riseIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Consistent vertical rhythm between fields without every route restating it. */
+.auth-fields > * + * { margin-top: 16px; }
+
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b706b;
+  transition: color 0.18s ease;
+}
+.auth-back-link:hover { color: #ad5415; }
+
+/* Auth links carry the accent rather than the body colour: on a form, a link is a
+   route out, and it has to be findable at a glance. */
+.auth-link {
+  font-weight: 600;
+  color: #ad5415;
+  border-radius: 6px;
+}
+.auth-link:hover { color: #f88735; text-decoration: underline; }
+
+.auth-icon-button:hover:not(:disabled) { background: rgba(36, 75, 66, 0.08); }
+
+/* The remember-me / terms rows: the whole row is the hit area, not just the box. */
+.auth-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.auth-check:hover { background: rgba(36, 75, 66, 0.05); }
+.auth-check:focus-within { background: rgba(36, 75, 66, 0.07); }
+.auth-check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: #244b42;
+  cursor: pointer;
+}
+.auth-check input:disabled,
+.auth-check input:disabled + span { cursor: not-allowed; opacity: 0.6; }
+
+/* The divider between the form and whatever follows it. */
+.auth-rule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6b706b;
+}
+.auth-rule::before,
+.auth-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #d9deda;
+}
