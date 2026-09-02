@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { closeMobileMenu, openAuthModal, selectMobileMenuOpen, showToast } from '../store/uiSlice';
+import { closeMobileMenu, selectMobileMenuOpen, showToast } from '../store/uiSlice';
 import { selectIsSignedIn, selectUser, signOut } from '../store/authSlice';
-import useStartBooking, { BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
+import useStartBooking, { AUTH_PATH, BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
 import { color, ease, eyebrow, font, layout, radius } from '../theme';
 import { NAV_MENUS } from './Nav';
 import Icon from './Icon';
@@ -145,41 +145,29 @@ export default function MobileMenu() {
             </button>
           </>
         ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => {
-                close();
-                dispatch(openAuthModal(null));
-              }}
-              style={{ ...outlineControl, background: 'transparent', cursor: 'pointer' }}
-            >
-              Login
-            </button>
-            <Link
-              to={BOOKING_PATH}
-              onClick={(event) => {
-                close();
-                startBooking(event);
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                height: '58px',
-                borderRadius: radius.pill,
-                background: color.orange,
-                color: color.ink,
-                fontSize: '16.5px',
-                fontWeight: 600,
-                fontFamily: font.body
-              }}
-            >
-              Get Started
-              <Icon name="arrow_outward" size={19} />
-            </Link>
-          </>
+          /* One door, matching the desktop nav: the separate "Login" button pointed
+             at the same authentication screen this CTA does. */
+          <Link
+            to={AUTH_PATH}
+            state={{ from: { pathname: BOOKING_PATH } }}
+            onClick={close}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              height: '58px',
+              borderRadius: radius.pill,
+              background: color.orange,
+              color: color.ink,
+              fontSize: '16.5px',
+              fontWeight: 600,
+              fontFamily: font.body
+            }}
+          >
+            Get Started
+            <Icon name="arrow_outward" size={19} />
+          </Link>
         )}
       </div>
     </div>
