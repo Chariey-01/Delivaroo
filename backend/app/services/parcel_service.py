@@ -86,6 +86,11 @@ def calculate_parcel_price(
 
 
 def serialize_parcel(parcel: Parcel) -> dict:
+    weighed_by = None
+    if parcel.weighed_by:
+        user = db.session.get(User, parcel.weighed_by)
+        weighed_by = user.email if user else str(parcel.weighed_by)
+
     return {
         "id": str(parcel.id),
         "tracking_number": parcel.tracking_number,
@@ -129,6 +134,10 @@ def serialize_parcel(parcel: Parcel) -> dict:
         ),
         "status": parcel.status,
         "price": str(parcel.price),
+        "declared_weight_kg": str(parcel.declared_weight_kg) if parcel.declared_weight_kg is not None else None,
+        "verified_weight_kg": str(parcel.verified_weight_kg) if parcel.verified_weight_kg is not None else None,
+        "weighed_at": parcel.weighed_at.isoformat() if parcel.weighed_at else None,
+        "weighed_by": weighed_by,
         "distance": str(parcel.distance) if parcel.distance is not None else None,
         "duration": parcel.duration,
         "created_at": parcel.created_at.isoformat() if parcel.created_at else None,
@@ -148,6 +157,7 @@ def create_parcel(
     destination_longitude=None,
     distance=None,
     duration=None,
+    declared_weight_kg=None,
     transport_mode="MOTORBIKE",
 ) -> Parcel:
     """Create and persist a parcel for an authenticated user."""
@@ -200,6 +210,7 @@ def create_parcel(
     )
     distance = _parse_decimal(distance, "distance")
     duration = _parse_int(duration, "duration")
+    declared_weight_kg = _parse_decimal(declared_weight_kg, "declared weight")
 
     if transport_mode not in TRANSPORT_MODES:
         raise ValueError("Invalid transport mode")
@@ -209,6 +220,9 @@ def create_parcel(
 
     if duration is not None and duration < 0:
         raise ValueError("Duration cannot be negative")
+
+    if declared_weight_kg is not None and declared_weight_kg <= 0:
+        raise ValueError("Declared weight must be greater than zero")
 
     price = calculate_parcel_price(
         weight_category,
@@ -227,6 +241,7 @@ def create_parcel(
         destination_longitude=destination_longitude,
         distance=distance,
         duration=duration,
+        declared_weight_kg=declared_weight_kg,
         price=price,
         transport_mode=transport_mode,
     )

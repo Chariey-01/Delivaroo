@@ -234,7 +234,7 @@ From `backend`, seed the local admin-dashboard dataset after migrations have run
 python seed.py
 ```
 
-The command is idempotent and creates 84 fictional parcels, a demo administrator,
+The command is idempotent and creates 94 fictional parcels, a demo administrator,
 and regular demo users at the reserved `demo.delivaroo.test` domain. The demo admin
 email defaults to `admin@demo.delivaroo.test`. Set `DEMO_ADMIN_EMAIL`,
 `DEMO_ADMIN_PASSWORD`, and `DEMO_USER_PASSWORD` in the local backend `.env` file
