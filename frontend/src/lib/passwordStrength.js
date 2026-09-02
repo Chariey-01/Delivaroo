@@ -14,7 +14,7 @@ const COMFORTABLE_LENGTH = 12;
 export const PASSWORD_RULES = [
   {
     id: 'length',
-    label: `At least ${PASSWORD_MIN_LENGTH} characters`,
+    label: `Minimum ${PASSWORD_MIN_LENGTH} characters`,
     required: true,
     test: (value) => value.length >= PASSWORD_MIN_LENGTH,
   },
