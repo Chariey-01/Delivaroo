@@ -6,6 +6,7 @@ from app.models.transport import TRANSPORT_MODES
 
 VALID_STATUSES = {
     "PENDING",
+    "ASSIGNED",
     "PICKED_UP",
     "IN_TRANSIT",
     "OUT_FOR_DELIVERY",
