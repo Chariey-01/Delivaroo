@@ -603,6 +603,44 @@ and a provider is explicitly configured. No real provider call runs in tests.
 
 ### PATCH /api/admin/parcels/:id/delivery-agent
 
-Admin-only endpoint to assign an active delivery agent to a parcel. It accepts
-`delivery_agent_id` (or `deliveryAgentId`) and creates a `PARCEL_AGENT_ASSIGNED`
-notification for the parcel owner when the assignment changes.
+Admin and dispatcher endpoint to assign an active delivery agent to a parcel. It
+accepts `delivery_agent_id` (or `deliveryAgentId`) and creates a
+`PARCEL_AGENT_ASSIGNED` notification for the parcel owner when the assignment
+changes. Parcel owners may also call this endpoint with an empty body to request
+automatic assignment to the first active agent for the parcel transport mode.
+
+### PATCH /api/admin/parcels/:id/weight
+
+Admin and dispatcher endpoint to record verified parcel weight.
+
+Request JSON:
+
+```json
+{
+  "weightKg": 4.25
+}
+```
+
+Aliases: `weight_kg` and `verified_weight_kg`.
+
+Success: `200`, returning the updated parcel. Errors: `400` for missing,
+non-numeric, zero, negative, or over-limit weights; `403` for non-staff users;
+`404` for missing parcels.
+
+### Admin Portal Support Endpoints
+
+These endpoints exist at both `/api/...` and non-prefixed aliases:
+
+| Endpoint | Auth | Purpose |
+| --- | --- | --- |
+| `GET /api/admin/users` | admin | List users for the admin directory |
+| `PATCH /api/admin/users/:id/role` | admin | Update a user's role |
+| `PATCH /api/admin/users/:id/suspension` | admin | Activate or suspend a user |
+| `GET /api/admin/couriers` | admin or dispatcher | List courier roster data |
+| `PATCH /api/admin/couriers/:id/shift` | admin or dispatcher | Toggle courier shift state |
+| `GET /api/admin/audit` | admin or dispatcher | Read recent audit events |
+| `GET /api/admin/notifications` | admin or dispatcher | Read recent notifications |
+| `GET /api/settings` | public | Read operational settings |
+| `PATCH /api/admin/settings` | admin | Update operational settings |
+| `GET /api/transport/availability` | public | Read transport availability |
+| `PATCH /api/admin/transport/availability` | admin or dispatcher | Update transport availability |

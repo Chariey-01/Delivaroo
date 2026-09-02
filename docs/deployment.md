@@ -5,6 +5,12 @@ The production setup uses two services:
 - Render runs the Flask API and PostgreSQL database.
 - Vercel builds and serves the Vite frontend.
 
+If the database is hosted outside Render, such as Neon, use that provider's
+PostgreSQL connection string for the same `DATABASE_URL` variable. For Neon,
+create a project and database in the Neon console, copy the pooled connection
+string for the application user, and keep `sslmode=require` in the URL. Configure
+it in Render under the backend service's Environment tab as `DATABASE_URL`.
+
 ## 1. Deploy the backend on Render
 
 Create a PostgreSQL database and a Python web service from this repository. Use
@@ -31,7 +37,7 @@ Set these Render environment variables:
 | Variable | Value |
 | --- | --- |
 | `FLASK_ENV` | `production` |
-| `DATABASE_URL` | Render PostgreSQL internal database URL |
+| `DATABASE_URL` | Render PostgreSQL internal database URL, or the Neon PostgreSQL connection string with SSL required |
 | `SECRET_KEY` | A long, random value |
 | `JWT_SECRET_KEY` | A different long, random value |
 | `CORS_ORIGINS` | The production Vercel origin, such as `https://delivaroo.vercel.app` |
@@ -57,6 +63,20 @@ curl https://YOUR-RENDER-SERVICE.onrender.com/api/health
 ```
 
 The response should be `{"status":"ok"}`.
+
+The current migration head also creates the admin portal state tables
+`platform_settings` and `transport_availability`, and adds parcel weight
+verification fields. After configuring `DATABASE_URL`, verify migrations from the
+backend service shell with:
+
+```bash
+flask --app run:app db upgrade
+flask --app run:app db current
+```
+
+To load local demo data after migrations, run `python seed.py` from `backend`.
+This creates 94 fictional parcels. Do not run `python seed.py --reset-demo-data`
+against production data.
 
 ## 2. Deploy the frontend on Vercel
 
