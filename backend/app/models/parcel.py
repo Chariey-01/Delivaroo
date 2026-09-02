@@ -79,6 +79,19 @@ class Parcel(db.Model):
         db.Numeric(12, 2),
         nullable=False,
     )
+    declared_weight_kg = db.Column(
+        db.Numeric(10, 2),
+    )
+    verified_weight_kg = db.Column(
+        db.Numeric(10, 2),
+    )
+    weighed_at = db.Column(
+        db.DateTime,
+    )
+    weighed_by = db.Column(
+        db.UUID(as_uuid=True),
+        db.ForeignKey("users.id"),
+    )
     distance = db.Column(
         db.Numeric(10, 2),
     )
@@ -131,6 +144,10 @@ class Parcel(db.Model):
             "present_longitude": float(self.present_longitude) if self.present_longitude is not None else None,
             "status": self.status,
             "price": float(self.price),
+            "declared_weight_kg": float(self.declared_weight_kg) if self.declared_weight_kg is not None else None,
+            "verified_weight_kg": float(self.verified_weight_kg) if self.verified_weight_kg is not None else None,
+            "weighed_at": self.weighed_at.isoformat() if self.weighed_at else None,
+            "weighed_by": str(self.weighed_by) if self.weighed_by else None,
             "distance": float(self.distance) if self.distance is not None else None,
             "duration": self.duration,
             "created_at": self.created_at.isoformat(),

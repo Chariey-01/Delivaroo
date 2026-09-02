@@ -176,6 +176,13 @@ class ParcelListResource(Resource):
                 destination_longitude=destination_longitude,
                 distance=route.distance_km if route else None,
                 duration=route.duration_minutes if route else None,
+                declared_weight_kg=_first_value(
+                    data,
+                    "declared_weight_kg",
+                    "declaredWeightKg",
+                    "weight_kg",
+                    "weightKg",
+                ),
                 transport_mode=_first_value(data, "transport_mode", "transportMode") or "MOTORBIKE",
             )
         except MapsServiceError as error:

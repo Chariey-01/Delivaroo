@@ -7,7 +7,7 @@ from app.extensions import db
 
 class User(db.Model):
     __tablename__ = "users"
-    VALID_ROLES = {"user", "admin"}
+    VALID_ROLES = {"user", "dispatcher", "admin"}
 
     id = db.Column(
         db.UUID(as_uuid=True),

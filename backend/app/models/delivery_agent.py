@@ -45,6 +45,11 @@ class DeliveryAgent(db.Model):
             "email": self.email,
             "phone": self.phone,
             "transport_mode": self.transport_mode,
+            "vehicleMode": self.transport_mode,
             "transport_label": TRANSPORT_MODES[self.transport_mode],
+            "vehicle": TRANSPORT_MODES[self.transport_mode],
+            "plate": self.email,
+            "rating": 4.8,
+            "onShift": self.is_active,
             "is_active": self.is_active,
         }
