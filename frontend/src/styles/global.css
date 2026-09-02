@@ -247,3 +247,19 @@ button { font-family: inherit; }
   height: 1px;
   background: #d9deda;
 }
+
+/* Used by components/ui/Spinner.jsx and the auth submit buttons — inline styles
+   cannot declare keyframes. It lived in the unused index.css, so nothing on the
+   page had ever actually spun. */
+@keyframes delivaroo-spin { to { transform: rotate(360deg); } }
+
+.auth-spin {
+  display: inline-block;
+  flex: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  border: 2px solid rgba(28, 32, 31, 0.25);
+  border-top-color: #1c201f;
+  animation: delivaroo-spin 0.7s linear infinite;
+}
