@@ -101,7 +101,7 @@ function Rule({ rule, emphasis = false }) {
       }}
     >
       <Icon
-        name={met ? 'check_circle' : emphasis ? 'radio_button_unchecked' : 'add_circle'}
+        name={met ? 'check_circle' : 'radio_button_unchecked'}
         size={15}
         color="currentColor"
       />
