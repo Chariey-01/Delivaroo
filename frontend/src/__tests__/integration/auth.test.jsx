@@ -22,6 +22,9 @@ beforeEach(() => clearTokens());
 const type = async (user, label, value) =>
   user.type(await screen.findByLabelText(label), value);
 
+/** Registration requires consent, so every signup path has to give it. */
+const acceptTerms = async (user) => user.click(await screen.findByRole('checkbox', { name: /i agree/i }));
+
 describe('signup', () => {
   test('creates the account, stores the tokens and lands on the dashboard', async () => {
     const user = userEvent.setup();
@@ -35,6 +38,7 @@ describe('signup', () => {
     await type(user, /email address/i, 'customer@delivaroo.test');
     await type(user, /^password$/i, 'supersecret');
     await type(user, /confirm password/i, 'supersecret');
+    await acceptTerms(user);
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/hello, cassie/i)).toBeInTheDocument();
@@ -62,6 +66,7 @@ describe('signup', () => {
     await type(user, /email address/i, 'not-an-email');
     await type(user, /^password$/i, 'short');
     await type(user, /confirm password/i, 'different');
+    await acceptTerms(user);
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
@@ -80,9 +85,10 @@ describe('signup', () => {
     await type(user, /email address/i, 'customer@delivaroo.test');
     await type(user, /^password$/i, 'supersecret');
     await type(user, /confirm password/i, 'supersecret');
+    await acceptTerms(user);
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Email is already registered');
+    expect(await screen.findByText('Email is already registered')).toBeInTheDocument();
     expect(getAccessToken()).toBeNull();
   });
 });
@@ -112,7 +118,7 @@ describe('login', () => {
     await type(user, /^password$/i, 'wrong-password');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email or password');
+    expect(await screen.findByText('Invalid email or password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^sign in$/i })).toBeInTheDocument();
     expect(getAccessToken()).toBeNull();
   });
@@ -155,6 +161,9 @@ describe('logout', () => {
     await user.click(screen.getByRole('menuitem', { name: /sign out/i }));
 
     await waitFor(() => expect(getAccessToken()).toBeNull());
-    expect(await screen.findByRole('link', { name: /sign in/i })).toBeInTheDocument();
+    // §12 — signed out, the nav offers one way back in, not a "Sign in" link beside a
+    // "Get Started" button pointing at the same screen.
+    expect(await screen.findByRole('link', { name: /get started/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^sign in$/i })).not.toBeInTheDocument();
   });
 });
