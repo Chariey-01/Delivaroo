@@ -31,7 +31,7 @@ const PANEL = {
   eyebrow: 'Welcome back',
   headline: 'Your parcels, exactly where you left them.',
   points: [
-    'Pick up a draft booking where it stopped',
+    'Book a courier in about a minute',
     'Live tracking on everything still moving',
     'One history for every delivery you have sent',
   ],
@@ -45,9 +45,10 @@ export default function Login() {
   const serverError = useSelector(selectAuthError);
 
   // A remembered email is a convenience, never a password: the field beside it always
-  // starts empty.
+  // starts empty. The box itself starts ticked, which is what the app did before it
+  // was a choice — clearing it is the deliberate act, for a shared machine.
   const [remembered] = useState(getRememberedEmail);
-  const [remember, setRemember] = useState(Boolean(remembered));
+  const [remember, setRemember] = useState(true);
   const form = useAuthForm({
     initialValues: { email: remembered, password: '' },
     validators: VALIDATORS,
