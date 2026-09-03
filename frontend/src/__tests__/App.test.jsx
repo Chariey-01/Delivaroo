@@ -23,12 +23,12 @@ describe('landing page', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: 'Sign in to send a package.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Create New Parcel' })).toBeInTheDocument();
   });
 
   it('opens on the hero, headline and strapline in place', () => {
     withStore(<App />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('From anywhere toyour door');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('From anywhere to your door');
     expect(screen.getByText('We move.')).toBeInTheDocument();
   });
 
