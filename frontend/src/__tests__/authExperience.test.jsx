@@ -12,10 +12,10 @@ import { clearTokens, getAccessToken } from '../lib/tokenStorage';
 const type = async (user, label, value) => user.type(await screen.findByLabelText(label), value);
 
 const fillSignup = async (user) => {
-  await type(user, /full name/i, 'Cassie Customer');
-  await type(user, /email address/i, 'customer@delivaroo.test');
-  await type(user, /^password$/i, 'supersecret');
-  await type(user, /confirm password/i, 'supersecret');
+  await type(user, /full name/i, 'Ada L');
+  await type(user, /email address/i, 'ada@d.test');
+  await type(user, /^password$/i, 'password1');
+  await type(user, /confirm password/i, 'password1');
 };
 
 beforeEach(() => {
@@ -66,8 +66,8 @@ describe('sign in', () => {
 
     renderApp({ route: '/login', preloadedState: signedOutState });
 
-    await type(user, /email address/i, 'customer@delivaroo.test');
-    await type(user, /^password$/i, 'supersecret');
+    await type(user, /email address/i, 'ada@d.test');
+    await type(user, /^password$/i, 'password1');
     await user.click(screen.getByRole('checkbox', { name: /remember me/i }));
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
@@ -86,8 +86,8 @@ describe('sign in', () => {
 
     renderApp({ route: '/login', preloadedState: signedOutState });
 
-    await type(user, /email address/i, 'customer@delivaroo.test');
-    await type(user, /^password$/i, 'supersecret');
+    await type(user, /email address/i, 'ada@d.test');
+    await type(user, /^password$/i, 'password1');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/couldn't reach the server/i);
@@ -140,7 +140,7 @@ describe('forgot password', () => {
 
     renderApp({ route: '/forgot-password', preloadedState: signedOutState });
 
-    await type(user, /email address/i, 'stranger@delivaroo.test');
+    await type(user, /email address/i, 'who@d.test');
     await user.click(screen.getByRole('button', { name: /send reset link/i }));
 
     const confirmation = await screen.findByRole('status');
@@ -179,8 +179,8 @@ describe('reset password', () => {
 
     renderApp({ route: '/reset-password?token=a-real-token', preloadedState: signedOutState });
 
-    await type(user, /^new password$/i, 'supersecret');
-    await type(user, /confirm new password/i, 'supersecrez');
+    await type(user, /^new password$/i, 'password1');
+    await type(user, /confirm new password/i, 'password2');
     await user.click(screen.getByRole('button', { name: /^reset password$/i }));
 
     expect(await screen.findByText(/do not match/i)).toBeInTheDocument();
