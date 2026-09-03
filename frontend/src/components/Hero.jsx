@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCtaHover } from '../store/uiSlice';
 import useStartBooking, { BOOKING_PATH } from '../hooks/useStartBooking';
+import { BOTTOM_NAV_HEIGHT } from './BottomNav';
 import { color, ease, font, layout } from '../theme';
 import Icon from './Icon';
 
@@ -15,13 +16,21 @@ const KNOB = 'clamp(50px,5.4vw,62px)';
  * `focus` is the object-position for the wide desktop crop, `focusNarrow` the one used
  * under the 980px breakpoint — a phone crops the frame horizontally instead of
  * vertically, and leans toward the road so the rider and truck survive it.
+ *
+ * `aspect` is why the phone layout differs at all. The frame is 1503x1046 — 1.44:1
+ * landscape — and `cover` in a full-bleed 390x844 portrait fold shows barely a third
+ * of its width: the drone, the container ship and most of the world map are simply
+ * cut off, which is the whole point of a photograph that carries every mode at once.
+ * So on a phone the picture gets a box near its own aspect, where 93% of the width
+ * survives, and the words move off it onto the ground below.
  */
 // eslint-disable-next-line react-refresh/only-export-components -- static hero content shared with the tests
 export const HERO_PHOTO = {
   src: '/photos/hero-global-network.jpeg',
   alt: 'Cargo aircraft, delivery drone, container ship, motorbike courier and freight truck under one sunset, over a world map',
   focus: '50% 50%',
-  focusNarrow: '58% 50%'
+  focusNarrow: '58% 50%',
+  aspect: '4 / 3'
 };
 
 /**
@@ -34,6 +43,24 @@ export const HERO_COPY = {
   headline: ['From anywhere to', 'your door'],
   body: 'One network. Every mode.'
 };
+
+/**
+ * Padding for the hero's content column.
+ *
+ * Exported because it is the only guard available on the bottom-bar reservation:
+ * jsdom's CSSOM silently discards any declaration containing calc(), so a test can
+ * read this string but never the rendered style.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper, tested directly
+export const heroContentPadding = (narrow) =>
+  narrow
+    // The bottom bar is fixed over the fold on a phone, so the hero hands back the
+    // strip it occupies: without this the Request a Delivery pill sits underneath it —
+    // half hidden, and a tap on its centre hits the Track tab instead.
+    ? `clamp(20px,3vh,32px) ${layout.gutter} calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom,0px) + clamp(18px,2.6vh,30px))`
+    // The top offset clears the fixed header, which only overlays the copy on a wide
+    // screen; on a phone the header sits over the photograph above it.
+    : `calc(80px + clamp(18px,4vh,40px)) ${layout.gutter} clamp(28px,5vh,56px)`;
 
 /**
  * The approved CTA, unchanged apart from its label: the goo-filtered pill whose knob
@@ -137,16 +164,54 @@ function RequestCta() {
 export default function Hero() {
   const narrow = useSelector((state) => state.ui.narrow);
 
+  const photo = (
+    <img
+      src={HERO_PHOTO.src}
+      alt={HERO_PHOTO.alt}
+      // Above the fold, and the only thing behind the headline: never lazy.
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      style={
+        narrow
+          ? {
+              position: 'relative',
+              zIndex: 1,
+              display: 'block',
+              width: '100%',
+              aspectRatio: HERO_PHOTO.aspect,
+              objectFit: 'cover',
+              objectPosition: HERO_PHOTO.focusNarrow
+            }
+          : {
+              position: 'absolute',
+              inset: 0,
+              zIndex: 1,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: HERO_PHOTO.focus
+            }
+      }
+    />
+  );
+
   return (
     <div
       id="top"
       style={{
         position: 'relative',
-        // Full viewport height: the photograph is the fold, so the band underneath it
-        // never shows as a strip of green below the picture. dvh rather than vh so a
-        // phone measures the visible viewport instead of running under the browser
-        // chrome; the floor keeps the copy from crushing on a short landscape screen.
-        minHeight: 'max(100dvh,560px)',
+        // On a wide screen the photograph is the fold, so the hero takes the whole
+        // viewport and the band underneath never shows as a strip of green below the
+        // picture. A phone gives a little of that back: there the photograph is a band
+        // rather than the whole stage, and a strict 100dvh would strand the words in
+        // dead space below it — while the sliver of the next section the shorter fold
+        // leaves showing is a useful hint that there is more down there.
+        //
+        // dvh rather than vh so a phone measures the visible viewport instead of
+        // running under the browser chrome; the floors keep the copy from crushing on
+        // a short landscape screen.
+        minHeight: narrow ? 'max(86dvh,520px)' : 'max(100dvh,560px)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -154,27 +219,36 @@ export default function Hero() {
       }}
     >
       {/*
-        Full bleed stage. One photograph, drawn untouched behind everything: no scrim,
-        no filter, no scale, so it renders exactly as supplied. The copy carries its
-        own shadow.
+        One photograph, drawn untouched: no scrim, no filter, no scale, so it renders
+        exactly as supplied. On a wide screen it is the full-bleed stage behind the
+        words. On a phone it is a band at its own aspect, with the copy underneath —
+        see the note on HERO_PHOTO.aspect for why it cannot simply stay full bleed.
       */}
-      <img
-        src={HERO_PHOTO.src}
-        alt={HERO_PHOTO.alt}
-        // Above the fold, and the only thing behind the headline: never lazy.
-        loading="eager"
-        decoding="async"
-        fetchpriority="high"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: narrow ? HERO_PHOTO.focusNarrow : HERO_PHOTO.focus
-        }}
-      />
+      {narrow ? (
+        <div style={{ position: 'relative', flex: 'none' }}>
+          {photo}
+          {/*
+            The photograph does not stop, it dissolves: without this the picture would
+            end on a hard horizontal seam across the fold. Sized in percent of the
+            band so it scales with the crop.
+          */}
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: '-1px',
+              height: '46%',
+              zIndex: 2,
+              pointerEvents: 'none',
+              background: `linear-gradient(to bottom, rgba(26,28,31,0) 0%, rgba(26,28,31,.72) 58%, ${color.greenDeep} 96%)`
+            }}
+          />
+        </div>
+      ) : (
+        photo
+      )}
 
       <div
         style={{
@@ -184,23 +258,27 @@ export default function Hero() {
           width: '100%',
           maxWidth: layout.maxWidth,
           margin: '0 auto',
-          padding: `calc(80px + clamp(18px,4vh,40px)) ${layout.gutter} clamp(28px,5vh,56px)`,
+          padding: heroContentPadding(narrow),
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          // On a phone the words and the CTA are one group centred in the ground under
+          // the photograph. Letting the copy absorb the slack instead would strand the
+          // headline in the middle of an empty half-screen.
+          justifyContent: narrow ? 'center' : undefined
         }}
       >
         {/*
           The copy takes every row the CTA leaves, which parks the CTA on the bottom
-          padding edge without the words having to move with it. On a phone the
-          subjects sit across the middle of the crop, so the copy drops to the foot of
-          that space rather than landing on top of them.
+          padding edge without the words having to move with it. It centres in that
+          space at both sizes now: on a phone the words have their own ground beneath
+          the photograph, so there are no subjects left for them to land on top of.
         */}
         <div
           style={{
-            flex: 1,
+            flex: narrow ? 'none' : 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: narrow ? 'flex-end' : 'center'
+            justifyContent: 'center'
           }}
         >
           <div
