@@ -21,7 +21,7 @@ const PANEL = {
   headline: 'Locked out? This takes one email.',
   points: [
     'A single-use link, sent to the address on the account',
-    'The link expires, so an old email cannot be reused',
+    'It expires after 30 minutes, and a new request cancels the old link',
     'Your deliveries carry on in the meantime',
   ],
 };
@@ -66,9 +66,12 @@ export default function ForgotPassword() {
       panel={PANEL}
       footer={
         <>
+          {/* Worded differently from the "Back to login" button above it on purpose:
+              two controls with the same name is one control too many to a screen
+              reader running through the page's links. */}
           Remembered it?{' '}
           <Link to="/login" className="auth-link">
-            Back to login
+            Sign in
           </Link>
         </>
       }
@@ -83,7 +86,7 @@ export default function ForgotPassword() {
           */}
           <AuthNotice role="status" tone="success" title="If the email exists, a reset link is on its way.">
             We sent instructions to <strong>{sentTo}</strong> if an account is registered to it.
-            The link is single-use and expires, so open it soon.
+            The link works once and expires after 30 minutes, so open it soon.
           </AuthNotice>
 
           <ul

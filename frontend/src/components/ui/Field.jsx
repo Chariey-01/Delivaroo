@@ -42,6 +42,20 @@ export default function Field({
   const noteId = error || hint ? `${id}-note` : null;
   const description = [noteId, describedBy].filter(Boolean).join(' ') || undefined;
 
+  // Error beats focus beats settled: whichever is true, the border says one thing.
+  const borderColor = error
+    ? control.fieldInvalid.borderColor
+    : focused
+      ? control.fieldFocus.borderColor
+      : valid
+        ? 'rgba(36,75,66,.55)'
+        : color.border;
+  const ringShadow = error
+    ? control.fieldInvalid.boxShadow
+    : focused
+      ? control.fieldFocus.boxShadow
+      : 'none';
+
   return (
     <div style={{ display: 'block' }} {...rest}>
       {label && (
@@ -76,13 +90,18 @@ export default function Field({
           aria-invalid={Boolean(error)}
           aria-describedby={description}
           disabled={disabled}
+          // Every state writes the same set of properties rather than spreading extra
+          // ones in conditionally. React warns when a longhand is *removed* while its
+          // shorthand is still set, and that removal is what leaves a focus ring stuck
+          // on a field that has already been blurred.
           style={{
             ...control.field,
-            ...(isPassword || showTick ? { paddingRight: '56px' } : null),
-            ...(focused ? control.fieldFocus : null),
-            ...(valid && !error ? { borderColor: 'rgba(36,75,66,.55)' } : null),
-            ...(error ? control.fieldInvalid : null),
-            ...(disabled ? { background: color.paper, color: color.muted, cursor: 'not-allowed' } : null)
+            padding: isPassword || showTick ? '0 56px 0 18px' : '0 18px',
+            border: `1px solid ${borderColor}`,
+            boxShadow: ringShadow,
+            background: disabled ? color.paper : color.white,
+            color: disabled ? color.muted : color.ink,
+            cursor: disabled ? 'not-allowed' : 'auto'
           }}
         />
         {isPassword && (
