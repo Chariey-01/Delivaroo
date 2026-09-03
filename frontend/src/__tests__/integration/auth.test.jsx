@@ -15,7 +15,13 @@ import {
 } from '../testUtils';
 import { clearTokens, getAccessToken, getRefreshToken } from '../../lib/tokenStorage';
 
-beforeEach(() => clearTokens());
+beforeEach(() => {
+  clearTokens();
+  // Signing in with "Remember me" leaves the address behind for next time, which is
+  // the feature working — but it must not bleed from one test into the next.
+  localStorage.clear();
+  sessionStorage.clear();
+});
 
 // findBy, not getBy: the guards render a "checking your session" spinner until the
 // stored-token question is answered, so the form is not in the DOM on first paint.
