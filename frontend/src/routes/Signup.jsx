@@ -45,7 +45,7 @@ const PANEL = {
   points: [
     'Price and route quoted before you commit',
     'Road, motorbike, air or sea — you choose',
-    'Live tracking and delivery updates, free',
+    'Live tracking and delivery updates as it moves',
   ],
 };
 
