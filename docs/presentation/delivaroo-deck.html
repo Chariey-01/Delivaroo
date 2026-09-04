@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Delivaroo — Capstone Presentation</title>
+
+<!-- Self-describing layout metadata for the Adobe Express exporter -->
+<meta name="hz:slide-selector" content=".slide">
+<meta name="hz:canvas-width" content="1920">
+<meta name="hz:canvas-height" content="1080">
+
+<link rel="stylesheet" href="https://use.typekit.net/gko3vro.css">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#05060A;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:36px;
+  padding:36px;
+}
+
+/* ---------- canvas ---------- */
+.slide {
+  position:relative;
+  width:1920px;
+  height:1080px;
+  background:#0E0F12;
+  overflow:hidden;
+  font-family:"acumin-pro", sans-serif;
+  color:#F5F5F3;
+}
+
+/* ---------- type roles ---------- */
+.kicker {
+  font-family:"source-code-pro", monospace;
+  font-weight:600;
+  font-size:24px;
+  line-height:1.2;
+  letter-spacing:0.22em;
+  text-transform:uppercase;
+  color:#FF7A1A;
+}
+.h1 {
+  font-family:"acumin-pro", sans-serif;
+  font-weight:700;
+  font-size:96px;
+  line-height:1.04;
+  letter-spacing:-0.026em;
+  color:#F5F5F3;
+}
+.h1.sm { font-size:76px; }
+.h1.xs { font-size:64px; }
+
+.lead {
+  font-family:"acumin-pro", sans-serif;
+  font-weight:400;
+  font-size:44px;
+  line-height:1.38;
+  color:#C6CBD2;
+}
+.body {
+  font-family:"acumin-pro", sans-serif;
+  font-weight:400;
+  font-size:34px;
+  line-height:1.48;
+  color:#9CA3AD;
+}
+.body.sm {
+  font-family:"acumin-pro", sans-serif;
+  font-size:29px;
+  line-height:1.45;
+}
+.lead b, .body b { font-weight:700; color:#F5F5F3; }
+.amber { color:#FF7A1A; }
+.blue  { color:#4DA3FF; }
+
+.cap {
+  font-family:"source-code-pro", monospace;
+  font-weight:500;
+  font-size:22px;
+  line-height:1.3;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:#5A6068;
+}
+.mono {
+  font-family:"source-code-pro", monospace;
+  font-weight:400;
+  color:#C6CBD2;
+}
+
+.stat {
+  font-family:"acumin-pro", sans-serif;
+  font-weight:700;
+  font-size:184px;
+  line-height:0.88;
+  letter-spacing:-0.045em;
+  color:#F5F5F3;
+}
+.stat.md { font-size:124px; }
+.stat.sm { font-size:88px; }
+
+/* ---------- regions ---------- */
+.pad {
+  position:absolute;
+  left:112px;
+  top:92px;
+  width:1696px;
+}
+.rule-foot {
+  position:absolute;
+  left:112px;
+  width:1696px;
+  bottom:102px;
+  height:1px;
+  background:#23262C;
+}
+.foot {
+  position:absolute;
+  left:112px;
+  width:1696px;
+  bottom:50px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:"source-code-pro", monospace;
+  font-weight:500;
+  font-size:20px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:#4A5058;
+}
+.foot-brand { color:#7A818B; }
+
+/* ---------- components ---------- */
+.card {
+  background:#15171C;
+  border:1px solid #23262C;
+  border-radius:14px;
+  padding:44px 46px;
+}
+.card.accent { border-color:#3A2A18; }
+
+.node {
+  background:#15171C;
+  border:1px solid #2A2E36;
+  border-radius:12px;
+  padding:22px 20px;
+  text-align:center;
+}
+.node.on { border-color:#FF7A1A; background:#1B1408; }
+.node.term { border-color:#3A3F49; background:#101216; }
+.node-t {
+  font-family:"acumin-pro", sans-serif;
+  font-weight:700;
+  font-size:28px;
+  line-height:1.2;
+  color:#F5F5F3;
+}
+.node-s {
+  font-family:"source-code-pro", monospace;
+  font-size:19px;
+  line-height:1.35;
+  letter-spacing:0.06em;
+  color:#6E757F;
+  margin-top:8px;
+}
+
+.chip {
+  display:inline-block;
+  font-family:"source-code-pro", monospace;
+  font-weight:500;
+  font-size:21px;
+  letter-spacing:0.08em;
+  color:#C6CBD2;
+  background:#15171C;
+  border:1px solid #2A2E36;
+  border-radius:8px;
+  padding:12px 18px;
+}
+.chip.on { border-color:#FF7A1A; color:#FF7A1A; background:#1B1408; }
+
+table.t { width:100%; border-collapse:collapse; }
+.t th {
+  font-family:"source-code-pro", monospace;
+  font-weight:500;
+  font-size:21px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#5A6068;
+  text-align:left;
+  padding:0 16px 18px 0;
+  border-bottom:1px solid #2A2E36;
+}
+.t td {
+  font-family:"acumin-pro", sans-serif;
+  font-size:29px;
+  color:#C6CBD2;
+  padding:20px 16px 20px 0;
+  border-bottom:1px solid #1B1E24;
+}
+.t td.m {
+  font-family:"source-code-pro", monospace;
+  font-size:25px;
+  color:#9CA3AD;
+}
+.t td b { font-weight:700; color:#F5F5F3; }
+
+.numbered { display:flex; gap:28px; align-items:flex-start; }
+.numbered .n {
+  font-family:"source-code-pro", monospace;
+  font-weight:600;
+  font-size:24px;
+  letter-spacing:0.1em;
+  color:#FF7A1A;
+  padding-top:8px;
+  flex:0 0 52px;
+}
+
+/* speaker notes live outside the exported canvas */
+.notes { display:none; }
+</style>
+</head>
+<body>
+
+<!-- ================= 01 · TITLE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div style="position:absolute; left:0; top:0; width:14px; height:1080px; background:#FF7A1A;"></div>
+
+  <div class="pad" style="top:120px; left:152px; width:1656px;">
+    <div class="kicker">Capstone Project &nbsp;·&nbsp; Group 8 &nbsp;·&nbsp; September 2026</div>
+
+    <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:216px; line-height:0.94; letter-spacing:-0.05em; color:#F5F5F3; margin-top:44px;">
+      Delivaroo
+    </div>
+
+    <div class="lead" style="margin-top:40px; max-width:1420px;">
+      A full-stack, <b>multi-modal parcel delivery and logistics platform</b>.
+    </div>
+    <div class="body" style="margin-top:22px; max-width:1380px;">
+      Customers book a pickup. The system prices and routes it across five transport modes.
+      A nine-section admin portal dispatches, tracks and audits every delivery end to end.
+    </div>
+  </div>
+
+  <div style="position:absolute; left:152px; width:1656px; bottom:196px; height:1px; background:#23262C;"></div>
+
+  <div style="position:absolute; left:152px; width:1656px; bottom:104px; display:flex; gap:64px;">
+    <div>
+      <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:27px; color:#F5F5F3;">Charity Jepkoech</div>
+      <div class="cap" style="margin-top:8px; font-size:19px;">Backend Lead</div>
+    </div>
+    <div>
+      <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:27px; color:#F5F5F3;">Darren Amore</div>
+      <div class="cap" style="margin-top:8px; font-size:19px;">Backend Developer</div>
+    </div>
+    <div>
+      <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:27px; color:#F5F5F3;">Bruce Mwendwa</div>
+      <div class="cap" style="margin-top:8px; font-size:19px;">Frontend Lead</div>
+    </div>
+    <div>
+      <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:27px; color:#F5F5F3;">Bhoke Mwita</div>
+      <div class="cap" style="margin-top:8px; font-size:19px;">Frontend Developer</div>
+    </div>
+    <div>
+      <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:27px; color:#F5F5F3;">Clyde Bichanga</div>
+      <div class="cap" style="margin-top:8px; font-size:19px;">QA / UI / DevOps</div>
+    </div>
+  </div>
+</div>
+<div class="notes" data-slide="1">Good morning. We're Group 8, and this is Delivaroo — a parcel delivery platform we built over three weeks. The short version: a customer says where a parcel is going and what it is, and the system computes a real driving route, prices that route across five different transport modes, assigns a courier, and streams live tracking until it's delivered. Behind that there's a nine-section operations portal that dispatches and audits everything. I'll walk through the problem first, then the architecture, and spend most of the time on the engineering decisions we'd defend in a review.</div>
+
+<!-- ================= 02 · PROBLEM ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">01 — The problem</div>
+    <h1 class="h1" style="margin-top:34px; max-width:1560px;">Parcel delivery runs on<br>WhatsApp and guesswork.</h1>
+
+    <div style="position:absolute; left:0; top:420px; width:1696px; display:flex; gap:34px;">
+      <div class="card" style="width:542px; height:392px;">
+        <div class="stat sm amber">01</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; line-height:1.25; color:#F5F5F3; margin-top:34px;">No price until a rider quotes it</div>
+        <div class="body sm" style="margin-top:20px;">A sender cannot plan, compare or budget a delivery before committing to it.</div>
+      </div>
+      <div class="card" style="width:542px; height:392px;">
+        <div class="stat sm amber">02</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; line-height:1.25; color:#F5F5F3; margin-top:34px;">No visibility once it leaves</div>
+        <div class="body sm" style="margin-top:20px;">No location, no ETA, and no record of who handled the parcel along the way.</div>
+      </div>
+      <div class="card" style="width:542px; height:392px;">
+        <div class="stat sm amber">03</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; line-height:1.25; color:#F5F5F3; margin-top:34px;">No audit trail for operators</div>
+        <div class="body sm" style="margin-top:20px;">Dispatch lives in spreadsheets — no capacity view, no single source of truth for pricing.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>The problem</span><span>02</span></div>
+</div>
+<div class="notes" data-slide="2">Parcel delivery in Kenyan cities is fragmented and opaque, and it's opaque on both sides of the transaction. If you're sending something, you don't know what it costs until a rider quotes you, you can't see where it is once it's gone, and there's no record of who touched it. If you're running the operation, it's worse — dispatch happens on WhatsApp and spreadsheets, so there's no audit trail, no view of what capacity you have, and no single place where pricing is decided. Those are three different problems, but they all come from the same missing thing: a system of record. That's what we built.</div>
+
+<!-- ================= 03 · SOLUTION ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">02 — The solution</div>
+    <h1 class="h1" style="margin-top:34px;">One system, two faces.</h1>
+
+    <div style="position:absolute; left:0; top:340px; width:1696px; display:flex; gap:40px;">
+      <div class="card" style="width:828px; height:472px; padding:52px;">
+        <div class="cap amber" style="color:#FF7A1A;">Customer side</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:46px; line-height:1.2; color:#F5F5F3; margin-top:26px;">Say where it's going.<br>Get a real price.</div>
+        <div class="body sm" style="margin-top:28px;">
+          The platform computes the actual driving route, prices <b>every eligible transport mode</b>
+          against that route and that parcel, assigns an agent, and streams live tracking — a moving
+          map marker and a counting-down ETA.
+        </div>
+      </div>
+      <div class="card" style="width:828px; height:472px; padding:52px;">
+        <div class="cap" style="color:#4DA3FF;">Operations side</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:46px; line-height:1.2; color:#F5F5F3; margin-top:26px;">Dispatch, track,<br>and account for it.</div>
+        <div class="body sm" style="margin-top:28px;">
+          A gated admin portal with <b>nine sections</b>: dispatch board, courier roster, transport
+          capacity, accounts and roles, reports, notification outbox, audit trail, and platform
+          settings.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>The solution</span><span>03</span></div>
+</div>
+<div class="notes" data-slide="3">Delivaroo is one system presenting two quite different faces. On the customer side, you describe the parcel and where it's going, and the platform does the work — it computes the real driving route, prices every mode that's actually eligible for that route and that parcel, finds you an agent, and then tracks it live. On the operations side, there's a gated portal with nine sections that handles dispatch, the courier roster, capacity, accounts, reporting and the audit trail. The important thing is that these aren't two applications — they're one data model with two views and a permission layer between them. Let me show you the customer journey first.</div>
+
+<!-- ================= 04 · CUSTOMER JOURNEY ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">03 — Customer journey</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Where → What → How → Price → Track</h1>
+
+    <div class="cap" style="margin-top:76px;">Booking</div>
+    <div style="margin-top:24px; display:flex; align-items:center; gap:16px;">
+      <div class="node on" style="width:292px;"><div class="node-t">Where?</div><div class="node-s">search · locate · tap map</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#FF7A1A" stroke-width="1.5" fill="none"/></svg>
+      <div class="node on" style="width:292px;"><div class="node-t">What?</div><div class="node-s">weight · type · dimensions</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#FF7A1A" stroke-width="1.5" fill="none"/></svg>
+      <div class="node on" style="width:292px;"><div class="node-t">How?</div><div class="node-s">five modes, priced live</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#FF7A1A" stroke-width="1.5" fill="none"/></svg>
+      <div class="node on" style="width:292px;"><div class="node-t">Price</div><div class="node-s">server-computed quote</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#FF7A1A" stroke-width="1.5" fill="none"/></svg>
+      <div class="node on" style="width:292px;"><div class="node-t">Request pickup</div><div class="node-s">sign in · confirm</div></div>
+    </div>
+
+    <div class="cap" style="margin-top:64px;">Fulfilment</div>
+    <div style="margin-top:24px; display:flex; align-items:center; gap:16px;">
+      <div class="node" style="width:292px;"><div class="node-t">Agent assigned</div><div class="node-s">who · vehicle · distance</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+      <div class="node" style="width:292px;"><div class="node-t">Picked up</div><div class="node-s">weight verified</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+      <div class="node" style="width:292px;"><div class="node-t">In transit</div><div class="node-s">location updates</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+      <div class="node" style="width:292px;"><div class="node-t">Track live</div><div class="node-s">marker · timeline · ETA</div></div>
+      <svg width="46" height="14" viewBox="0 0 46 14"><path d="M0 7 H38 M31 2 L38 7 L31 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+      <div class="node term" style="width:292px;"><div class="node-t">Delivered</div><div class="node-s">terminal state</div></div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Customer journey</span><span>04</span></div>
+</div>
+<div class="notes" data-slide="4">The journey splits cleanly into booking and fulfilment. In booking, you pick pickup and destination — by type-ahead search, by "use my location", or by tapping the map — and the route, distance and duration draw themselves. Then you declare the parcel, and then you choose how it travels: four or five cards, priced live against this specific route and this specific parcel. Then you request pickup and confirm. Fulfilment is the half you watch rather than drive: an agent is assigned, the parcel is picked up and weighed, and from there you get a moving marker, a seven-stage timeline and a countdown that advances with the clock. Every one of those pricing cards is computed server-side — I'll come back to why that matters.</div>
+
+<!-- ================= 05 · ARCHITECTURE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">04 — System architecture</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Three tiers, one contract.</h1>
+
+    <div style="position:absolute; left:0; top:200px; width:1696px; display:flex; align-items:stretch; gap:28px;">
+      <div class="card" style="width:520px; height:392px; padding:40px;">
+        <div class="cap" style="color:#4DA3FF;">Client</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:38px; line-height:1.2; color:#F5F5F3; margin-top:20px;">React 18 + Vite SPA</div>
+        <div class="mono" style="font-size:24px; line-height:1.85; margin-top:22px;">
+          Redux Toolkit · 6 slices<br>
+          React Router 6<br>
+          Leaflet / React-Leaflet<br>
+          <span style="color:#5A6068;">deployed on Vercel</span>
+        </div>
+      </div>
+
+      <div style="width:104px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;">
+        <div class="mono" style="font-size:19px; letter-spacing:0.1em; color:#FF7A1A;">HTTPS</div>
+        <svg width="88" height="14" viewBox="0 0 88 14"><path d="M0 7 H80 M73 2 L80 7 L73 12" stroke="#FF7A1A" stroke-width="1.5" fill="none"/></svg>
+        <div class="mono" style="font-size:19px; letter-spacing:0.1em; color:#5A6068;">JWT</div>
+        <svg width="88" height="14" viewBox="0 0 88 14"><path d="M88 7 H8 M15 2 L8 7 L15 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+        <div class="mono" style="font-size:19px; letter-spacing:0.1em; color:#5A6068;">JSON</div>
+      </div>
+
+      <div class="card" style="width:520px; height:392px; padding:40px;">
+        <div class="cap" style="color:#FF7A1A;">API</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:38px; line-height:1.2; color:#F5F5F3; margin-top:20px;">Flask 3 REST API</div>
+        <div class="mono" style="font-size:24px; line-height:1.85; margin-top:22px;">
+          Flask-RESTful resources<br>
+          17 service modules<br>
+          SQLAlchemy 2 ORM<br>
+          <span style="color:#5A6068;">Render + Gunicorn</span>
+        </div>
+      </div>
+
+      <div style="width:104px; display:flex; align-items:center; justify-content:center;">
+        <svg width="88" height="14" viewBox="0 0 88 14"><path d="M0 7 H80 M73 2 L80 7 L73 12" stroke="#3A3F49" stroke-width="1.5" fill="none"/></svg>
+      </div>
+
+      <div class="card" style="width:392px; height:392px; padding:40px;">
+        <div class="cap" style="color:#7A818B;">Data</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:38px; line-height:1.2; color:#F5F5F3; margin-top:20px;">PostgreSQL 16</div>
+        <div class="mono" style="font-size:24px; line-height:1.85; margin-top:22px;">
+          13 models<br>
+          Alembic migrations<br>
+          UUID primary keys
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:650px; width:1696px; display:flex; align-items:center; gap:20px;">
+      <div class="cap" style="flex:0 0 auto;">External</div>
+      <div style="flex:1; height:1px; background:#23262C;"></div>
+      <div class="chip">Google Geocoding API</div>
+      <div class="chip">Google Routes API</div>
+      <div class="chip">SMTP</div>
+    </div>
+
+    <div class="body sm" style="position:absolute; left:0; top:730px; width:1696px;">
+      <b>Layering discipline:</b> <span class="mono" style="font-size:26px;">resources/</span> handles HTTP and validation,
+      <span class="mono" style="font-size:26px;">services/</span> holds business logic,
+      <span class="mono" style="font-size:26px;">models/</span> handles persistence. No business rule lives in a route handler.
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Architecture</span><span>05</span></div>
+</div>
+<div class="notes" data-slide="5">Architecturally this is a conventional three-tier application, and we kept it conventional on purpose. A React single-page app talks over HTTPS to a Flask REST API using JWTs, and the API owns a PostgreSQL database. Google's Geocoding and Routes APIs and an SMTP server sit at the edge, reached only by the backend. The part I'd point at is the layering rule at the bottom: resources handle HTTP and validation, services hold business logic, models handle persistence — and no business rule is allowed to live in a route handler. That's what makes the logic testable without an HTTP request, and it's why we could expose the same service under two different route aliases without duplicating anything.</div>
+
+<!-- ================= 06 · TECH STACK ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">05 — Tech stack</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Chosen for boring reliability.</h1>
+
+    <div style="position:absolute; left:0; top:230px; width:1696px; display:flex; gap:24px;">
+      <div style="width:406px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Frontend</div>
+        <div class="mono" style="font-size:25px; line-height:2.0; margin-top:20px;">React 18.3<br>Vite 5<br>React Router 6.30<br>Redux Toolkit 2.2<br>React-Redux 9.1</div>
+      </div>
+      <div style="width:406px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Backend</div>
+        <div class="mono" style="font-size:25px; line-height:2.0; margin-top:20px;">Python 3.12<br>Flask 3.1.3<br>Flask-RESTful 0.3.10<br>SQLAlchemy 2.0.52<br>Flask-Migrate 4.1</div>
+      </div>
+      <div style="width:406px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Auth &amp; maps</div>
+        <div class="mono" style="font-size:25px; line-height:2.0; margin-top:20px;">Flask-JWT-Extended 4.7<br>bcrypt 5.0<br>flask-cors 6.0<br>Leaflet 1.9<br>Google Geocoding / Routes</div>
+      </div>
+      <div style="width:406px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Test &amp; ship</div>
+        <div class="mono" style="font-size:25px; line-height:2.0; margin-top:20px;">pytest 9.1 + pytest-cov<br>Jest 29 + RTL 16<br>GitHub Actions<br>Vercel (web)<br>Render + Gunicorn 23</div>
+      </div>
+    </div>
+
+    <div class="body" style="position:absolute; left:0; top:700px; width:1696px;">
+      Nothing here is exotic. Every choice is a mainstream, well-documented tool the whole team could
+      read on day one — the interesting decisions live in <b>how the code is arranged</b>, not in what it imports.
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Tech stack</span><span>06</span></div>
+</div>
+<div class="notes" data-slide="6">Here's the stack grouped by layer. React, Vite and Redux Toolkit on the front; Flask, Flask-RESTful and SQLAlchemy on the back; JWT and bcrypt for auth; Leaflet in the browser with Google's Geocoding and Routes APIs called server-side. Testing is pytest on one side and Jest with React Testing Library on the other, and it ships through GitHub Actions to Vercel and Render. I want to be honest that none of this is exotic — that was deliberate. We picked mainstream tools that five people could all read on day one, and we spent our thinking budget on how the code is arranged instead. That's what the rest of the deck is about.</div>
+
+<!-- ================= 07 · DATA MODEL ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">06 — Data model</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Thirteen tables, one central entity.</h1>
+
+    <div style="position:absolute; left:0; top:250px; width:1696px; height:280px;">
+      <svg width="1696" height="280" viewBox="0 0 1696 280" style="position:absolute; left:0; top:0;">
+        <path d="M392 74 H452 M445 69 L452 74 L445 79" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M1044 74 H1104 M1097 69 L1104 74 L1097 79" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M718 222 V152 M713 159 L718 152 L723 159" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+      </svg>
+
+      <div class="node" style="position:absolute; left:0; top:26px; width:392px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t mono" style="font-family:'source-code-pro',monospace; font-size:30px;">User</div>
+        <div class="node-s">identity · role · is_active</div>
+      </div>
+
+      <div class="node on" style="position:absolute; left:452px; top:26px; width:592px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t mono" style="font-family:'source-code-pro',monospace; font-size:30px; color:#FF7A1A;">Parcel</div>
+        <div class="node-s" style="color:#A8814E;">tracking no. · coordinates · status · price · mode</div>
+      </div>
+
+      <div class="node" style="position:absolute; left:1104px; top:26px; width:592px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t mono" style="font-family:'source-code-pro',monospace; font-size:30px;">StatusHistory</div>
+        <div class="node-s">append-only · who · when · where</div>
+      </div>
+
+      <div class="node" style="position:absolute; left:452px; top:222px; width:592px; height:58px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="node-t mono" style="font-family:'source-code-pro',monospace; font-size:26px;">WeightCategory</div>
+        <div class="node-s" style="margin:0 0 0 18px;">base_price · price_per_km</div>
+      </div>
+    </div>
+
+    <div class="cap" style="position:absolute; left:0; top:576px;">The other nine</div>
+    <div style="position:absolute; left:0; top:622px; width:1696px; display:flex; flex-wrap:wrap; gap:14px;">
+      <div class="chip">Profile</div>
+      <div class="chip">Address</div>
+      <div class="chip">DeliveryAgent</div>
+      <div class="chip">RefreshToken</div>
+      <div class="chip">PasswordResetToken</div>
+      <div class="chip">Notification</div>
+      <div class="chip">NotificationDelivery</div>
+      <div class="chip">NotificationPreference</div>
+      <div class="chip">AuditLog</div>
+    </div>
+
+    <div class="body" style="position:absolute; left:0; top:772px; width:1696px;">
+      <b>Every primary key is a UUID</b> — resources are not guessable and not enumerable by construction.
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Data model</span><span>07</span></div>
+</div>
+<div class="notes" data-slide="7">There are thirteen tables, but four of them carry the story. A User owns Parcels; Parcel is the central entity holding the tracking number, the coordinates, status, price and transport mode; and every status change appends a row to StatusHistory with who changed it, when, where and why. WeightCategory holds the tariff bands that pricing reads. The other nine handle profiles, addresses, couriers, tokens, notifications and audit. One detail worth flagging: every primary key is a UUID, not an auto-incrementing integer. That means you can't guess a resource ID and you can't enumerate the table by counting upward — it's a security property you get from a schema decision.</div>
+
+<!-- ================= 08 · PRICING ENGINE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">07 — The pricing engine</div>
+    <h1 class="h1" style="margin-top:30px;">Price is computed<br>server-side, always.</h1>
+
+    <div class="card accent" style="position:absolute; left:0; top:420px; width:1696px; padding:56px 60px;">
+      <div class="mono" style="font-size:37px; letter-spacing:-0.01em; color:#F5F5F3; white-space:nowrap;">
+        price = base_price + (price_per_km <span class="amber">×</span> measured_route_distance)
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:606px; width:1696px; display:flex; gap:40px;">
+      <div style="width:828px;">
+        <div class="cap amber" style="color:#FF7A1A;">The client cannot set its own fare</div>
+        <div class="body sm" style="margin-top:20px;">
+          When coordinates are present the API <b>explicitly discards</b> any client-supplied
+          <span class="mono" style="font-size:26px;">price</span>,
+          <span class="mono" style="font-size:26px;">distance</span> or
+          <span class="mono" style="font-size:26px;">duration</span>. The browser renders a quote; it never authors one.
+        </div>
+      </div>
+      <div style="width:828px;">
+        <div class="cap amber" style="color:#FF7A1A;">Real roads, not straight lines</div>
+        <div class="body sm" style="margin-top:20px;">
+          Distance is the <b>driving route</b> from the Google Routes API — not a great-circle
+          approximation — with a haversine fallback when the provider is unavailable.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Pricing engine</span><span>08</span></div>
+</div>
+<div class="notes" data-slide="8">This is the claim I'd most want to defend. Price is always computed on the server. The formula itself is simple — a base price plus a per-kilometre rate times the measured distance — but two things make it trustworthy. First, when the request carries coordinates, the API explicitly throws away any price, distance or duration the client sent. The browser renders a quote; it never authors one. If we trusted the client here, anyone with developer tools could post their own fare. Second, the distance is a real driving route from Google's Routes API, not a straight line between two points, because a straight line badly underprices anything that has to go around a lake or through a city. There's a haversine fallback if the provider is down.</div>
+
+<!-- ================= 09 · MULTI-MODAL ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">08 — Multi-modal transport</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Five ways to move a parcel.</h1>
+
+    <table class="t" style="position:absolute; left:0; top:210px; width:1696px;">
+      <tr>
+        <th style="width:280px;">Mode</th>
+        <th style="width:150px;">Base</th>
+        <th style="width:230px;">Per km</th>
+        <th style="width:150px;">Per kg</th>
+        <th style="width:150px;">Floor</th>
+        <th>Eligible when</th>
+      </tr>
+      <tr>
+        <td><b>Road</b></td><td class="m">—</td><td class="m">40 <span style="color:#5A6068;">→ 6</span></td><td class="m">50</td><td class="m">200</td>
+        <td class="m">≤ 1,500 km · ≤ 2,000 kg</td>
+      </tr>
+      <tr>
+        <td><b>Motorbike</b></td><td class="m">60</td><td class="m">28</td><td class="m">22</td><td class="m">150</td>
+        <td class="m">≤ 45 km · ≤ 20 kg · ≤ 70 cm side</td>
+      </tr>
+      <tr>
+        <td><b>Air</b></td><td class="m">1,500</td><td class="m">11</td><td class="m">240</td><td class="m">2,000</td>
+        <td class="m">≥ 120 km · ≤ 250 kg</td>
+      </tr>
+      <tr>
+        <td><b>Ship</b></td><td class="m">900</td><td class="m">4.5</td><td class="m">28</td><td class="m">1,400</td>
+        <td class="m">≥ 200 km <span class="amber">and</span> an end within 90 km of a port</td>
+      </tr>
+      <tr>
+        <td><b>Drone</b></td><td class="m">350</td><td class="m">60</td><td class="m">110</td><td class="m">700</td>
+        <td class="m">≤ 30 km · ≤ 5 kg · ≤ 45 cm side</td>
+      </tr>
+    </table>
+
+    <div class="card accent" style="position:absolute; left:0; top:690px; width:1696px; padding:36px 44px;">
+      <div class="body sm" style="color:#C6CBD2;">
+        <b>An ineligible mode is disabled with a stated reason</b> — “Sea freight starts at 200 km” —
+        never silently dropped. A greyed-out card with no explanation is a dead end.
+      </div>
+    </div>
+
+    <div class="cap" style="position:absolute; left:0; top:158px;">All tariffs in KES · road charges 40/km for the first 50 km, then 6/km</div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Transport modes</span><span>09</span></div>
+</div>
+<div class="notes" data-slide="9">Five transport modes, each with its own tariff and its own eligibility rules. Road is the default; motorbike is cheap but capped at 45 kilometres and 20 kilos; air has a high base but a low per-kilometre rate, so it wins on long hauls; ship is cheapest per kilometre but needs both ends near a port; drone is fast and expensive with tight weight and size limits. The rule I want to highlight is at the bottom. When a mode doesn't qualify, we don't hide the card — we disable it and say why. "Sea freight starts at 200 kilometres" tells the customer something. A greyed-out card with no explanation is a dead end, so we made the reason part of the data model rather than an afterthought in the UI.</div>
+
+<!-- ================= 10 · PRICING NUANCE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">09 — Pricing nuance</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Four refinements that stop it being naïve.</h1>
+
+    <div style="position:absolute; left:0; top:250px; width:1696px; display:flex; flex-wrap:wrap; gap:32px;">
+      <div class="card" style="width:832px; height:250px;">
+        <div class="numbered">
+          <div class="n">01</div>
+          <div style="flex:1;">
+            <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; color:#F5F5F3;">Line-haul banding</div>
+            <div class="body sm" style="margin-top:16px;">40/km is a cross-town courier rate and absurd over 400 km. Distance past the first 50 km is charged at <b>6/km</b> instead.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="width:832px; height:250px;">
+        <div class="numbered">
+          <div class="n">02</div>
+          <div style="flex:1;">
+            <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; color:#F5F5F3;">Priority as a multiplier pair</div>
+            <div class="body sm" style="margin-top:16px;">Express is <b>×1.45 price</b> and <b>×0.72 time</b> applied to whichever vehicle was chosen — not a sixth tariff to maintain.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="width:832px; height:250px;">
+        <div class="numbered">
+          <div class="n">03</div>
+          <div style="flex:1;">
+            <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; color:#F5F5F3;">Volumetric weight</div>
+            <div class="body sm" style="margin-top:16px;"><span class="mono" style="font-size:26px;">L×W×H ÷ 5000</span> — a big light parcel is charged on the space it occupies. Dimensions are also what disqualify a drone.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="width:832px; height:250px;">
+        <div class="numbered">
+          <div class="n">04</div>
+          <div style="flex:1;">
+            <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:36px; color:#F5F5F3;">Declared vs. verified weight</div>
+            <div class="body sm" style="margin-top:16px;">The typed weight buys an <b>estimate</b>. Billing uses what an admin put on the scale; under-declaration beyond 0.5 kg or 20% is flagged.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Pricing nuance</span><span>10</span></div>
+</div>
+<div class="notes" data-slide="10">A flat rate per kilometre falls apart quickly, so there are four refinements. Line-haul banding: forty shillings a kilometre is a sensible cross-town courier rate and completely absurd over four hundred kilometres, so anything past the first fifty is charged at six. Priority is a multiplier pair rather than a separate tariff — express is 1.45 times the price and 0.72 times the duration, applied to whatever vehicle you picked, so we don't maintain ten tariffs instead of five. Volumetric weight means a large light parcel is charged for the space it occupies. And the weight you type only buys an estimate — the billable figure is what an admin actually weighed, with under-declaration past a tolerance flagged to operations.</div>
+
+<!-- ================= 11 · STATE MACHINE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">10 — The status state machine</div>
+    <h1 class="h1 sm" style="margin-top:30px;">The illegal transition is impossible,<br>not merely unhandled.</h1>
+
+    <div style="position:absolute; left:0; top:290px; width:1696px; height:424px;">
+      <svg width="1696" height="424" viewBox="0 0 1696 424" style="position:absolute; left:0; top:0;">
+        <path d="M292 52 H344 M337 47 L344 52 L337 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M643 52 H695 M688 47 L695 52 L688 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M994 52 H1046 M1039 47 L1046 52 L1039 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M1345 52 H1397 M1390 47 L1397 52 L1390 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+
+        <path d="M146 104 V270" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M497 104 V270" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M848 104 V270" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M1199 104 V270" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M146 270 H1199" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M848 270 V314 M842 307 L848 314 L854 307" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+      </svg>
+
+      <div class="node on" style="position:absolute; left:0; top:0; width:292px; height:104px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#FF7A1A; letter-spacing:0.04em;">PENDING</div>
+      </div>
+      <div class="node" style="position:absolute; left:351px; top:0; width:292px; height:104px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; letter-spacing:0.04em;">PICKED_UP</div>
+      </div>
+      <div class="node" style="position:absolute; left:702px; top:0; width:292px; height:104px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; letter-spacing:0.04em;">IN_TRANSIT</div>
+      </div>
+      <div class="node" style="position:absolute; left:1053px; top:0; width:292px; height:104px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:24px; letter-spacing:0.02em;">OUT_FOR_DELIVERY</div>
+      </div>
+      <div class="node term" style="position:absolute; left:1404px; top:0; width:292px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3; letter-spacing:0.04em;">DELIVERED</div>
+        <div class="node-s" style="margin-top:6px;">terminal</div>
+      </div>
+
+      <div class="node term" style="position:absolute; left:702px; top:320px; width:292px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3; letter-spacing:0.04em;">CANCELLED</div>
+        <div class="node-s" style="margin-top:6px;">terminal · soft · idempotent</div>
+      </div>
+    </div>
+
+    <div class="body sm" style="position:absolute; left:0; top:750px; width:1696px;">
+      Enforced by an explicit <span class="mono" style="font-size:26px;">VALID_TRANSITIONS</span> map in
+      <span class="mono" style="font-size:26px;">status_history_service.py</span> — not by scattered
+      <span class="mono" style="font-size:26px;">if</span> statements. Every transition writes a
+      <span class="mono" style="font-size:26px;">StatusHistory</span> row.
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>State machine</span><span>11</span></div>
+</div>
+<div class="notes" data-slide="11">A parcel moves through five states, and any of the first four can be cancelled. Delivered and cancelled are terminal — they have zero outgoing transitions. What matters is how that's enforced. There's a single explicit VALID_TRANSITIONS map in the status history service, so an illegal move isn't something we forgot to handle — it's something the code has no path to express. Scattered if-statements would have given us the same behaviour on a good day and a bug on a bad one. Two more details: every transition appends a StatusHistory row, so the audit trail is a side effect of the design rather than extra work; and cancellation is soft and idempotent, so cancelling twice returns 200 and operational history is never destroyed.</div>
+
+<!-- ================= 12 · LIVE TRACKING ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">11 — Live tracking</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Five states for the API.<br>Seven stages for the human.</h1>
+
+    <div style="position:absolute; left:0; top:300px; width:1696px; height:150px;">
+      <svg width="1696" height="150" viewBox="0 0 1696 150" style="position:absolute; left:0; top:0;">
+        <path d="M28 40 H1668" stroke="#23262C" stroke-width="2" fill="none"/>
+        <path d="M28 40 H1120" stroke="#FF7A1A" stroke-width="2" fill="none"/>
+        <circle cx="28"   cy="40" r="9" fill="#FF7A1A"/>
+        <circle cx="301"  cy="40" r="9" fill="#FF7A1A"/>
+        <circle cx="574"  cy="40" r="9" fill="#FF7A1A"/>
+        <circle cx="847"  cy="40" r="9" fill="#FF7A1A"/>
+        <circle cx="1120" cy="40" r="13" fill="#FF7A1A"/>
+        <circle cx="1393" cy="40" r="9" fill="#0E0F12" stroke="#3A3F49" stroke-width="2"/>
+        <circle cx="1666" cy="40" r="9" fill="#0E0F12" stroke="#3A3F49" stroke-width="2"/>
+      </svg>
+      <div style="position:absolute; left:0; top:74px; width:1696px; display:flex;">
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#C6CBD2;">Requested</div></div>
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#C6CBD2;">Agent assigned</div></div>
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#C6CBD2;">Picked up</div></div>
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#C6CBD2;">Dispatched</div></div>
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#FF7A1A;">In transit</div></div>
+        <div style="width:273px;"><div class="mono" style="font-size:23px; color:#5A6068;">Arriving</div></div>
+        <div style="width:auto;"><div class="mono" style="font-size:23px; color:#5A6068;">Delivered</div></div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:520px; width:1696px; display:flex; gap:32px;">
+      <div class="card" style="width:544px; height:262px;">
+        <div class="cap amber" style="color:#FF7A1A;">Derived, not duplicated</div>
+        <div class="body sm" style="margin-top:18px;"><span class="mono" style="font-size:26px;">journeyStages()</span> derives seven readable stages from the status plus how far along the parcel is.</div>
+      </div>
+      <div class="card" style="width:544px; height:262px;">
+        <div class="cap amber" style="color:#FF7A1A;">A marker that moves</div>
+        <div class="body sm" style="margin-top:18px;">The vehicle advances along the <b>measured polyline</b> — the same route the price was computed from.</div>
+      </div>
+      <div class="card" style="width:544px; height:262px;">
+        <div class="cap amber" style="color:#FF7A1A;">An ETA that counts down</div>
+        <div class="body sm" style="margin-top:18px;">Clock-driven interpolation, so the estimate advances while the tab sits open.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Live tracking</span><span>12</span></div>
+</div>
+<div class="notes" data-slide="12">The backend has five canonical states, but five states make a poor progress bar — "in transit" covers most of the journey and tells the customer nothing. So the frontend derives seven human-facing stages from the status plus how far through the route the parcel is. The key word is derived. We didn't add a second status column that could disagree with the first; there's one vocabulary for the API and one for the human, and the second is computed from the first. Alongside that, the map marker moves along the same measured polyline the price was calculated from, and the ETA counts down with the clock. I'll be upfront now: this is interpolation, not GPS telemetry — I'll come back to that in limitations.</div>
+
+<!-- ================= 13 · SECURITY ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">12 — Security model</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Five decisions worth the trouble.</h1>
+
+    <div style="position:absolute; left:0; top:230px; width:1696px; display:flex; gap:28px;">
+      <div class="card" style="width:546px; height:268px;">
+        <div class="cap" style="color:#FF7A1A;">Passwords</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:34px; line-height:1.25; color:#F5F5F3; margin-top:20px;">bcrypt, per-password salt</div>
+        <div class="body sm" style="margin-top:16px; font-size:27px;">Plaintext is never persisted, anywhere.</div>
+      </div>
+      <div class="card" style="width:546px; height:268px;">
+        <div class="cap" style="color:#FF7A1A;">Refresh tokens</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:34px; line-height:1.25; color:#F5F5F3; margin-top:20px;">Stored only as SHA-256 hashes</div>
+        <div class="body sm" style="margin-top:16px; font-size:27px;">A database leak yields no usable tokens. 7-day expiry, revocable.</div>
+      </div>
+      <div class="card" style="width:546px; height:268px;">
+        <div class="cap" style="color:#FF7A1A;">Cross-user reads</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:34px; line-height:1.25; color:#F5F5F3; margin-top:20px;">404, never 403</div>
+        <div class="body sm" style="margin-top:16px; font-size:27px;">Someone else's parcel answers exactly like a nonexistent one. Ownership never leaks.</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:540px; width:1696px; display:flex; gap:28px;">
+      <div class="card" style="width:834px; height:250px;">
+        <div class="cap" style="color:#FF7A1A;">Password reset</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:34px; line-height:1.25; color:#F5F5F3; margin-top:20px;">Non-enumerating by design</div>
+        <div class="body sm" style="margin-top:16px; font-size:27px;">Always answers “if the email exists, a link will be sent”. A successful reset revokes every refresh token on the account.</div>
+      </div>
+      <div class="card" style="width:834px; height:250px;">
+        <div class="cap" style="color:#FF7A1A;">Authorization</div>
+        <div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:34px; line-height:1.25; color:#F5F5F3; margin-top:20px;">The backend guard is the control</div>
+        <div class="body sm" style="margin-top:16px; font-size:27px;">An <span class="mono" style="font-size:25px;">@admin_required</span> decorator verifies the JWT role claim server-side. The frontend guard is only convenience.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Security</span><span>13</span></div>
+</div>
+<div class="notes" data-slide="13">Five security decisions. Passwords are bcrypt-hashed with a per-password salt. Refresh tokens are opaque and stored only as SHA-256 hashes, so a database leak doesn't hand an attacker working tokens — same reasoning as password hashing, applied consistently. Cross-user reads return 404 rather than 403, because 403 confirms the resource exists and belongs to someone; a 404 is indistinguishable from a parcel that was never created. Password reset always says "if the email exists, a link will be sent", so you can't use it to discover who has an account, and a successful reset revokes every refresh token. And authorization is enforced by a decorator that checks the JWT role claim server-side — the frontend guard is convenience, the backend guard is the control.</div>
+
+<!-- ================= 14 · ADMIN PORTAL ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">13 — The admin portal</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Nine sections, permission-driven.</h1>
+
+    <div style="position:absolute; left:0; top:200px; width:1072px; display:flex; flex-wrap:wrap; gap:20px;">
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Overview</div><div class="node-s">the four figures a shift lead acts on</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Deliveries</div><div class="node-s">the dispatch board</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Couriers</div><div class="node-s">who is on shift, what they carry</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Capacity</div><div class="node-s">availability per mode, live load</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Accounts</div><div class="node-s">roles and suspension</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Reports</div><div class="node-s">volume, revenue, punctuality, CSV</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Notifications</div><div class="node-s">every message the platform sent</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Audit trail</div><div class="node-s">who did what, to whose delivery</div>
+      </div>
+      <div class="node" style="width:344px; height:132px; padding:24px 26px; text-align:left;">
+        <div class="node-t" style="font-size:30px;">Settings</div><div class="node-s">booking pause, notices, demo data</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:1128px; top:200px; width:568px;">
+      <div class="cap amber" style="color:#FF7A1A;">Roles</div>
+      <div style="margin-top:22px;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3;">CUSTOMER</div>
+        <div class="body sm" style="font-size:26px; margin-top:6px;">Own deliveries only.</div>
+      </div>
+      <div style="margin-top:26px;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3;">DISPATCHER</div>
+        <div class="body sm" style="font-size:26px; margin-top:6px;">Board, roster, capacity. No accounts, no settings — <b>including by URL</b>.</div>
+      </div>
+      <div style="margin-top:26px;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3;">ADMIN</div>
+        <div class="body sm" style="font-size:26px; margin-top:6px;">Everything.</div>
+      </div>
+
+      <div style="margin-top:38px; height:1px; background:#23262C;"></div>
+
+      <div class="body sm" style="margin-top:32px; font-size:27px;">
+        One <span class="mono" style="font-size:25px;">SECTIONS</span> table drives the sidebar, the page heading
+        <b>and</b> the route guard — so a section can never appear in navigation while being closed to the
+        person looking at it.
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Admin portal</span><span>14</span></div>
+</div>
+<div class="notes" data-slide="14">The operations portal has nine sections, from the dispatch board through to the audit trail and platform settings. Three roles: customers see only their own deliveries, dispatchers get the board, roster and capacity but not accounts or settings — and that holds even if they type the URL directly — and admins get everything. The design decision here is that it's permission-driven rather than screen-driven. A single SECTIONS table drives the sidebar, the page heading and the route guard together, which means a section physically cannot appear in someone's navigation while being closed to them. Those three things can't drift apart because they're the same data. And admin actions are live — change a status and the customer's tracking tab updates without a reload.</div>
+
+<!-- ================= 15 · NOTIFICATIONS ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">14 — Notifications</div>
+    <h1 class="h1 sm" style="margin-top:30px;">One event, three channels, no duplicates.</h1>
+
+    <div style="position:absolute; left:0; top:260px; width:1696px; height:296px;">
+      <svg width="1696" height="296" viewBox="0 0 1696 296" style="position:absolute; left:0; top:0;">
+        <path d="M560 148 H636 M629 143 L636 148 L629 153" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M636 148 H700" stroke="#FF7A1A" stroke-width="1.5" fill="none" opacity="0"/>
+        <path d="M700 148 V40 H812 M805 35 L812 40 L805 45" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M700 148 H812 M805 143 L812 148 L805 153" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M700 148 V256 H812 M805 251 L812 256 L805 261" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+        <path d="M636 148 H700" stroke="#3A3F49" stroke-width="1.5" fill="none"/>
+      </svg>
+
+      <div class="node on" style="position:absolute; left:0; top:96px; width:560px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:28px; color:#FF7A1A;">Notification</div>
+        <div class="node-s" style="color:#A8814E;">one logical event · unique idempotency key</div>
+      </div>
+
+      <div class="node" style="position:absolute; left:812px; top:0; width:520px; height:80px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:24px;">NotificationDelivery · IN_APP</div>
+      </div>
+      <div class="node" style="position:absolute; left:812px; top:108px; width:520px; height:80px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:24px;">NotificationDelivery · EMAIL</div>
+      </div>
+      <div class="node" style="position:absolute; left:812px; top:216px; width:520px; height:80px; padding:0; display:flex; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:24px; color:#5A6068;">NotificationDelivery · SMS</div>
+      </div>
+
+      <div style="position:absolute; left:1372px; top:0px; width:324px;">
+        <div class="body sm" style="font-size:25px;">Each row carries its own status, <b>attempt count (max 3)</b> and provider reference.</div>
+      </div>
+      <div style="position:absolute; left:1372px; top:216px; width:324px;">
+        <div class="body sm" style="font-size:25px; color:#5A6068;">Safe-disabled by default. No provider call ever runs in tests.</div>
+      </div>
+    </div>
+
+    <div class="cap" style="position:absolute; left:0; top:610px;">Events</div>
+    <div style="position:absolute; left:0; top:656px; width:1696px; display:flex; flex-wrap:wrap; gap:14px;">
+      <div class="chip">WELCOME</div>
+      <div class="chip">PARCEL_CREATED</div>
+      <div class="chip">PARCEL_STATUS_CHANGED</div>
+      <div class="chip">PARCEL_LOCATION_UPDATED</div>
+      <div class="chip">PARCEL_CANCELLED</div>
+      <div class="chip">PARCEL_DESTINATION_UPDATED</div>
+      <div class="chip">PARCEL_AGENT_ASSIGNED</div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Notifications</span><span>15</span></div>
+</div>
+<div class="notes" data-slide="15">Notifications fan out. One logical event — a parcel was created, a status changed, an agent was assigned — becomes one Notification row, which then produces a separate delivery record per channel: in-app, email and SMS. Each delivery tracks its own status, its own attempt count capped at three, and a provider reference, so a failed email doesn't mark the whole event failed. The idempotency key is a unique column, which means the same event physically cannot notify twice — that's a database constraint doing the work rather than application logic hoping. Users control their channels through a preferences table. SMS is scaffolded but safe-disabled: it needs an explicit flag and a configured provider, and no real provider call ever runs in tests.</div>
+
+<!-- ================= 16 · API SURFACE ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">15 — API surface</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Roughly forty endpoints, one envelope.</h1>
+
+    <div style="position:absolute; left:0; top:200px; width:1696px; display:flex; gap:28px;">
+      <div style="width:546px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:16px; border-bottom:1px solid #2A2E36;">Auth</div>
+        <div class="mono" style="font-size:23px; line-height:1.95; margin-top:18px; color:#9CA3AD;">
+          POST /auth/register<br>POST /auth/login<br>POST /auth/refresh<br>POST /auth/logout<br>
+          POST /auth/forgot-password<br>POST /auth/reset-password<br>POST /auth/change-password<br>GET&nbsp;&nbsp;/auth/me
+        </div>
+      </div>
+      <div style="width:546px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:16px; border-bottom:1px solid #2A2E36;">Parcels</div>
+        <div class="mono" style="font-size:23px; line-height:1.95; margin-top:18px; color:#9CA3AD;">
+          POST&nbsp;&nbsp;/api/parcels<br>GET&nbsp;&nbsp;&nbsp;/api/parcels<br>GET&nbsp;&nbsp;&nbsp;/api/parcels/:id<br>
+          PATCH /api/parcels/:id<br>PATCH /api/parcels/:id/cancel<br>GET&nbsp;&nbsp;&nbsp;/api/parcels/track/:no<br>
+          GET&nbsp;&nbsp;&nbsp;/api/parcels/:id/history
+        </div>
+      </div>
+      <div style="width:546px;">
+        <div class="cap amber" style="color:#FF7A1A; padding-bottom:16px; border-bottom:1px solid #2A2E36;">Admin &amp; supporting</div>
+        <div class="mono" style="font-size:23px; line-height:1.95; margin-top:18px; color:#9CA3AD;">
+          GET&nbsp;&nbsp;&nbsp;/api/admin/parcels<br>PATCH /api/admin/parcels/:id/status<br>PATCH …/location&nbsp;·&nbsp;…/delivery-agent<br>
+          /api/weight-categories<br>/api/addresses&nbsp;·&nbsp;/api/profile<br>/api/notifications&nbsp;·&nbsp;/preferences<br>
+          /api/maps/geocode&nbsp;·&nbsp;/route<br>/api/health
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:645px; width:1696px; display:flex; gap:28px;">
+      <div class="card" style="width:834px; height:204px;">
+        <div class="cap" style="color:#FF7A1A;">Consistent envelope</div>
+        <div class="body sm" style="margin-top:14px; font-size:27px;">Every response carries <span class="mono" style="font-size:25px;">message</span> plus both a <span class="mono" style="font-size:25px;">data</span> key and a named key — stable contract, readable payload.</div>
+      </div>
+      <div class="card" style="width:834px; height:204px;">
+        <div class="cap" style="color:#FF7A1A;">Tracking numbers</div>
+        <div class="body sm" style="margin-top:14px; font-size:27px;">Cryptographically random via <span class="mono" style="font-size:25px;">secrets</span>, format <span class="mono" style="font-size:25px;">DLV-XXXXXXXXXX</span>, with a uniqueness re-roll loop.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>API surface</span><span>16</span></div>
+</div>
+<div class="notes" data-slide="16">About forty endpoints in four families: auth, parcels, admin, and supporting services like addresses, notifications and maps. Two things are worth calling out. Every response uses the same envelope — a human-readable message plus both a generic data key and a named key like "parcel" or "parcels" — so client code has a stable contract to bind to without the payload becoming unreadable, and errors always return a message written for the end user rather than a stack trace. And tracking numbers are generated with Python's secrets module in a DLV-plus-ten-characters format, with a re-roll loop on collision. Sequential tracking numbers would let anyone enumerate every parcel on the platform.</div>
+
+<!-- ================= 17 · TESTING ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">16 — Testing &amp; quality</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Authorization is tested as its own concern.</h1>
+
+    <div style="position:absolute; left:0; top:230px; width:1696px; display:flex; align-items:flex-end; gap:100px;">
+      <div>
+        <div class="stat">499</div>
+        <div class="cap" style="margin-top:26px;">Automated tests</div>
+      </div>
+      <div>
+        <div class="stat md">186</div>
+        <div class="cap" style="margin-top:22px;">Backend · 29 files</div>
+      </div>
+      <div>
+        <div class="stat md">313</div>
+        <div class="cap" style="margin-top:22px;">Frontend · 32 files</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:520px; width:1696px; display:flex; gap:28px;">
+      <div class="card" style="width:546px; height:266px;">
+        <div class="cap" style="color:#FF7A1A;">Real database in CI</div>
+        <div class="body sm" style="margin-top:18px; font-size:27px;">Backend tests run against a <b>PostgreSQL 16 service container</b> — not an in-memory stand-in — so schema behaviour is genuinely exercised.</div>
+      </div>
+      <div class="card" style="width:546px; height:266px;">
+        <div class="cap" style="color:#FF7A1A;">Authorization, separately</div>
+        <div class="body sm" style="margin-top:18px; font-size:27px;">Four dedicated files test <i>who may do what</i> apart from whether the feature works at all.</div>
+      </div>
+      <div class="card" style="width:546px; height:266px;">
+        <div class="cap" style="color:#FF7A1A;">The contract is pinned</div>
+        <div class="body sm" style="margin-top:18px; font-size:27px;"><span class="mono" style="font-size:24px;">test_frontend_api_compat.py</span> means a backend change cannot silently break the client.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Testing</span><span>17</span></div>
+</div>
+<div class="notes" data-slide="17">Roughly 499 automated tests — 186 backend functions across 29 files, and about 313 frontend cases across 32. But the count matters less than the shape. Backend tests run against a real PostgreSQL service container in CI rather than SQLite in memory, so constraints, cascades and migrations are actually exercised instead of approximated. Authorization has its own dedicated test files, separate from the functional ones, because "does this work" and "who is allowed to do this" are different questions and the second is the one that bites you. And there are contract tests pinning the shapes the frontend expects, so a backend rename can't silently break the client — it fails in CI instead of in the demo.</div>
+
+<!-- ================= 18 · CI/CD ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">17 — CI/CD &amp; deployment</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Every push runs the whole suite.</h1>
+
+    <div style="position:absolute; left:0; top:210px; width:1696px; display:flex; gap:32px;">
+      <div class="card" style="width:832px; height:384px;">
+        <div class="cap" style="color:#FF7A1A;">Frontend job</div>
+        <div class="mono" style="font-size:25px; line-height:1.95; margin-top:20px;">
+          Node 22<br>npm ci<br>ESLint over src/<br>Jest + React Testing Library<br>Vite production build
+        </div>
+      </div>
+      <div class="card" style="width:832px; height:384px;">
+        <div class="cap" style="color:#FF7A1A;">Backend job</div>
+        <div class="mono" style="font-size:25px; line-height:1.95; margin-top:20px;">
+          Python 3.12<br>PostgreSQL 16 service container<br>full pytest suite<br>python -m compileall <span style="color:#5A6068;">(syntax gate)</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:626px; width:1696px; height:120px;">
+      <svg width="1696" height="120" viewBox="0 0 1696 120" style="position:absolute; left:0; top:0;">
+        <path d="M424 60 H556 M549 55 L556 60 L549 65" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M1140 60 H1272 M1265 55 L1272 60 L1265 65" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+      </svg>
+      <div class="node" style="position:absolute; left:0; top:12px; width:424px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t">GitHub Actions</div><div class="node-s">on every push &amp; PR to develop / main</div>
+      </div>
+      <div class="node" style="position:absolute; left:556px; top:12px; width:584px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t">Vercel &nbsp;·&nbsp; Render + Gunicorn</div><div class="node-s">frontend/ → dist/ &nbsp;·&nbsp; flask db upgrade &amp;&amp; gunicorn</div>
+      </div>
+      <div class="node on" style="position:absolute; left:1272px; top:12px; width:424px; height:96px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="node-t" style="color:#FF7A1A;">/api/health</div><div class="node-s" style="color:#A8814E;">health check path</div>
+      </div>
+    </div>
+
+    <div class="body sm" style="position:absolute; left:0; top:786px; width:1696px;">
+      The migration step runs <b>as part of the release command</b>, not by hand — so a deploy and its schema can never disagree.
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>CI/CD</span><span>18</span></div>
+</div>
+<div class="notes" data-slide="18">GitHub Actions runs two jobs on every push and every pull request into develop or main. The frontend job installs cleanly, lints, runs Jest, and does a real production build — so a build failure is caught in CI rather than at deploy time. The backend job spins up a PostgreSQL 16 service container, runs the full pytest suite, and finishes with compileall as a cheap syntax gate. Deployment is Vercel for the frontend and Render with Gunicorn for the API, with /api/health as the health check path. The detail I like: the migration runs as part of the release command, so a deployed build and its database schema can never disagree with each other.</div>
+
+<!-- ================= 19 · PROCESS ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">18 — Engineering process</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Documentation first, then code.</h1>
+
+    <div style="position:absolute; left:0; top:200px; width:1696px; height:104px;">
+      <svg width="1696" height="104" viewBox="0 0 1696 104" style="position:absolute; left:0; top:0;">
+        <path d="M556 52 H684 M677 47 L684 52 L677 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+        <path d="M1140 52 H1268 M1261 47 L1268 52 L1261 57" stroke="#FF7A1A" stroke-width="1.5" fill="none"/>
+      </svg>
+      <div class="node" style="position:absolute; left:0; top:0; width:556px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3;">feature/*</div><div class="node-s">47 branches, one per feature</div>
+      </div>
+      <div class="node" style="position:absolute; left:684px; top:0; width:456px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#F5F5F3;">develop</div><div class="node-s">integration · PR + review + green CI</div>
+      </div>
+      <div class="node on" style="position:absolute; left:1268px; top:0; width:428px; height:104px; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="mono" style="font-size:26px; color:#FF7A1A;">main</div><div class="node-s" style="color:#A8814E;">production · direct pushes prohibited</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:0; top:380px; width:1696px; display:flex; gap:88px;">
+      <div><div class="stat md">391</div><div class="cap" style="margin-top:20px;">Commits</div></div>
+      <div><div class="stat md">47</div><div class="cap" style="margin-top:20px;">Branches</div></div>
+      <div><div class="stat md">5</div><div class="cap" style="margin-top:20px;">Contributors</div></div>
+      <div><div class="stat md">18 Aug<span style="font-size:60px;"> — </span>3 Sep</div><div class="cap" style="margin-top:20px;">2026</div></div>
+    </div>
+
+    <div class="card" style="position:absolute; left:0; top:590px; width:1696px; padding:40px 46px;">
+      <div class="body sm">
+        A <b>15,700-word backend PRD</b> was written before implementation and is referenced by section (§)
+        throughout the code, alongside a full API contract, a deployment runbook and a QA checklist.
+        Conventional Commits throughout — <span class="mono" style="font-size:25px;">feat:</span>
+        <span class="mono" style="font-size:25px;">fix:</span>
+        <span class="mono" style="font-size:25px;">test:</span>
+        <span class="mono" style="font-size:25px;">docs:</span>
+        <span class="mono" style="font-size:25px;">refactor:</span>
+        <span class="mono" style="font-size:25px;">chore:</span>
+        <span class="mono" style="font-size:25px;">ci:</span>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Process</span><span>19</span></div>
+</div>
+<div class="notes" data-slide="19">We ran a three-tier Git flow: feature branches merge into develop by pull request with review and green CI, and develop merges into main. Direct pushes to main are prohibited. That produced 391 commits across 47 feature branches from five contributors between the 18th of August and the 3rd of September. The part I'd underline is documentation-first. A 15,700-word backend requirements document was written before the implementation and is referenced by section number throughout the code, so when you're reading a service you can find the requirement it satisfies. Alongside it there's an API contract, a deployment runbook and a QA checklist. That's what let five people work in parallel without constantly colliding.</div>
+
+<!-- ================= 20 · DECISIONS ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">19 — Decisions worth defending</div>
+    <h1 class="h1 sm" style="margin-top:30px;">Four we would make again.</h1>
+
+    <div style="position:absolute; left:0; top:230px; width:1696px;">
+      <div style="display:flex; gap:28px; align-items:flex-start; padding-bottom:34px; border-bottom:1px solid #1B1E24;">
+        <div class="n mono" style="font-family:'source-code-pro',monospace; font-weight:600; font-size:24px; color:#FF7A1A; flex:0 0 64px; padding-top:12px;">01</div>
+        <div style="flex:0 0 700px;"><div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:42px; line-height:1.2; color:#F5F5F3;">Pricing is server-authoritative</div></div>
+        <div class="body sm" style="flex:1; padding-top:6px;">The client renders a quote; it never sets one. The API discards any price it is handed.</div>
+      </div>
+
+      <div style="display:flex; gap:28px; align-items:flex-start; padding:34px 0; border-bottom:1px solid #1B1E24;">
+        <div class="n mono" style="font-family:'source-code-pro',monospace; font-weight:600; font-size:24px; color:#FF7A1A; flex:0 0 64px; padding-top:12px;">02</div>
+        <div style="flex:0 0 700px;"><div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:42px; line-height:1.2; color:#F5F5F3;">404 instead of 403</div></div>
+        <div class="body sm" style="flex:1; padding-top:6px;">A 403 confirms the resource exists. A 404 prevents ownership enumeration entirely.</div>
+      </div>
+
+      <div style="display:flex; gap:28px; align-items:flex-start; padding:34px 0; border-bottom:1px solid #1B1E24;">
+        <div class="n mono" style="font-family:'source-code-pro',monospace; font-weight:600; font-size:24px; color:#FF7A1A; flex:0 0 64px; padding-top:12px;">03</div>
+        <div style="flex:0 0 700px;"><div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:42px; line-height:1.2; color:#F5F5F3;">An explicit transition map</div></div>
+        <div class="body sm" style="flex:1; padding-top:6px;">The illegal move has no path to be expressed — it is impossible, not merely unhandled.</div>
+      </div>
+
+      <div style="display:flex; gap:28px; align-items:flex-start; padding-top:34px;">
+        <div class="n mono" style="font-family:'source-code-pro',monospace; font-weight:600; font-size:24px; color:#FF7A1A; flex:0 0 64px; padding-top:12px;">04</div>
+        <div style="flex:0 0 700px;"><div style="font-family:'acumin-pro',sans-serif; font-weight:700; font-size:42px; line-height:1.2; color:#F5F5F3;">React-free logic modules</div></div>
+        <div class="body sm" style="flex:1; padding-top:6px;">Pricing, eligibility, journey geometry and permissions are unit-testable and mirror-able server-side.</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Decisions</span><span>20</span></div>
+</div>
+<div class="notes" data-slide="20">If you take four things from this talk, take these. Pricing is server-authoritative — the client renders a quote and never sets one, so nobody sets their own fare with developer tools. Cross-user reads return 404 rather than 403, because a 403 confirms the thing exists and belongs to someone, which is itself a leak. The status machine uses an explicit transition map, so an illegal move isn't merely unhandled — the code has no way to express it. And the frontend's core logic — pricing, transport eligibility, journey geometry, permissions — lives in modules that import neither React nor Leaflet, which means we can unit-test them directly and mirror them server-side without a rewrite.</div>
+
+<!-- ================= 21 · LIMITATIONS ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div class="pad">
+    <div class="kicker">20 — Limitations &amp; roadmap</div>
+    <h1 class="h1 sm" style="margin-top:30px;">What we did not build.</h1>
+
+    <div style="position:absolute; left:0; top:308px; width:832px;">
+      <div class="cap" style="color:#7A818B; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Honest gaps</div>
+      <div style="margin-top:28px;">
+        <div class="body sm"><b>Tracking is interpolated, not telemetry.</b> Cross-tab subscription and clock-derived movement — not WebSockets, and not real GPS from a courier device.</div>
+        <div class="body sm" style="margin-top:26px;"><b>SMS is scaffolded, not wired.</b> The model, preference and delivery record exist; no provider is connected.</div>
+        <div class="body sm" style="margin-top:26px;"><b>No payment integration.</b> Parcels are priced but not paid for.</div>
+        <div class="body sm" style="margin-top:26px;"><b>Dispatch is admin-driven.</b> Courier assignment is a human decision, not an optimiser.</div>
+      </div>
+    </div>
+
+    <div style="position:absolute; left:864px; top:308px; width:832px;">
+      <div class="cap" style="color:#FF7A1A; padding-bottom:18px; border-bottom:1px solid #2A2E36;">Next</div>
+      <div style="margin-top:28px; display:flex; flex-direction:column; gap:20px;">
+        <div class="numbered"><div class="n">→</div><div class="body sm" style="flex:1;">M-Pesa Daraja payments — the natural next step for this market</div></div>
+        <div class="numbered"><div class="n">→</div><div class="body sm" style="flex:1;">WebSocket live tracking, replacing the cross-tab subscription</div></div>
+        <div class="numbered"><div class="n">→</div><div class="body sm" style="flex:1;">A courier mobile app emitting real GPS</div></div>
+        <div class="numbered"><div class="n">→</div><div class="body sm" style="flex:1;">Automated dispatch assignment and multi-stop route optimisation</div></div>
+        <div class="numbered"><div class="n">→</div><div class="body sm" style="flex:1;">Proof-of-delivery capture — signature or photo</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="rule-foot"></div>
+  <div class="foot"><span class="foot-brand">Delivaroo</span><span>Limitations</span><span>21</span></div>
+</div>
+<div class="notes" data-slide="21">I want to be straight about the gaps, because a demo can hide them. Live tracking looks real, but it's a cross-tab subscription plus clock-driven interpolation along a known route — there are no WebSockets and no GPS coming off a courier's phone. SMS has the model, the preference and the delivery record, but no provider is connected, so it's scaffolding. There's no payment integration at all. And courier assignment is a human decision rather than an optimiser. The roadmap follows directly from that list: M-Pesa through the Daraja API is the obvious first step for this market, then WebSockets, then a courier app with real GPS, then automated dispatch and proof-of-delivery capture.</div>
+
+<!-- ================= 22 · CLOSING NUMBERS ================= -->
+<div class="slide" data-canvas-width="1920" data-canvas-height="1080">
+  <div style="position:absolute; left:0; top:0; width:14px; height:1080px; background:#FF7A1A;"></div>
+
+  <div class="pad" style="left:152px; width:1656px;">
+    <div class="kicker">Delivaroo — by the numbers</div>
+    <h1 class="h1 sm" style="margin-top:28px;">Three weeks, five people.</h1>
+
+    <div style="position:absolute; left:0; top:280px; width:1656px; display:flex; flex-wrap:wrap;">
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">13</div><div class="cap" style="margin-top:16px;">Database models</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">17</div><div class="cap" style="margin-top:16px;">Service modules</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">~40</div><div class="cap" style="margin-top:16px;">API endpoints</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">5</div><div class="cap" style="margin-top:16px;">Transport modes</div></div>
+
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">9</div><div class="cap" style="margin-top:16px;">Portal sections</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">6</div><div class="cap" style="margin-top:16px;">Redux slices</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm amber" style="color:#FF7A1A;">~499</div><div class="cap" style="margin-top:16px;">Automated tests</div></div>
+      <div style="width:414px; margin-bottom:52px;"><div class="stat sm">391</div><div class="cap" style="margin-top:16px;">Commits</div></div>
+
+      <div style="width:414px;"><div class="stat sm">47</div><div class="cap" style="margin-top:16px;">Feature branches</div></div>
+      <div style="width:414px;"><div class="stat sm">5</div><div class="cap" style="margin-top:16px;">Contributors</div></div>
+      <div style="width:828px;"><div class="stat sm">~28,700</div><div class="cap" style="margin-top:16px;">Lines of application code</div></div>
+    </div>
+  </div>
+
+  <div style="position:absolute; left:152px; width:1656px; bottom:102px; height:1px; background:#23262C;"></div>
+  <div style="position:absolute; left:152px; width:1656px; bottom:50px; display:flex; justify-content:space-between; align-items:center; font-family:'source-code-pro',monospace; font-weight:500; font-size:20px; letter-spacing:0.2em; text-transform:uppercase; color:#4A5058;">
+    <span style="color:#7A818B;">Delivaroo</span><span class="amber" style="color:#FF7A1A;">Thank you — questions?</span><span>22</span>
+  </div>
+</div>
+<div class="notes" data-slide="22">To close, the shape of the thing: 13 models, 17 service modules, about 40 endpoints, 5 transport modes, a 9-section portal, 6 Redux slices, roughly 499 automated tests, 391 commits across 47 feature branches from 5 contributors, and about 28,700 lines of application code — built in three weeks. The number I'm proudest of isn't the line count, it's the test count relative to it, because that's what let us keep changing the pricing engine and the state machine in the last week without breaking the demo. Thank you — we're happy to take questions, and we can go live in the app or into any part of the codebase you'd like to see.</div>
+
+
+
+</body>
+</html>
