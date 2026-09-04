@@ -1,16 +1,35 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { clearAuthError, login, selectAuthError, selectAuthSubmitting } from '../../store/authSlice';
 import { closeAuthModal, selectAuthModal, showToast } from '../../store/uiSlice';
-import { collectErrors, validateEmail } from '../../lib/validators';
+import { validateEmail } from '../../lib/validators';
+import { friendlyAuthError } from '../../lib/authPreferences';
+import useAuthForm from '../../hooks/useAuthForm';
 import { color, font } from '../../theme';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Field from '../ui/Field';
+import FormError from './FormError';
 import Icon from '../Icon';
 import FormError from './FormError';
 
+// The same two checks the full sign-in screen makes, so a CTA that opens the modal
+// and a visit to /login behave identically. Everything else — the request, the token
+// handling, the error text — is the one shared thunk.
+const VALIDATORS = {
+  email: (value) => validateEmail(value),
+  password: (value) => (value ? null : 'Password is required.'),
+};
+
+const INITIAL = { email: '', password: '' };
+
+/**
+ * Sign-in without leaving the page, for the CTAs that interrupt something the user
+ * was already doing. It is a shortcut into the same authentication, never a second
+ * implementation of it: anyone who wants the full screen — registration, password
+ * recovery — is one link away from it.
+ */
 export default function AuthModal() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -41,17 +60,38 @@ export default function AuthModal() {
       setEmail('');
       setPassword('');
       dispatch(closeAuthModal());
-      dispatch(showToast({ message: `Signed in as ${result.payload.fullName || result.payload.email}.`, tone: 'success' }));
+      dispatch(
+        showToast({
+          message: `Signed in as ${result.payload.fullName || result.payload.email}.`,
+          tone: 'success',
+        }),
+      );
       if (returnTo) navigate(returnTo);
     }
   };
 
+  const leaveFor = (path) => (event) => {
+    event.preventDefault();
+    close();
+    navigate(path, { state: returnTo ? { from: { pathname: returnTo } } : undefined });
+  };
+
   return (
     <Modal open={open} onClose={close} title="Sign in">
-      <h2 style={{ margin: '0 0 10px', fontFamily: font.display, fontWeight: 700, fontSize: 'clamp(28px,4vw,40px)', lineHeight: 0.95, textTransform: 'uppercase', color: color.ink }}>
+      <h2
+        style={{
+          margin: '0 0 10px',
+          fontFamily: font.display,
+          fontWeight: 700,
+          fontSize: 'clamp(28px,4vw,40px)',
+          lineHeight: 0.95,
+          textTransform: 'uppercase',
+          color: color.ink,
+        }}
+      >
         Sign in to send
       </h2>
-      <p style={{ margin: '0 0 26px', fontSize: '14.5px', lineHeight: 1.55, color: color.body }}>
+      <p style={{ margin: '0 0 24px', fontSize: '14.5px', lineHeight: 1.55, color: color.body }}>
         Sign in securely to book, track, and manage your deliveries.
       </p>
       <FormError message={error} />
