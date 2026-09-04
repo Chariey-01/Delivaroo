@@ -46,10 +46,8 @@ export default function ResetPassword() {
 
     setSubmitting(true);
     try {
-      await authApi.resetPassword({ token, newPassword: form.values.password });
-      // Cleared the moment it is spent: there is no reason for a new password to sit
-      // in component state after the request that used it has returned.
-      form.reset();
+      await authApi.resetPassword({ token, newPassword: form.password });
+      setForm({ password: '', confirm: '' });
       setComplete(true);
     } catch (requestError) {
       setServerError(
@@ -100,45 +98,36 @@ export default function ResetPassword() {
             </AuthNotice>
           )}
           <FormError message={serverError} />
-
-          <form onSubmit={submit} noValidate>
-            <div className="auth-fields">
-              <div>
-                <Field
-                  label="New password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Choose a strong password"
-                  autoFocus={Boolean(token)}
-                  required
-                  describedBy="reset-password-strength"
-                  disabled={submitting || !token}
-                  {...form.fieldProps('password')}
-                />
-                <PasswordStrength id="reset-password-strength" value={form.values.password} />
-              </div>
-              <Field
-                label="Confirm new password"
-                name="confirm"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Repeat your new password"
-                required
-                disabled={submitting || !token}
-                {...form.fieldProps('confirm')}
-              />
-            </div>
-
-            <div style={{ marginTop: '22px', display: 'grid', gap: '10px' }}>
-              <Button type="submit" full size="lg" disabled={submitting || !token}>
-                {submitting && <span className="auth-spin" />}
-                {submitting ? 'Resetting password…' : 'Reset password'}
-              </Button>
-              <Button as={Link} to="/login" variant="ghost" full icon="arrow_back" iconPosition="left">
-                Back to login
-              </Button>
-            </div>
+          <form onSubmit={submit} noValidate aria-busy={submitting}>
+            <Field
+              label="New password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              value={form.password}
+              error={errors.password}
+              onChange={set('password')}
+              disabled={submitting || !token}
+              required
+              minLength={8}
+            />
+            <Field
+              label="Confirm new password"
+              name="confirm"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repeat your new password"
+              value={form.confirm}
+              error={errors.confirm}
+              onChange={set('confirm')}
+              disabled={submitting || !token}
+              required
+              minLength={8}
+            />
+            <Button type="submit" full disabled={submitting || !token}>
+              {submitting ? 'Resetting password...' : 'Reset password'}
+            </Button>
           </form>
         </>
       )}

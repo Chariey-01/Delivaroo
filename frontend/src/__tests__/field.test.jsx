@@ -5,7 +5,7 @@ import Field from '../components/ui/Field';
 
 function PasswordField() {
   const [value, setValue] = useState('');
-  return <Field label="Password" type="password" value={value} onChange={setValue} />;
+  return <Field label="Password" name="password" type="password" value={value} onChange={setValue} required />;
 }
 
 test('password visibility toggle preserves the value and announces its action', async () => {
@@ -13,6 +13,10 @@ test('password visibility toggle preserves the value and announces its action', 
   render(<PasswordField />);
 
   const input = screen.getByLabelText('Password');
+  expect(input).toHaveAttribute('name', 'password');
+  expect(input).toBeRequired();
+  expect(input).toHaveAttribute('autocapitalize', 'none');
+  expect(input).toHaveAttribute('spellcheck', 'false');
   await user.type(input, 'top-secret');
 
   const show = screen.getByRole('button', { name: 'Show password' });

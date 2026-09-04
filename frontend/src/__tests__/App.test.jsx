@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { makeStore } from '../store';
-import App from '../App';
+import App, { AppRoutes } from '../App';
 import Nav from '../components/Nav';
 import { setNarrow } from '../store/uiSlice';
 
@@ -16,9 +16,19 @@ const withStore = (ui, store = makeStore()) => ({
 const renderNav = (store = makeStore()) => withStore(<MemoryRouter><Nav /></MemoryRouter>, store);
 
 describe('landing page', () => {
+  it('keeps the parcel-create URL on the complete booking flow', () => {
+    withStore(
+      <MemoryRouter initialEntries={['/parcels/create']}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { name: 'Create New Parcel' })).toBeInTheDocument();
+  });
+
   it('opens on the hero, headline and strapline in place', () => {
     withStore(<App />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('From anywhere toyour door');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('From anywhere to your door');
     expect(screen.getByText('We move.')).toBeInTheDocument();
   });
 

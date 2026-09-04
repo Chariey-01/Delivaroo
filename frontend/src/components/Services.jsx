@@ -89,6 +89,8 @@ function ServiceCard({ service, delay }) {
       style={{
         display: 'flex',
         flexDirection: 'column',
+        width: '100%',
+        minWidth: 0,
         borderRadius: radius.card,
         overflow: 'hidden',
         // The nav is fixed at 80px, so a card jumped to from the Services menu has
@@ -123,6 +125,7 @@ function ServiceCard({ service, delay }) {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
+          minWidth: 0,
           padding: 'clamp(18px,1.9vw,26px)'
         }}
       >
@@ -149,9 +152,10 @@ function ServiceCard({ service, delay }) {
             margin: '0 0 8px',
             fontSize: 'clamp(19px,1.7vw,23px)',
             fontWeight: 600,
-            letterSpacing: '-.028em',
+            letterSpacing: 0,
             lineHeight: 1.15,
-            color: color.ink
+            color: color.ink,
+            overflowWrap: 'anywhere'
           }}
         >
           {service.title}

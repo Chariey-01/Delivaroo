@@ -28,7 +28,13 @@ const asOrder = (parcel) => {
     trackingNumber: parcel.trackingNumber,
     status: parcel.status,
     sender: { name: ownerEmail || 'Customer', email: ownerEmail },
-    parcel: { weightKg: 0, weightCategoryId: parcel.weightCategoryId },
+    parcel: {
+      weightKg: parcel.declaredWeightKg ?? 0,
+      weightCategoryId: parcel.weightCategoryId,
+      verifiedWeightKg: parcel.verifiedWeightKg,
+      weighedAt: parcel.weighedAt,
+      weighedBy: parcel.weighedBy,
+    },
     transport: { mode: parcel.transportMode, label: parcel.transportLabel },
     pickup: point(parcel.pickup),
     destination: point(parcel.destination),
@@ -75,6 +81,7 @@ const createLiveOrder = async (draft) => {
         lat: draft.destination?.lat,
         lng: draft.destination?.lng,
       },
+      declaredWeightKg: weightKg,
       transportMode,
     }),
   );
@@ -94,14 +101,14 @@ const http = {
   updateCourierPosition: unsupported('Courier position updates'),
   // §25 — dispatch finds and attaches a pickup agent. The server owns the matching;
   // the client only asks. Must be idempotent: the confirmation screen may retry.
-  assignAgent: unsupported('Delivery-agent assignment'),
+  assignAgent: async (id) => asOrder(await parcelsApi.assignDeliveryAgent(id)),
   // §26 — staff-only: where the parcel currently is, in words.
   updatePresentLocation: async (id, payload) => asOrder(await parcelsApi.updatePresentLocation(id, payload)),
   // §26 — which transport capacity dispatch can book into today.
-  getFleet: unsupported('Transport capacity'),
-  setFleetStatus: unsupported('Transport capacity'),
+  getFleet: () => api('/transport/availability'),
+  setFleetStatus: (mode, status) => api('/admin/transport/availability', { method: 'PATCH', body: { mode, status } }),
   // Staff-only on the server. The console gates the button, the route gates the data.
-  verifyWeight: unsupported('Weight verification'),
+  verifyWeight: async (id, payload) => asOrder(await parcelsApi.verifyParcelWeight(id, payload)),
 
   // §27 — the rest of the admin portal. Everything under /admin is staff-only, and
   // the three account routes are administrator-only; see src/lib/roles.js for the

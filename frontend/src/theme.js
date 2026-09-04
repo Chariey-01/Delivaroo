@@ -118,7 +118,9 @@ export const radius = {
 export const surface = {
   card: {
     borderRadius: radius.card,
-    border: `1px solid ${color.borderSoft}`,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: color.borderSoft,
     background: color.card,
     boxShadow: shadow.card,
     transition: 'transform .2s ease, box-shadow .2s ease, border-color .2s ease'
@@ -139,7 +141,9 @@ export const control = {
     height: '56px',
     padding: '0 18px',
     borderRadius: radius.field,
-    border: `1px solid ${color.border}`,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: color.border,
     background: color.white,
     fontFamily: font.body,
     fontSize: '16px',
@@ -173,7 +177,9 @@ export const control = {
     minHeight: '46px',
     padding: '0 20px',
     borderRadius: radius.pill,
-    border: `1px solid ${color.border}`,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: color.border,
     background: color.card,
     fontFamily: font.body,
     fontSize: '15px',

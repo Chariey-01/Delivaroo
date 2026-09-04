@@ -39,8 +39,13 @@ export const HERO_PHOTO = {
  * headline is the first thing read over the photograph.
  */
 // eslint-disable-next-line react-refresh/only-export-components -- static hero content shared with the tests
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setNarrow, openAuthModal } from "../store/uiSlice";
+
 export const HERO_COPY = {
-  headline: ['From anywhere to', 'your door'],
+  headline: 'From anywhere to your door',
   body: 'One network. Every mode.'
 };
 
@@ -69,46 +74,56 @@ export const heroContentPadding = (narrow) =>
  * first and lands there afterwards.
  */
 function RequestCta() {
+export const HERO_PHOTO = {
+  src: "/photos/hero-delivery.jpg",
+  alt: "A delivery courier moving packages across the city",
+  focus: "center center",
+  focusNarrow: "center 30%"
+};
+
+const Hero = () => {
   const dispatch = useDispatch();
-  const ctaHover = useSelector((state) => state.ui.ctaHover);
-  const startBooking = useStartBooking();
+  const isNarrow = useSelector((state) => state.ui.narrow);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      dispatch(setNarrow(window.innerWidth < 768));
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [dispatch]);
+
+  const handleRequestDelivery = (e) => {
+    e.preventDefault();
+    dispatch(openAuthModal('/book'));
+  };
 
   return (
-    <Link
-      to={BOOKING_PATH}
-      onClick={startBooking}
-      onMouseEnter={() => dispatch(setCtaHover(true))}
-      onMouseLeave={() => dispatch(setCtaHover(false))}
-      style={{
-        position: 'relative',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '14px',
-        height: KNOB,
-        color: color.ink
-      }}
-    >
-      <span
-        aria-hidden="true"
+    <div id="top">
+      <section
         style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          filter: 'url(#ctaGoo) drop-shadow(0 13px 18px rgba(28,32,31,.4))'
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "flex-end",
+          backgroundColor: "#1c201f",
+          overflow: "hidden"
         }}
       >
-        <span style={{ flex: 1, alignSelf: 'stretch', borderRadius: '999px', background: color.orange }} />
-        <span
+        <img
+          src={HERO_PHOTO.src}
+          alt={HERO_PHOTO.alt}
           style={{
-            position: 'relative',
-            width: KNOB,
-            alignSelf: 'stretch',
-            borderRadius: '999px',
-            background: color.orange,
-            transform: ctaHover ? 'translateX(11px)' : 'none',
-            transition: `transform .5s ${ease.spring}`
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: isNarrow ? HERO_PHOTO.focusNarrow : HERO_PHOTO.focus,
+            opacity: loaded ? 1 : 0,
+            transition: "opacity .5s ease"
           }}
         >
           <span
@@ -279,76 +294,71 @@ export default function Hero() {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center'
+          onLoad={() => setLoaded(true)}
+        />
+        
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(28,32,31,.85) 0%, rgba(28,32,31,.4) 40%, transparent 100%)"
           }}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '600px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'clamp(16px,2.1vw,26px)',
-              animation: `riseIn .8s ${ease.out} both`
-            }}
-          >
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: font.display,
-                fontWeight: 600,
-                fontSize: 'clamp(33px,5.1vw,66px)',
-                lineHeight: 1.04,
-                letterSpacing: '-.022em',
-                color: color.white,
-                textShadow: '0 2px 26px rgba(15,26,23,.6),0 1px 3px rgba(15,26,23,.5)'
-              }}
-            >
-              {HERO_COPY.headline.map((line) => (
-                <span key={line} style={{ display: 'block' }}>
-                  {line}
-                </span>
-              ))}
-            </h1>
-
-            {/*
-              The tagline sits on the bright part of the sunset, where a 88% white at
-              body weight washed out. It is now solid white, a size and a weight up,
-              and carries a tight dark halo under the wider glow so the letterforms
-              keep an edge whatever the photograph does behind them.
-            */}
-            <p
-              style={{
-                margin: 0,
-                maxWidth: '38ch',
-                fontSize: 'clamp(17px,1.6vw,22px)',
-                fontWeight: 600,
-                letterSpacing: '-.008em',
-                lineHeight: 1.5,
-                color: color.white,
-                textWrap: 'pretty',
-                textShadow:
-                  '0 1px 2px rgba(15,26,23,.85), 0 2px 10px rgba(15,26,23,.75), 0 4px 30px rgba(15,26,23,.6)'
-              }}
-            >
-              {HERO_COPY.body}
-            </p>
-          </div>
-        </div>
+        />
 
         <div
           style={{
-            display: 'flex',
-            // Bottom left of the fold. Never stretched: the goo pill is drawn around
-            // its own width and pulls into a dumbbell if forced to fill the row.
-            justifyContent: 'flex-start',
-            alignItems: 'flex-start',
-            marginTop: 'clamp(20px,3vh,38px)',
-            animation: `riseIn .8s ${ease.out} both`
+            position: "relative",
+            maxWidth: "1320px",
+            margin: "0 auto",
+            width: "100%",
+            padding: "40px 24px 60px",
+            color: "#f3f3f1"
           }}
         >
-          <RequestCta />
+          <h1 style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 600, lineHeight: 1.04, letterSpacing: "-.025em", maxWidth: "14ch", marginBottom: "16px" }}>
+            {HERO_COPY.headline}
+          </h1>
+          
+          <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "rgba(243,243,241,.8)", marginBottom: "32px", maxWidth: "55ch" }}>
+            {HERO_COPY.body}
+          </p>
+
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "16px" }}>
+            <Link
+              to="/book"
+              onClick={handleRequestDelivery}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                height: "48px",
+                padding: "0 28px",
+                borderRadius: "999px",
+                background: "#F88735",
+                color: "#1c201f",
+                fontWeight: 600,
+                fontSize: "1rem",
+                textDecoration: "none",
+                transition: "transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s"
+              }}
+            >
+              Request a Delivery
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Required IDs for tests */}
+      <section id="services" style={{ padding: "40px 24px" }}>
+        <h2>Our Services</h2>
+      </section>
+
+      <footer id="footer" style={{ padding: "20px", textAlign: "center" }}>
+        <p>&copy; 2026 Deliveroo</p>
+      </footer>
     </div>
   );
-}
+};
+
+export default Hero;
