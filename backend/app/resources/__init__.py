@@ -1,4 +1,6 @@
 from flask_restful import Api
+from flask_jwt_extended.exceptions import JWTExtendedException
+from jwt.exceptions import PyJWTError
 
 from app.resources.auth import (
     ChangePasswordResource,
@@ -50,8 +52,24 @@ from app.resources.notification import (
 )
 
 
+class JWTCompatibleApi(Api):
+    """Let Flask-JWT-Extended format authentication failures.
+
+    Flask-RESTful otherwise treats JWT exceptions as unknown application errors
+    when ``PROPAGATE_EXCEPTIONS`` is false (the production default), turning an
+    expected missing/expired-token response into HTTP 500. The JWT extension has
+    already registered the correct 401/422 handlers on the Flask application, so
+    route those exceptions back to Flask's original error handler.
+    """
+
+    def error_router(self, original_handler, error):
+        if isinstance(error, (JWTExtendedException, PyJWTError)):
+            return original_handler(error)
+        return super().error_router(original_handler, error)
+
+
 def init_resources(app):
-    api = Api(app)
+    api = JWTCompatibleApi(app)
 
     api.add_resource(HealthResource, "/api/health")
     api.add_resource(RegisterResource, "/auth/register", "/api/auth/register")

@@ -100,6 +100,25 @@ def test_auth_me_requires_jwt(client):
     assert response.status_code == 401
 
 
+def test_auth_errors_remain_client_errors_with_production_exception_handling(client, app):
+    """Flask-RESTful must not turn JWT failures into production-only HTTP 500s."""
+    previous = app.config.get("PROPAGATE_EXCEPTIONS")
+    app.config["PROPAGATE_EXCEPTIONS"] = False
+    try:
+        missing = client.get("/api/notifications/unread-count")
+        invalid = client.get(
+            "/api/auth/me",
+            headers={"Authorization": "Bearer not-a-valid-jwt"},
+        )
+    finally:
+        app.config["PROPAGATE_EXCEPTIONS"] = previous
+
+    assert missing.status_code == 401
+    assert missing.get_json()["msg"] == "Missing Authorization Header"
+    assert invalid.status_code == 422
+    assert "msg" in invalid.get_json()
+
+
 def test_auth_me_returns_current_user(client, auth_headers):
     headers = auth_headers(email="me@example.com")
 
