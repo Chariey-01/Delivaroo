@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, toggleMobileMenu } from '../store/uiSlice';
 import { selectIsSignedIn, selectUser, signOut } from '../store/authSlice';
-import useStartBooking, { AUTH_PATH, BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
+import useStartBooking, { BOOKING_PATH, showsBookingCta } from '../hooks/useStartBooking';
 import { getUnreadNotificationCount } from '../api/notifications';
 import { usingMockBackend } from '../api';
 import { color, ease, hover, layout, radius } from '../theme';
@@ -282,17 +282,16 @@ export default function Nav() {
                 <ProfileMenu user={user} />
               </>
             ) : (
-              /*
-                One door, not two. "Sign in" and "Get Started" sat side by side
-                pointing at the same authentication screen, which made the visitor
-                choose between two words for one action. The CTA is now the only
-                way in, and it carries the booking page as its destination so the
-                sign-in screen returns the visitor to what they meant to do.
-              */
+              <>
+                {/* The group project has real sign-in and sign-up pages, so the nav
+                    links to them rather than opening the demo modal. */}
+                <Link to="/login" style={{ ...topLink, fontSize: '14.5px' }}>
+                  Sign in
+                </Link>
               <HoverLink
                 as={Link}
-                to={AUTH_PATH}
-                state={{ from: { pathname: BOOKING_PATH } }}
+                to={BOOKING_PATH}
+                onClick={startBooking}
                 hoverStyle={hover.yellow}
                 style={{
                   display: 'inline-flex',
@@ -311,6 +310,7 @@ export default function Nav() {
                 Get Started
                 <Icon name="arrow_outward" size={17} />
               </HoverLink>
+              </>
             )}
           </div>
         )}

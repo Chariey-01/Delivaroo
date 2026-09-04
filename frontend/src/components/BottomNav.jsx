@@ -1,8 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectIsSignedIn } from '../store/authSlice';
-import { toggleMobileMenu } from '../store/uiSlice';
-import useStartBooking, { AUTH_PATH, BOOKING_PATH } from '../hooks/useStartBooking';
+import { openAuthModal, toggleMobileMenu } from '../store/uiSlice';
+import useStartBooking, { BOOKING_PATH } from '../hooks/useStartBooking';
 import { color, ease, font, layout, radius } from '../theme';
 import Icon from './Icon';
 
@@ -107,20 +107,14 @@ export default function BottomNav() {
         </Link>
       ))}
 
-      {/* Signed out, this tab is the way into the account, and it goes to the
-          authentication screen the rest of the app now points at rather than to a
-          second, smaller sign-in of its own. */}
-      {signedIn ? (
-        <button type="button" onClick={() => dispatch(toggleMobileMenu())} style={tab(false)}>
-          <Icon name="menu" size={21} color={color.muted} />
-          Menu
-        </button>
-      ) : (
-        <Link to={AUTH_PATH} state={{ from: { pathname: BOOKING_PATH } }} style={tab(false)}>
-          <Icon name="person" size={21} color={color.muted} />
-          Account
-        </Link>
-      )}
+      <button
+        type="button"
+        onClick={() => (signedIn ? dispatch(toggleMobileMenu()) : dispatch(openAuthModal(null)))}
+        style={tab(false)}
+      >
+        <Icon name={signedIn ? 'menu' : 'person'} size={21} color={color.muted} />
+        {signedIn ? 'Menu' : 'Sign in'}
+      </button>
     </nav>
   );
 }
