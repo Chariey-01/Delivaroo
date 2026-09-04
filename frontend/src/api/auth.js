@@ -33,15 +33,14 @@ export function normalizeUser(raw) {
  * persisted here rather than in the slice so that a caller who bypasses Redux — a
  * test, or a future route loader — still ends up authenticated.
  */
-function acceptSession(payload, remember) {
+function acceptSession(payload) {
   const access = payload?.access_token ?? payload?.accessToken;
   const refresh = payload?.refresh_token ?? payload?.refreshToken;
-  // `remember` decides which store the pair lands in; see lib/tokenStorage.
-  if (access) setTokens({ access, refresh, remember });
+  if (access) setTokens({ access, refresh });
   return normalizeUser(payload?.user ?? payload);
 }
 
-export async function register({ email, password, fullName, phone, remember = true }) {
+export async function register({ email, password, fullName, phone }) {
   const data = await post(
     '/auth/register',
     {
@@ -52,16 +51,16 @@ export async function register({ email, password, fullName, phone, remember = tr
     },
     { auth: false },
   );
-  return acceptSession(data, remember);
+  return acceptSession(data);
 }
 
-export async function login({ email, password, remember = true }) {
+export async function login({ email, password }) {
   const data = await post(
     '/auth/login',
     { email: email?.trim().toLowerCase(), password },
     { auth: false },
   );
-  return acceptSession(data, remember);
+  return acceptSession(data);
 }
 
 /** Request a reset email. The server deliberately gives the same response for every email. */

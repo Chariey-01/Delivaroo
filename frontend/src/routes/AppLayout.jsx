@@ -18,10 +18,6 @@ import AuthModal from '../components/auth/AuthModal';
 import Toast from '../components/ui/Toast';
 import { BOOKING_PATH } from '../hooks/useStartBooking';
 
-/** The four screens that render their own full-viewport frame (see AuthCard). */
-const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password'];
-const isAuthRoute = (pathname) => AUTH_ROUTES.includes(pathname);
-
 /** Anchor links carry a hash across routes; this does the scrolling on arrival. */
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -76,13 +72,7 @@ export default function AppLayout() {
 
   // The booking flow carries its own fixed quote bar; two stacked bars on a phone is
   // one too many, so the flow keeps the bottom edge to itself.
-  const showBottomNav = narrow && pathname !== BOOKING_PATH && !isAuthRoute(pathname);
-
-  // The authentication screens own the whole viewport. The site nav is white text on
-  // a transparent bar designed to sit over the hero photograph; over a light form it
-  // is unreadable, and the marketing chrome is noise on the one screen where the only
-  // job is to finish a short form. The screens carry their own logo and a way back.
-  const chromeless = isAuthRoute(pathname);
+  const showBottomNav = narrow && pathname !== BOOKING_PATH;
 
   return (
     <div
@@ -96,10 +86,10 @@ export default function AppLayout() {
     >
       <GooFilter />
       <ScrollToHash />
-      {!chromeless && <Nav />}
-      {!chromeless && <MobileMenu />}
+      <Nav />
+      <MobileMenu />
       <Outlet />
-      {!chromeless && <SiteFooter brand="Deliveroo" />}
+      <SiteFooter brand="Deliveroo" />
       {showBottomNav && <BottomNav />}
       <AuthModal />
       <Toast />

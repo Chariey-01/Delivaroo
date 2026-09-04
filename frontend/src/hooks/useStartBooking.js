@@ -6,13 +6,6 @@ import { openAuthModal } from '../store/uiSlice';
 export const BOOKING_PATH = '/book';
 
 /**
- * The single entry point to the account. Everything that used to offer a choice
- * between "Sign in" and "Get Started" now points here; the screen itself carries the
- * switch between signing in and creating an account.
- */
-export const AUTH_PATH = '/login';
-
-/**
  * Whether the "Request delivery" shortcut belongs in the nav on this route.
  *
  * On the booking form it points at the page you are already filling in, and on the

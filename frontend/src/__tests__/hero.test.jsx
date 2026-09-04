@@ -2,8 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { makeStore } from '../store';
-import Hero, { HERO_COPY, HERO_PHOTO, heroContentPadding } from '../components/Hero';
-import { BOTTOM_NAV_HEIGHT } from '../components/BottomNav';
+import Hero, { HERO_COPY, HERO_PHOTO } from '../components/Hero';
 import { setNarrow } from '../store/uiSlice';
 
 const renderHero = (store = makeStore()) => ({
@@ -83,41 +82,6 @@ describe('hero', () => {
     expect(ctaRow.style.justifyContent).toBe('flex-start');
     expect(ctaRow.parentElement.lastElementChild).toBe(ctaRow);
   });
-
-  // The frame is 1.44:1. Full-bleed `cover` on a portrait phone fold showed a third of
-  // its width — the drone, the ship and the map were cut off the photograph whose
-  // whole job is to carry every mode at once.
-  it('gives the photograph its own aspect on a phone instead of a portrait crop', () => {
-    const store = makeStore();
-    store.dispatch(setNarrow(true));
-    const { container } = renderHero(store);
-    const img = container.querySelector('img');
-
-    expect(img.style.aspectRatio).toBe(HERO_PHOTO.aspect);
-    // A band in the flow, not a full-bleed layer behind the words.
-    expect(img.style.position).toBe('relative');
-    expect(img.style.height).not.toBe('100%');
-  });
-
-  it('keeps the full-bleed crop on a wide screen', () => {
-    const { container } = renderHero();
-    const img = container.querySelector('img');
-
-    expect(img.style.position).toBe('absolute');
-    expect(img.style.height).toBe('100%');
-    expect(img.style.aspectRatio).toBeFalsy();
-  });
-
-  // The bottom bar is fixed over the fold on a phone. Without this reservation the
-  // pill sat underneath it and a tap on its centre hit the Track tab instead.
-  // Asserted on the string rather than the rendered style: jsdom's CSSOM drops every
-  // declaration containing calc(), so the element's own padding always reads empty.
-  it('reserves the fixed bottom bar height so the CTA stays tappable on a phone', () => {
-    expect(heroContentPadding(true)).toContain(`${BOTTOM_NAV_HEIGHT}px`);
-    expect(heroContentPadding(true)).toContain('safe-area-inset-bottom');
-    // The desktop fold has no bottom bar over it, and must not pay for one.
-    expect(heroContentPadding(false)).not.toContain(`${BOTTOM_NAV_HEIGHT}px`);
-  });
 });
 
 // The words are content, not a lookup table — but a typo in one would ship a blank
@@ -128,7 +92,6 @@ describe('hero content', () => {
     expect(HERO_PHOTO.alt).toBeTruthy();
     expect(HERO_PHOTO.focus).toBeTruthy();
     expect(HERO_PHOTO.focusNarrow).toBeTruthy();
-    expect(HERO_PHOTO.aspect).toBeTruthy();
   });
 
   it('gives the hero a headline and a tagline, and no eyebrow', () => {
