@@ -1,6 +1,6 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { selectIsSignedIn } from '../store/authSlice';
-import { openAuthModal } from '../store/uiSlice';
 import { color } from '../theme';
 import BookDelivery from '../components/booking/BookDelivery';
 import Button from '../components/ui/Button';
@@ -15,7 +15,6 @@ import PageShell from './PageShell';
  * would walk past the check.
  */
 export default function BookPage() {
-  const dispatch = useDispatch();
   const signedIn = useSelector(selectIsSignedIn);
 
   if (!signedIn) {
@@ -24,7 +23,7 @@ export default function BookPage() {
         <p style={{ margin: '0 0 24px', maxWidth: '46ch', fontSize: '16px', lineHeight: 1.6, color: color.body }}>
           We need to know who is sending, so we can keep you posted on the handover and the delivery.
         </p>
-        <Button onClick={() => dispatch(openAuthModal('/book'))} icon="arrow_forward">
+        <Button as={Link} to="/login" state={{ from: { pathname: '/book' } }} icon="arrow_forward">
           Sign in to continue
         </Button>
       </PageShell>

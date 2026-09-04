@@ -1,4 +1,5 @@
 import { useJsApiLoader, GoogleMap, Marker, Polyline } from '@react-google-maps/api';
+import { GOOGLE_MAPS_API_KEY } from '../../api/viteEnv';
 
 const containerStyle = {
   width: '100%',
@@ -7,7 +8,7 @@ const containerStyle = {
 
 const ParcelMap = ({ pickupLocation, deliveryLocation, routePath }) => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY, 
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: ['places']
   });
 

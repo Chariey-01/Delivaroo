@@ -23,13 +23,16 @@ export default function Field({
   placeholder,
   autoComplete,
   autoFocus,
+  autoCapitalize,
+  spellCheck,
+  minLength,
   required,
   describedBy,
   onKeyDown,
   onBlur,
   inputRef,
   disabled,
-  ...inputProps
+  ...rest
 }) {
   const id = useId();
   const [focused, setFocused] = useState(false);
@@ -68,11 +71,8 @@ export default function Field({
           )}
         </label>
       )}
-    <div style={{ display: 'block' }}>
-      {label && <label htmlFor={id} style={control.label}>{label}</label>}
       <span style={{ position: 'relative', display: 'block' }}>
         <input
-          {...inputProps}
           id={id}
           name={name}
           ref={inputRef}
@@ -82,6 +82,9 @@ export default function Field({
           placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
+          autoCapitalize={isPassword ? 'none' : autoCapitalize}
+          spellCheck={isPassword ? false : spellCheck}
+          minLength={minLength}
           required={required === true || undefined}
           onKeyDown={onKeyDown}
           onChange={(event) => onChange(event.target.value)}
@@ -97,8 +100,6 @@ export default function Field({
           // ones in conditionally. React warns when a longhand is *removed* while its
           // shorthand is still set, and that removal is what leaves a focus ring stuck
           // on a field that has already been blurred.
-          autoCapitalize={isPassword ? 'none' : inputProps.autoCapitalize}
-          spellCheck={isPassword ? false : inputProps.spellCheck}
           style={{
             ...control.field,
             padding: isPassword || showTick ? '0 56px 0 18px' : '0 18px',

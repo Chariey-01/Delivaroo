@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders, selectActiveOrder, selectAllOrders, selectOrderStats } from '../store/ordersSlice';
 import { selectUser } from '../store/authSlice';
-import { openAuthModal } from '../store/uiSlice';
 import useOrderSync from '../hooks/useOrderSync';
 import { STATUS, STATUS_LABEL, isTerminal } from '../lib/orderStatus';
 import { formatKes } from '../lib/pricing';
@@ -67,7 +66,7 @@ export default function MyOrders() {
   if (!user) {
     return (
       <PageShell eyebrow="Deliveries" title="Sign in to see your deliveries.">
-        <Button onClick={() => dispatch(openAuthModal('/orders'))} icon="arrow_forward">
+        <Button as={Link} to="/login" state={{ from: { pathname: '/orders' } }} icon="arrow_forward">
           Sign in
         </Button>
       </PageShell>

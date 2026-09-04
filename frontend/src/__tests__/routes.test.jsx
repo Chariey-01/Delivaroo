@@ -140,10 +140,11 @@ describe('routes', () => {
   });
 
   it('sends a signed-out visitor to sign-in rather than to booking', async () => {
-    const { store } = renderAt('/');
+    renderAt('/');
     await userEvent.click(screen.getByRole('link', { name: 'Request a Delivery' }));
 
-    expect(store.getState().ui.authModal).toEqual({ open: true, returnTo: '/book' });
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.getByText(/sign in to continue/i)).toBeInTheDocument();
     expect(screen.queryByText('Where should we pick it up?')).not.toBeInTheDocument();
   });
 });
