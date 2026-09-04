@@ -124,7 +124,7 @@ export default function ForgotPassword() {
       ) : (
         <>
           <FormError message={error} />
-          <form onSubmit={submit} noValidate>
+          <form onSubmit={submit} noValidate aria-busy={submitting}>
             <Field
               label="Email address"
               name="email"
@@ -136,6 +136,7 @@ export default function ForgotPassword() {
               required
               disabled={submitting}
               {...form.fieldProps('email')}
+              required
             />
             <div style={{ marginTop: '22px', display: 'grid', gap: '10px' }}>
               <Button type="submit" full size="lg" disabled={submitting} icon={submitting ? undefined : 'send'}>

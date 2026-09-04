@@ -5,6 +5,7 @@ import { fetchAllOrders } from '../../store/ordersSlice';
 import { fetchFleet } from '../../store/fleetSlice';
 import { showToast } from '../../store/uiSlice';
 import { MOCK_OTP, usingMockBackend } from '../../api';
+import { collectErrors, validateEmail, validatePhone } from '../../lib/validators';
 import { color, control, ease, font, radius } from '../../theme';
 import Panel from '../../components/admin/Panel';
 import Button from '../../components/ui/Button';
@@ -57,22 +58,49 @@ export default function AdminSettings() {
   const [notice, setNotice] = useState(settings.noticeToStaff);
   const [email, setEmail] = useState(settings.supportEmail);
   const [phone, setPhone] = useState(settings.supportPhone);
+  const [noticeDirty, setNoticeDirty] = useState(false);
+  const [contactsDirty, setContactsDirty] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // The settings arrive a moment after the screen does, and another administrator
   // may change them in the next tab; the draft follows unless it is being edited.
   useEffect(() => {
-    setNotice(settings.noticeToStaff);
-    setEmail(settings.supportEmail);
-    setPhone(settings.supportPhone);
-  }, [settings]);
-
-  const save = async (patch, message) => {
-    const result = await dispatch(updateSettings(patch));
-    if (updateSettings.fulfilled.match(result)) {
-      dispatch(showToast({ message, tone: 'success' }));
+    if (!noticeDirty) setNotice(settings.noticeToStaff);
+    if (!contactsDirty) {
+      setEmail(settings.supportEmail);
+      setPhone(settings.supportPhone);
     }
+  }, [contactsDirty, noticeDirty, settings]);
+
+  const save = async (patch, message, key) => {
+    setSaving(key);
+    try {
+      const result = await dispatch(updateSettings(patch));
+      if (updateSettings.fulfilled.match(result)) {
+        if (key === 'notice') setNoticeDirty(false);
+        if (key === 'contacts') setContactsDirty(false);
+        dispatch(showToast({ message, tone: 'success' }));
+      }
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const saveContacts = async () => {
+    const found = collectErrors({
+      email: validateEmail(email),
+      phone: validatePhone(phone)
+    });
+    setErrors(found);
+    if (Object.keys(found).length) return;
+    await save(
+      { supportEmail: email.trim(), supportPhone: phone.trim() },
+      'Support contacts saved.',
+      'contacts'
+    );
   };
 
   const reset = async () => {
@@ -99,10 +127,12 @@ export default function AdminSettings() {
           <Switch
             on={settings.acceptingOrders}
             label="Accepting new bookings"
+            disabled={saving === 'bookings'}
             onChange={(next) =>
               save(
                 { acceptingOrders: next },
-                next ? 'Deliveroo is taking bookings again.' : 'New bookings are paused.'
+                next ? 'Deliveroo is taking bookings again.' : 'New bookings are paused.',
+                'bookings'
               )
             }
           />
@@ -121,7 +151,11 @@ export default function AdminSettings() {
         <div style={{ display: 'grid', gap: '12px' }}>
           <textarea
             value={notice}
-            onChange={(event) => setNotice(event.target.value)}
+            onChange={(event) => {
+              setNotice(event.target.value);
+              setNoticeDirty(true);
+            }}
+            disabled={saving === 'notice'}
             aria-label="Notice to staff"
             rows={2}
             maxLength={240}
@@ -132,13 +166,22 @@ export default function AdminSettings() {
             <Button
               variant="dark"
               size="sm"
-              onClick={() => save({ noticeToStaff: notice.trim() }, notice.trim() ? 'Notice posted.' : 'Notice cleared.')}
-              disabled={notice === settings.noticeToStaff}
+              onClick={() => save(
+                { noticeToStaff: notice.trim() },
+                notice.trim() ? 'Notice posted.' : 'Notice cleared.',
+                'notice'
+              )}
+              disabled={notice === settings.noticeToStaff || saving === 'notice'}
             >
-              {notice.trim() ? 'Post notice' : 'Clear notice'}
+              {saving === 'notice' ? 'Saving...' : notice.trim() ? 'Post notice' : 'Clear notice'}
             </Button>
             {settings.noticeToStaff && (
-              <Button variant="ghost" size="sm" onClick={() => save({ noticeToStaff: '' }, 'Notice cleared.')}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={saving === 'notice'}
+                onClick={() => save({ noticeToStaff: '' }, 'Notice cleared.', 'notice')}
+              >
                 Take it down
               </Button>
             )}
@@ -148,17 +191,44 @@ export default function AdminSettings() {
 
       <Panel title="Support contacts" note="What the platform gives customers when a delivery needs a human.">
         <div style={{ display: 'grid', gap: '14px', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
-          <Field label="Support email" value={email} onChange={setEmail} type="email" autoComplete="off" />
-          <Field label="Support phone" value={phone} onChange={setPhone} type="tel" autoComplete="off" />
+          <Field
+            label="Support email"
+            name="supportEmail"
+            value={email}
+            onChange={(value) => {
+              setEmail(value);
+              setContactsDirty(true);
+              setErrors((current) => ({ ...current, email: null }));
+            }}
+            error={errors.email}
+            type="email"
+            autoComplete="off"
+            disabled={saving === 'contacts'}
+            required
+          />
+          <Field
+            label="Support phone"
+            name="supportPhone"
+            value={phone}
+            onChange={(value) => {
+              setPhone(value);
+              setContactsDirty(true);
+              setErrors((current) => ({ ...current, phone: null }));
+            }}
+            error={errors.phone}
+            type="tel"
+            autoComplete="off"
+            disabled={saving === 'contacts'}
+          />
         </div>
         <div style={{ marginTop: '14px' }}>
           <Button
             variant="dark"
             size="sm"
-            disabled={!contactsChanged}
-            onClick={() => save({ supportEmail: email.trim(), supportPhone: phone.trim() }, 'Support contacts saved.')}
+            disabled={!contactsChanged || saving === 'contacts'}
+            onClick={saveContacts}
           >
-            Save contacts
+            {saving === 'contacts' ? 'Saving...' : 'Save contacts'}
           </Button>
         </div>
       </Panel>

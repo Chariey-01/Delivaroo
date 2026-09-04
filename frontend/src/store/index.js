@@ -5,7 +5,8 @@ import booking from './bookingSlice';
 import orders from './ordersSlice';
 import fleet from './fleetSlice';
 import admin from './adminSlice';
+import parcels from './slices/parcelsSlice';
 
-export const makeStore = () => configureStore({ reducer: { ui, auth, booking, orders, fleet, admin } });
+export const makeStore = () => configureStore({ reducer: { ui, auth, booking, orders, fleet, admin, parcels } });
 
 export const store = makeStore();

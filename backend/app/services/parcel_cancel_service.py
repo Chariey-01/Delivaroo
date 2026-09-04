@@ -44,6 +44,7 @@ def cancel_parcel(parcel, requester_id):
             new_status="CANCELLED",
             changed_by_id=requester_id,
             notes="Parcel cancelled by owner",
+            audit_action="parcel.cancelled",
         )
     except InvalidStatusTransitionError:
         raise ParcelNotCancellableError(

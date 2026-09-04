@@ -14,6 +14,16 @@ from app.resources.admin_parcel import AdminParcelListResource
 from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.admin_status import AdminParcelStatusResource
 from app.resources.admin_delivery_agent import AdminParcelDeliveryAgentResource
+from app.resources.admin_audit import AdminAuditResource
+from app.resources.admin_courier import AdminCourierListResource, AdminCourierShiftResource
+from app.resources.admin_notification import AdminNotificationListResource
+from app.resources.admin_user import (
+    AdminUserListResource,
+    AdminUserRoleResource,
+    AdminUserSuspensionResource,
+)
+from app.resources.admin_weight import AdminParcelWeightResource
+from app.resources.fleet import AdminFleetAvailabilityResource, FleetAvailabilityResource
 from app.resources.parcel import (
     ParcelHistoryResource,
     ParcelListResource,
@@ -30,6 +40,7 @@ from app.resources.address import (
 from app.resources.profile import ProfileResource
 from app.resources.maps import GeocodeResource, ReverseGeocodeResource, RouteResource
 from app.resources.health import HealthResource
+from app.resources.settings import AdminSettingsResource, SettingsResource
 from app.resources.notification import (
     NotificationListResource,
     NotificationPreferenceResource,
@@ -94,6 +105,46 @@ def init_resources(app):
         AdminParcelDeliveryAgentResource,
         "/admin/parcels/<uuid:parcel_id>/delivery-agent",
         "/api/admin/parcels/<uuid:parcel_id>/delivery-agent",
+    )
+    api.add_resource(
+        AdminParcelWeightResource,
+        "/admin/parcels/<uuid:parcel_id>/weight",
+        "/api/admin/parcels/<uuid:parcel_id>/weight",
+    )
+    api.add_resource(AdminUserListResource, "/admin/users", "/api/admin/users")
+    api.add_resource(
+        AdminUserRoleResource,
+        "/admin/users/<uuid:user_id>/role",
+        "/api/admin/users/<uuid:user_id>/role",
+    )
+    api.add_resource(
+        AdminUserSuspensionResource,
+        "/admin/users/<uuid:user_id>/suspension",
+        "/api/admin/users/<uuid:user_id>/suspension",
+    )
+    api.add_resource(AdminCourierListResource, "/admin/couriers", "/api/admin/couriers")
+    api.add_resource(
+        AdminCourierShiftResource,
+        "/admin/couriers/<uuid:courier_id>/shift",
+        "/api/admin/couriers/<uuid:courier_id>/shift",
+    )
+    api.add_resource(AdminAuditResource, "/admin/audit", "/api/admin/audit")
+    api.add_resource(
+        AdminNotificationListResource,
+        "/admin/notifications",
+        "/api/admin/notifications",
+    )
+    api.add_resource(SettingsResource, "/settings", "/api/settings")
+    api.add_resource(AdminSettingsResource, "/admin/settings", "/api/admin/settings")
+    api.add_resource(
+        FleetAvailabilityResource,
+        "/transport/availability",
+        "/api/transport/availability",
+    )
+    api.add_resource(
+        AdminFleetAvailabilityResource,
+        "/admin/transport/availability",
+        "/api/admin/transport/availability",
     )
 
     api.add_resource(AddressListResource, "/addresses", "/api/addresses")

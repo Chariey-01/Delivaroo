@@ -28,16 +28,16 @@ def test_seed_creates_a_complete_idempotent_demo_dataset(app, db_session, monkey
             "users": 13,
             "delivery_agents": 8,
             "weight_categories": 4,
-            "parcels": 84,
+            "parcels": 94,
             "addresses": 24,
-            "status_history": 277,
-            "audit_logs": 277,
+            "status_history": 297,
+            "audit_logs": 297,
         }
         assert User.query.filter_by(email=DEMO_ADMIN_EMAIL, role="admin").count() == 1
         admin = User.query.filter_by(email=DEMO_ADMIN_EMAIL).one()
         assert verify_password("AdminDemoPass123!", admin.password_hash)
-        assert Parcel.query.filter(Parcel.tracking_number.like(f"{DEMO_TRACKING_PREFIX}%")).count() == 84
-        assert len({parcel.tracking_number for parcel in Parcel.query.all()}) == 84
+        assert Parcel.query.filter(Parcel.tracking_number.like(f"{DEMO_TRACKING_PREFIX}%")).count() == 94
+        assert len({parcel.tracking_number for parcel in Parcel.query.all()}) == 94
         assert {status for status, _ in STATUS_DISTRIBUTION} == VALID_STATUSES
         assert {
             status
@@ -46,8 +46,8 @@ def test_seed_creates_a_complete_idempotent_demo_dataset(app, db_session, monkey
             )
         } == VALID_STATUSES
         assert Address.query.count() == 24
-        assert StatusHistory.query.count() == 277
-        assert AuditLog.query.filter_by(entity_type="parcel").count() == 277
+        assert StatusHistory.query.count() == 297
+        assert AuditLog.query.filter_by(entity_type="parcel").count() == 297
         assert {parcel.transport_mode for parcel in Parcel.query.all()} == {
             "MOTORBIKE", "TRUCK", "SHIP", "AIR"
         }
@@ -62,7 +62,7 @@ def test_seeded_demo_data_supports_admin_pagination_and_pricing(app, db_session)
     with app.app_context():
         seed_demo_data()
         page = list_all_parcels(page=1, per_page=20)
-        assert page["pagination"]["total_items"] == 84
+        assert page["pagination"]["total_items"] == 94
         assert page["pagination"]["total_pages"] == 5
         assert page["pagination"]["has_next"] is True
 
@@ -75,7 +75,13 @@ def test_seeded_demo_data_supports_admin_pagination_and_pricing(app, db_session)
 def test_seeded_status_history_and_audit_entries_are_chronological(app, db_session):
     with app.app_context():
         seed_demo_data()
-        parcel = Parcel.query.filter_by(tracking_number=f"{DEMO_TRACKING_PREFIX}0064").one()
+        parcel = (
+            Parcel.query.filter(Parcel.tracking_number.like(f"{DEMO_TRACKING_PREFIX}%"))
+            .filter_by(status="DELIVERED")
+            .order_by(Parcel.tracking_number)
+            .first()
+        )
+        assert parcel is not None
         history = StatusHistory.query.filter_by(parcel_id=parcel.id).order_by(StatusHistory.created_at).all()
         assert [entry.status for entry in history[:5]] == [
             "PENDING",
@@ -105,4 +111,4 @@ def test_demo_reset_only_replaces_demo_records(app, db_session, monkeypatch):
         seed_demo_data(reset=True)
 
         assert db_session.get(User, non_demo_user.id) is not None
-        assert demo_counts()["parcels"] == 84
+        assert demo_counts()["parcels"] == 94

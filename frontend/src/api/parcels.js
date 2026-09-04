@@ -20,6 +20,10 @@ export function normalizeParcel(raw) {
     transportLabel: raw.transport_label ?? raw.transportLabel,
     deliveryAgent: raw.delivery_agent ?? raw.deliveryAgent ?? null,
     price: raw.price == null ? null : Number(raw.price),
+    declaredWeightKg: raw.declared_weight_kg == null ? null : Number(raw.declared_weight_kg),
+    verifiedWeightKg: raw.verified_weight_kg == null ? null : Number(raw.verified_weight_kg),
+    weighedAt: raw.weighed_at ?? raw.weighedAt,
+    weighedBy: raw.weighed_by ?? raw.weighedBy,
     distance: raw.distance == null ? null : Number(raw.distance),
     duration: raw.duration == null ? null : Number(raw.duration),
     owner: raw.owner ?? null,
@@ -69,5 +73,9 @@ export const listAllParcels = async (params = {}) => {
 };
 export const updateParcelStatus = async (id, status) =>
   normalizeParcel(await patch(`/admin/parcels/${id}/status`, { status }));
-export const updatePresentLocation = async (id, { lat, lng }) =>
-  normalizeParcel(await patch(`/admin/parcels/${id}/location`, { latitude: lat, longitude: lng }));
+export const updatePresentLocation = async (id, { label, lat, lng }) =>
+  normalizeParcel(await patch(`/admin/parcels/${id}/location`, { address: label, latitude: lat, longitude: lng }));
+export const assignDeliveryAgent = async (id) =>
+  normalizeParcel(await patch(`/admin/parcels/${id}/delivery-agent`, {}));
+export const verifyParcelWeight = async (id, { weightKg }) =>
+  normalizeParcel(await patch(`/admin/parcels/${id}/weight`, { weightKg }));

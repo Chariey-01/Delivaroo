@@ -12,6 +12,7 @@ import Button from '../ui/Button';
 import Field from '../ui/Field';
 import FormError from './FormError';
 import Icon from '../Icon';
+import FormError from './FormError';
 
 // The same two checks the full sign-in screen makes, so a CTA that opens the modal
 // and a visit to /login behave identically. Everything else — the request, the token
@@ -35,27 +36,29 @@ export default function AuthModal() {
   const { open, returnTo } = useSelector(selectAuthModal);
   const submitting = useSelector(selectAuthSubmitting);
   const error = useSelector(selectAuthError);
-  const form = useAuthForm({ initialValues: INITIAL, validators: VALIDATORS });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
 
-  // Closing the modal drops both the typed credentials and any failure it was
-  // showing, so reopening it is a clean form rather than the last one's wreckage.
-  useEffect(() => {
-    if (!open) {
-      form.reset();
-      dispatch(clearAuthError());
-    }
-    // `form` is recreated each render; keying the effect on `open` is the intent.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, dispatch]);
-
-  const close = () => dispatch(closeAuthModal());
-
+  const close = () => {
+    setPassword('');
+    setErrors({});
+    dispatch(clearAuthError());
+    dispatch(closeAuthModal());
+  };
   const submit = async (event) => {
-    event.preventDefault();
-    if (!form.validateAll()) return;
+    event?.preventDefault();
+    const found = collectErrors({
+      email: validateEmail(email),
+      password: password ? null : 'Password is required.'
+    });
+    setErrors(found);
+    if (Object.keys(found).length) return;
 
-    const result = await dispatch(login({ ...form.values, remember: true }));
+    const result = await dispatch(login({ email, password }));
     if (login.fulfilled.match(result)) {
+      setEmail('');
+      setPassword('');
       dispatch(closeAuthModal());
       dispatch(
         showToast({
@@ -91,64 +94,49 @@ export default function AuthModal() {
       <p style={{ margin: '0 0 24px', fontSize: '14.5px', lineHeight: 1.55, color: color.body }}>
         Sign in securely to book, track, and manage your deliveries.
       </p>
-
-      <FormError message={friendlyAuthError(error)} />
-
-      <form onSubmit={submit} noValidate>
-        <div className="auth-fields">
-          <Field
-            label="Email address"
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="username"
-            placeholder="you@example.com"
-            required
-            disabled={submitting}
-            {...form.fieldProps('email')}
-          />
+      <FormError message={error} />
+      <form onSubmit={submit} noValidate aria-busy={submitting}>
+        <Field
+          label="Email address"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          error={errors.email}
+          onChange={(value) => {
+            setEmail(value);
+            setErrors((current) => ({ ...current, email: null }));
+            if (error) dispatch(clearAuthError());
+          }}
+          disabled={submitting}
+          required
+        />
+        <div style={{ marginTop: '14px' }}>
           <Field
             label="Password"
             name="password"
             type="password"
             autoComplete="current-password"
             placeholder="Your password"
-            required
+            value={password}
+            error={errors.password}
+            onChange={(value) => {
+              setPassword(value);
+              setErrors((current) => ({ ...current, password: null }));
+              if (error) dispatch(clearAuthError());
+            }}
             disabled={submitting}
-            {...form.fieldProps('password')}
+            required
           />
         </div>
-
-        <p style={{ margin: '12px 0 20px', textAlign: 'right', fontSize: '13.5px' }}>
-          <Link to="/forgot-password" onClick={leaveFor('/forgot-password')} className="auth-link">
-            Forgot password?
-          </Link>
-        </p>
-
-        <Button type="submit" full size="lg" disabled={submitting} icon={submitting ? undefined : 'arrow_forward'}>
-          {submitting && <span className="auth-spin" />}
-          {submitting ? 'Signing in...' : 'Sign in'}
-        </Button>
+        <div style={{ marginTop: '20px' }}>
+          <Button type="submit" full size="lg" disabled={submitting} icon="arrow_forward">
+            {submitting ? 'Signing in...' : 'Sign in'}
+          </Button>
+        </div>
       </form>
-
-      <p style={{ margin: '20px 0 0', textAlign: 'center', fontSize: '14px', color: color.body }}>
-        New here?{' '}
-        <Link to="/signup" onClick={leaveFor('/signup')} className="auth-link">
-          Create an account
-        </Link>
-      </p>
-
-      <p
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          margin: '20px 0 0',
-          fontSize: '12.5px',
-          lineHeight: 1.5,
-          color: color.muted,
-        }}
-      >
+      <p style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '22px 0 0', fontSize: '12.5px', lineHeight: 1.5, color: color.muted }}>
         <Icon name="lock" size={15} color={color.muted} /> Your session is protected with secure access tokens.
       </p>
     </Modal>

@@ -37,6 +37,9 @@ function OptionCard({ option, selected, onSelect }) {
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
+        width: '100%',
+        minWidth: 0,
+        minHeight: '100%',
         gap: '14px',
         textAlign: 'left',
         padding: 'clamp(16px,2vw,20px)',
@@ -52,10 +55,11 @@ function OptionCard({ option, selected, onSelect }) {
             : 'none',
         transform: selected || (available && hovered) ? 'translateY(-3px)' : 'none',
         transition: `transform .25s ${ease.out}, box-shadow .25s ${ease.out}, border-color .2s, background .2s`,
-        opacity: available ? 1 : 0.72
+        opacity: available ? 1 : 0.72,
+        overflowWrap: 'anywhere'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '44px minmax(0,1fr) auto', alignItems: 'flex-start', gap: '12px', minWidth: 0 }}>
         <span
           aria-hidden="true"
           style={{
@@ -74,8 +78,8 @@ function OptionCard({ option, selected, onSelect }) {
         </span>
 
         <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '16.5px', fontWeight: 600, letterSpacing: '-.02em', color: color.ink }}>
+          <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 8px', minWidth: 0 }}>
+            <span style={{ minWidth: 0, fontSize: '16.5px', fontWeight: 600, letterSpacing: 0, color: color.ink }}>
               {meta.label}
             </span>
             {badge && available && (
@@ -126,14 +130,14 @@ function OptionCard({ option, selected, onSelect }) {
 
       {available ? (
         <>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '10px 12px' }}>
             <span
               style={{
                 fontFamily: font.display,
                 fontWeight: 600,
                 fontSize: 'clamp(24px,2.6vw,30px)',
                 lineHeight: 1,
-                letterSpacing: '-.02em',
+                letterSpacing: 0,
                 color: color.ink
               }}
             >
@@ -157,12 +161,15 @@ function OptionCard({ option, selected, onSelect }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '7px',
-              height: '44px',
+              minHeight: '44px',
+              padding: '8px 12px',
               borderRadius: radius.pill,
               background: selected ? color.green : 'transparent',
               border: selected ? 'none' : `1px solid ${color.border}`,
               fontSize: '14.5px',
               fontWeight: 600,
+              lineHeight: 1.3,
+              textAlign: 'center',
               color: selected ? color.paper : color.ink,
               transition: 'background .2s, color .2s, border-color .2s'
             }}
@@ -213,7 +220,8 @@ export default function TransportOptions({ options, selected, onSelect, priority
           role="radiogroup"
           aria-label="Delivery priority"
           style={{
-            display: 'inline-flex',
+            display: 'flex',
+            width: 'min(100%,360px)',
             padding: '4px',
             borderRadius: radius.pill,
             background: 'rgba(28,32,31,.05)',
@@ -232,7 +240,9 @@ export default function TransportOptions({ options, selected, onSelect, priority
                 title={tier.note}
                 style={{
                   height: '40px',
-                  padding: '0 20px',
+                  flex: '1 1 0',
+                  minWidth: 0,
+                  padding: '0 12px',
                   borderRadius: radius.pill,
                   border: 'none',
                   background: active ? color.card : 'transparent',
@@ -256,7 +266,8 @@ export default function TransportOptions({ options, selected, onSelect, priority
         style={{
           display: 'grid',
           gap: '12px',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))'
+          gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))',
+          alignItems: 'stretch'
         }}
       >
         {loading ? (

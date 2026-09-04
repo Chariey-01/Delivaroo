@@ -5,6 +5,12 @@ The production setup uses two services:
 - Render runs the Flask API and PostgreSQL database.
 - Vercel builds and serves the Vite frontend.
 
+If the database is hosted outside Render, such as Neon, use that provider's
+PostgreSQL connection string for the same `DATABASE_URL` variable. For Neon,
+create a project and database in the Neon console, copy the pooled connection
+string for the application user, and keep `sslmode=require` in the URL. Configure
+it in Render under the backend service's Environment tab as `DATABASE_URL`.
+
 ## 1. Deploy the backend on Render
 
 Create a PostgreSQL database and a Python web service from this repository. Use
@@ -31,7 +37,7 @@ Set these Render environment variables:
 | Variable | Value |
 | --- | --- |
 | `FLASK_ENV` | `production` |
-| `DATABASE_URL` | Render PostgreSQL internal database URL |
+| `DATABASE_URL` | Render PostgreSQL internal database URL, or the Neon PostgreSQL connection string with SSL required |
 | `SECRET_KEY` | A long, random value |
 | `JWT_SECRET_KEY` | A different long, random value |
 | `CORS_ORIGINS` | The production Vercel origin, such as `https://delivaroo.vercel.app` |
@@ -41,8 +47,11 @@ Set these Render environment variables:
 | `GOOGLE_MAPS_DEFAULT_REGION` | `KE` |
 | `SMTP_HOST` | SMTP hostname used for password-reset email |
 | `SMTP_PORT` | SMTP port, usually `587` |
+| `SMTP_USE_TLS` | `true` for STARTTLS providers such as Gmail |
+| `SMTP_TIMEOUT_SECONDS` | Provider connection timeout, for example `10` |
 | `SMTP_USERNAME` | SMTP account username |
-| `SMTP_PASSWORD` | SMTP account password or provider app password |
+| `SMTP_PASSWORD` | Provider app password or SMTP credential, never the normal account password |
+| `SMTP_SENDER_NAME` | Transactional sender identity, normally `Delivaroo` |
 | `SMTP_SENDER_EMAIL` | Verified sender address for password-reset email |
 | `PASSWORD_RESET_URL` | Public frontend reset route, for example `https://delivaroo.vercel.app/reset-password` |
 
@@ -54,6 +63,20 @@ curl https://YOUR-RENDER-SERVICE.onrender.com/api/health
 ```
 
 The response should be `{"status":"ok"}`.
+
+The current migration head also creates the admin portal state tables
+`platform_settings` and `transport_availability`, and adds parcel weight
+verification fields. After configuring `DATABASE_URL`, verify migrations from the
+backend service shell with:
+
+```bash
+flask --app run:app db upgrade
+flask --app run:app db current
+```
+
+To load local demo data after migrations, run `python seed.py` from `backend`.
+This creates 94 fictional parcels. Do not run `python seed.py --reset-demo-data`
+against production data.
 
 ## 2. Deploy the frontend on Vercel
 
@@ -96,3 +119,25 @@ https://YOUR-RENDER-SERVICE.onrender.com/api/...
 A CORS error means the current frontend origin is missing from Render's
 `CORS_ORIGINS`. A 404 whose response is Vercel HTML usually means `VITE_API_URL`
 was blank when the frontend was built; set it and redeploy the frontend.
+
+## 4. Notification delivery operations
+
+Pending email deliveries are persisted when an SMTP attempt fails. Run a bounded
+retry pass from the backend service environment with:
+
+```bash
+python process_notification_deliveries.py
+```
+
+To send exactly one explicitly approved test email, configure
+`ALLOW_REAL_NOTIFICATION_TESTS=true` and `TEST_NOTIFICATION_EMAIL` outside Git,
+then run:
+
+```bash
+python notification_smoke.py --confirm
+```
+
+The command masks the recipient before sending and reports only whether SMTP
+accepted the message. It refuses to send without both the environment flag and
+the command-line confirmation. SMS remains disabled until the team selects and
+configures a provider and adds verified phone-number support.

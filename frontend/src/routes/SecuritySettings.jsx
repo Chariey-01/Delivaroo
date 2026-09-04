@@ -58,29 +58,14 @@ export default function SecuritySettings() {
           Signed in as <strong>{user?.email}</strong>. Confirm your current password before choosing a new one.
         </p>
         <FormError message={serverError} />
-        {success && (
-          <AuthNotice role="status" tone="success" title={success}>
-            Any other device using the old password will need the new one.
-          </AuthNotice>
-        )}
-        <form onSubmit={submit} noValidate>
-          {/* The same controls as the reset screen, on purpose: choosing a password is
-              one job, and it should not feel like a different product depending on
-              whether you arrived by email link or from the account menu. */}
-          <div className="auth-fields">
-            <Field label="Current password" name="currentPassword" type="password" autoComplete="current-password" required value={form.currentPassword} error={errors.currentPassword} onChange={set('currentPassword')} disabled={submitting} />
-            <div>
-              <Field label="New password" name="password" type="password" autoComplete="new-password" placeholder="Choose a strong password" required describedBy="security-password-strength" value={form.password} error={errors.password} onChange={set('password')} disabled={submitting} />
-              <PasswordStrength id="security-password-strength" value={form.password} />
-            </div>
-            <Field label="Confirm new password" name="confirm" type="password" autoComplete="new-password" placeholder="Repeat your new password" required value={form.confirm} error={errors.confirm} onChange={set('confirm')} disabled={submitting} />
-          </div>
-          <div style={{ marginTop: '22px' }}>
-            <Button type="submit" disabled={submitting}>
-              {submitting && <span className="auth-spin" />}
-              {submitting ? 'Updating password...' : 'Update password'}
-            </Button>
-          </div>
+        {success && <div role="status" style={{ marginBottom: '18px', padding: '12px 15px', borderRadius: radius.field, background: 'rgba(31,122,84,.1)', color: color.ink, fontSize: '14px' }}>{success}</div>}
+        <form onSubmit={submit} noValidate aria-busy={submitting}>
+          <Field label="Current password" name="currentPassword" type="password" autoComplete="current-password" value={form.currentPassword} error={errors.currentPassword} onChange={set('currentPassword')} disabled={submitting} required />
+          <Field label="New password" name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={form.password} error={errors.password} onChange={set('password')} disabled={submitting} required minLength={8} />
+          <Field label="Confirm new password" name="confirm" type="password" autoComplete="new-password" placeholder="Repeat your new password" value={form.confirm} error={errors.confirm} onChange={set('confirm')} disabled={submitting} required minLength={8} />
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Updating password...' : 'Update password'}
+          </Button>
         </form>
       </section>
     </PageShell>
