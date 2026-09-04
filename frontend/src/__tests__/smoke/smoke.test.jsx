@@ -51,14 +51,17 @@ describe('smoke: every public route renders', () => {
 });
 
 describe('smoke: navigation reflects the session', () => {
-  test('signed out, the nav offers sign in and sign up', async () => {
+  test('signed out, the nav offers exactly one way into the account', async () => {
     renderApp({ preloadedState: signedOutState });
 
     // Scoped to the nav: the landing page carries its own sign-in call to action.
     const nav = within(await screen.findByRole('navigation'));
 
-    expect(nav.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
-    expect(nav.getByRole('link', { name: /get started/i })).toBeInTheDocument();
+    const getStarted = nav.getByRole('link', { name: /get started/i });
+    expect(getStarted).toBeInTheDocument();
+    expect(getStarted).toHaveAttribute('href', '/login');
+    // §12 — "Sign in" and "Get Started" pointed at the same screen; only one remains.
+    expect(nav.queryByRole('link', { name: /^sign in$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
   });
 });
