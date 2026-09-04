@@ -3,6 +3,9 @@ import AppLayout from "./routes/AppLayout";
 import LandingPage from "./routes/LandingPage";
 import BookPage from "./routes/BookPage";
 import CreateParcel from "./pages/parcels/CreateParcel";
+import ParcelList from "./pages/parcels/ParcelList";
+import ParcelDetails from "./pages/parcels/ParcelDetails";
+import UpdateParcel from "./pages/parcels/UpdateParcel";
 import Confirmation from "./routes/Confirmation";
 import TrackLookup from "./routes/TrackLookup";
 import TrackOrder from "./routes/TrackOrder";
@@ -38,7 +41,10 @@ export function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/book" element={<BookPage />} />
+        <Route path="/parcels" element={<ParcelList />} />
         <Route path="/parcels/create" element={<CreateParcel />} />
+        <Route path="/parcels/:id" element={<ParcelDetails />} />
+        <Route path="/parcels/update/:id" element={<UpdateParcel />} />
         <Route path="/track" element={<TrackLookup />} />
         <Route path="/track/:id" element={<TrackOrder />} />
         <Route path="/orders" element={<MyOrders />} />

@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { createParcel } from "../../store/slices/parcelsSlice";
+import { getParcelDetails, updateParcel, clearSelectedParcel } from "../../store/slices/parcelsSlice";
 
-const CreateParcel = () => {
+const UpdateParcel = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error, success } = useSelector((state) => state.parcels.create);
+  
+  const { selectedParcel, loading, error } = useSelector((state) => state.parcels.details);
+  const updateState = useSelector((state) => state.parcels.update);
 
   const [formData, setFormData] = useState({
     senderName: "",
@@ -17,21 +22,49 @@ const CreateParcel = () => {
     description: "",
   });
 
+  useEffect(() => {
+    dispatch(getParcelDetails(id));
+    return () => {
+      dispatch(clearSelectedParcel());
+    };
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (selectedParcel) {
+      setFormData({
+        senderName: selectedParcel.senderName || "",
+        senderPhone: selectedParcel.senderPhone || "",
+        recipientName: selectedParcel.recipientName || "",
+        recipientPhone: selectedParcel.recipientPhone || "",
+        pickupLocation: selectedParcel.pickupLocation || "",
+        deliveryLocation: selectedParcel.deliveryLocation || "",
+        weight: selectedParcel.weight || "",
+        description: selectedParcel.description || "",
+      });
+    }
+  }, [selectedParcel]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(createParcel(formData));
+    dispatch(updateParcel({ id, parcelData: formData })).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        navigate(`/parcels/${id}`);
+      }
+    });
   };
+
+  if (loading) return <div className="text-center mt-10">Loading parcel details...</div>;
+  if (error) return <div className="text-red-600 text-center mt-10">{error}</div>;
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-6">Create New Parcel</h2>
+      <h2 className="text-2xl font-bold mb-6">Update Parcel</h2>
       
-      {success && <p className="text-green-600 mb-4">Parcel created successfully!</p>}
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {updateState.error && <p className="text-red-600 mb-4">{updateState.error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -131,14 +164,20 @@ const CreateParcel = () => {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          disabled={updateState.loading}
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
         >
-          {loading ? "Creating..." : "Create Parcel"}
+          {updateState.loading ? "Updating..." : "Update Parcel"}
         </button>
       </form>
+
+      <div className="mt-4 text-center">
+        <Link to={`/parcels/${id}`} className="text-blue-600 hover:underline">
+          Cancel and go back
+        </Link>
+      </div>
     </div>
   );
 };
 
-export default CreateParcel;
+export default UpdateParcel;
