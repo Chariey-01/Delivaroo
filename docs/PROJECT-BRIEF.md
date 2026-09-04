@@ -55,7 +55,7 @@ WHERE? → WHAT? → HOW? → PRICE → REQUEST PICKUP → AGENT ASSIGNED
 ┌──────────────────────────────┐        ┌──────────────────────────────┐
 │  React 18 + Vite SPA         │  HTTPS │  Flask 3 REST API            │
 │  Redux Toolkit (6 slices)    │ ─────► │  Flask-RESTful resources     │
-│  React Router v6             │  JWT   │  Service layer (15 services) │
+│  React Router v6             │  JWT   │  Service layer (17 services) │
 │  Leaflet / Google Maps       │ ◄───── │  SQLAlchemy 2 ORM            │
 │  Vercel                      │  JSON  │  Render + Gunicorn           │
 └──────────────────────────────┘        └──────────────┬───────────────┘
@@ -253,9 +253,9 @@ uniqueness re-roll loop.
 
 | Metric | Value |
 |---|---|
-| Backend test functions | **186** across 27 test files |
-| Frontend test cases | **316** across 29 test files |
-| Total | **502 automated tests** |
+| Backend test functions | **186** across 29 test files |
+| Frontend test cases | **~313** across 32 test files |
+| Total | **~499 automated tests** |
 | Backend lines (app + tests) | ~6,750 |
 | Frontend lines | ~21,970 |
 
@@ -290,12 +290,12 @@ check path.
 
 - **Three-tier Git flow** — `main` (production) ← `develop` (integration) ← `feature/*`.
   Direct pushes to `main` are prohibited.
-- **48 branches**, one per feature — `feature/auth`, `feature/parcel-crud`,
+- **47 branches**, one per feature — `feature/auth`, `feature/parcel-crud`,
   `feature/parcel-cancel`, `feature/status-history`, `feature/admin-status`,
   `feature/admin-location`, `feature/maps-route`, `feature/maps-markers`,
   `feature/notification-system`, `feature/audit-logs`, `feature/refresh-token`,
   `feature/password-reset-flow`, `feature/e2e-tests`, `feature/deployment-ci`, and more.
-- **399 commits** over roughly two weeks (18 Aug – 3 Sep 2026), Conventional Commit style
+- **391 commits** over roughly two weeks (18 Aug – 3 Sep 2026), Conventional Commit style
   (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `ci:`).
 - **PR-based review** into `develop` with required passing CI.
 - **Documentation-first** — a 15,700-word backend PRD (`BACKENDPRD.md`) written before
@@ -349,11 +349,11 @@ capture (signature/photo).
 ## 20. Numbers for the closing slide
 
 - **13** database models
-- **15** backend service modules
-- **31** REST resources across **49** routes
+- **17** backend service modules
+- **~40** API endpoints
 - **5** transport modes
 - **9** admin portal sections
 - **6** Redux slices
-- **502** automated tests
-- **399** commits · **48** branches · **5** contributors
-- **~28,800** lines of application code
+- **~499** automated tests
+- **391** commits · **47** branches · **5** contributors
+- **~28,700** lines of application code
