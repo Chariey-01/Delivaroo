@@ -6,8 +6,6 @@ import { collectErrors, validateConfirm, validatePassword } from '../lib/validat
 import { color, radius } from '../theme';
 import PageShell from './PageShell';
 import FormError from '../components/auth/FormError';
-import AuthNotice from '../components/auth/AuthNotice';
-import PasswordStrength from '../components/auth/PasswordStrength';
 import Field from '../components/ui/Field';
 import Button from '../components/ui/Button';
 

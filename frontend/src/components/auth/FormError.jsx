@@ -21,11 +21,12 @@ export default function FormError({ message }) {
         marginBottom: '20px',
         padding: '14px 16px',
         borderRadius: radius.field,
-        border: `1.5px solid ${color.orangeDeep}`,
-        background: 'rgba(179,38,30,.08)',
+        border: `1px solid rgba(173,84,21,.45)`,
+        background: 'rgba(173,84,21,.09)',
         fontSize: '14px',
-        lineHeight: 1.5,
+        lineHeight: 1.55,
         color: color.orangeDeep,
+        animation: `riseIn .28s ${ease.out} both`
       }}
     >
       <Icon name="error" size={19} color="currentColor" style={{ marginTop: '1px', flex: 'none' }} />

@@ -14,7 +14,6 @@ import MobileMenu from '../components/MobileMenu';
 import BottomNav, { BOTTOM_NAV_HEIGHT } from '../components/BottomNav';
 import SiteFooter from '../components/SiteFooter';
 import GooFilter from '../components/GooFilter';
-import AuthModal from '../components/auth/AuthModal';
 import Toast from '../components/ui/Toast';
 import { BOOKING_PATH } from '../hooks/useStartBooking';
 
@@ -101,7 +100,6 @@ export default function AppLayout() {
       <Outlet />
       {!chromeless && <SiteFooter brand="Deliveroo" />}
       {showBottomNav && <BottomNav />}
-      <AuthModal />
       <Toast />
     </div>
   );

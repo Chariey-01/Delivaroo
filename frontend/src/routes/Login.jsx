@@ -58,11 +58,9 @@ export default function Login() {
   // freshly opened form.
   useEffect(() => () => dispatch(clearAuthError()), [dispatch]);
 
-  const set = (key) => (value) => {
-    setForm((current) => ({ ...current, [key]: value }));
-    setErrors((current) => ({ ...current, [key]: null }));
-    if (serverError) dispatch(clearAuthError());
-  };
+  // Where a guard sent them, if a guard sent them. Worth saying out loud: landing on
+  // a login screen you did not ask for is otherwise just confusing.
+  const from = location.state?.from?.pathname ?? null;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -103,36 +101,61 @@ export default function Login() {
         </>
       }
     >
-      <FormError message={serverError} />
-      <form onSubmit={submit} noValidate aria-busy={submitting}>
-        <Field
-          label="Email address"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          value={form.email}
-          error={errors.email}
-          onChange={set('email')}
-          disabled={submitting}
-          required
-        />
-        <Field
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          value={form.password}
-          error={errors.password}
-          onChange={set('password')}
-          disabled={submitting}
-          required
-        />
-        <p style={{ margin: '-8px 0 20px', textAlign: 'right', fontSize: '13.5px' }}>
-          <Link to="/forgot-password">Forgot password?</Link>
-        </p>
-        <Button type="submit" full disabled={submitting}>
+      <FormError message={friendlyAuthError(serverError)} />
+
+      {/* A real <form>, so Enter submits and browsers offer to save the credentials. */}
+      <form onSubmit={submit} noValidate>
+        <div className="auth-fields">
+          <Field
+            label="Email address"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="username"
+            placeholder="you@example.com"
+            autoFocus={!remembered}
+            required
+            disabled={submitting}
+            {...form.fieldProps('email')}
+          />
+          <Field
+            label="Password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Your password"
+            autoFocus={Boolean(remembered)}
+            required
+            disabled={submitting}
+            {...form.fieldProps('password')}
+          />
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+            margin: '14px 0 22px',
+          }}
+        >
+          <CheckRow
+            name="remember"
+            checked={remember}
+            onChange={setRemember}
+            disabled={submitting}
+          >
+            Remember me
+          </CheckRow>
+          <Link to="/forgot-password" className="auth-link" style={{ fontSize: '14px' }}>
+            Forgot password?
+          </Link>
+        </div>
+
+        <Button type="submit" full size="lg" disabled={submitting} icon={submitting ? undefined : 'arrow_forward'}>
+          {submitting && <span className="auth-spin" />}
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>

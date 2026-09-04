@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectUser } from '../../store/authSlice';
 import { fetchAllOrders } from '../../store/ordersSlice';
@@ -12,7 +12,6 @@ import {
   fetchUsers,
   selectSettings
 } from '../../store/adminSlice';
-import { openAuthModal } from '../../store/uiSlice';
 import useOrderSync from '../../hooks/useOrderSync';
 import { PERMISSION, ROLE_LABEL, can, isStaff, roleOf } from '../../lib/roles';
 import { usingMockBackend } from '../../api';
@@ -103,7 +102,7 @@ export default function AdminPortal() {
         <p style={{ margin: '0 0 24px', maxWidth: '46ch', fontSize: '16px', lineHeight: 1.6, color: color.body }}>
           The admin portal is for staff accounts. Sign in to continue.
         </p>
-        <Button onClick={() => dispatch(openAuthModal(pathname))} icon="arrow_forward">
+        <Button as={Link} to="/login" state={{ from: { pathname } }} icon="arrow_forward">
           Sign in
         </Button>
       </PageShell>

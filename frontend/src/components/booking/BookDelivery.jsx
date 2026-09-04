@@ -26,7 +26,7 @@ import {
 import { selectIsSignedIn, selectUser } from '../../store/authSlice';
 import { fetchFleet } from '../../store/fleetSlice';
 import { selectSettings } from '../../store/adminSlice';
-import { openAuthModal, showToast } from '../../store/uiSlice';
+import { showToast } from '../../store/uiSlice';
 import { reverseGeocode } from '../../api/geo';
 import { usingMockBackend } from '../../api';
 import { formatDuration, formatKes, formatKm } from '../../lib/pricing';
@@ -105,7 +105,6 @@ export default function BookDelivery() {
   const [customWeight, setCustomWeight] = useState('');
   const [showDimensions, setShowDimensions] = useState(false);
   /** Set when the customer hit Confirm while signed out (§12). */
-  const awaitingAuth = useRef(false);
   /** One entry per StepShell, so the wizard can bring the open step to the customer. */
   const stepRefs = useRef([]);
   const lastStep = useRef(step);
@@ -207,23 +206,11 @@ export default function BookDelivery() {
     }
   };
 
-  // §12 — sign-in interrupts the flow, then hands it straight back.
-  useEffect(() => {
-    if (signedIn && awaitingAuth.current) {
-      awaitingAuth.current = false;
-      placeOrder();
-    }
-    // placeOrder is stable enough for this guard; re-running on every render would resubmit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signedIn]);
-
   const confirm = () => {
     if (!signedIn) {
-      // Safety net for a session lapsing mid-form — /book already gates entry. No
-      // returnTo: the effect above resumes the submit in place, and navigating
-      // would throw away the filled-in form.
-      awaitingAuth.current = true;
-      dispatch(openAuthModal(null));
+      // Safety net for a session lapsing mid-form. Booking state lives in Redux, so
+      // the canonical login route can return here without losing the draft.
+      navigate('/login', { state: { from: { pathname: '/book' } } });
       return;
     }
     placeOrder();

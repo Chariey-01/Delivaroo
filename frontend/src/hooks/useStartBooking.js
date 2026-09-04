@@ -1,7 +1,6 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { selectIsSignedIn } from '../store/authSlice';
-import { openAuthModal } from '../store/uiSlice';
 
 export const BOOKING_PATH = '/book';
 
@@ -29,15 +28,14 @@ export function showsBookingCta(pathname = '') {
 
 /**
  * Every "send a package" CTA runs through here so the gate is identical wherever it
- * is pressed: signed in goes straight to the booking page, signed out opens the auth
- * modal first, which lands on /book once the code checks out.
+ * is pressed: signed in goes straight to the booking page, signed out goes to the
+ * canonical login route, which returns to /book after authentication.
  *
  * Returns a click handler. Attach it to a Link pointing at BOOKING_PATH so the
  * control is still a real link — middle-click, copy-link and Ctrl+click keep working,
  * and /book gates itself for anyone who arrives that way.
  */
 export default function useStartBooking() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const signedIn = useSelector(selectIsSignedIn);
 
@@ -51,6 +49,6 @@ export default function useStartBooking() {
       navigate(BOOKING_PATH);
       return;
     }
-    dispatch(openAuthModal(BOOKING_PATH));
+    navigate(AUTH_PATH, { state: { from: { pathname: BOOKING_PATH } } });
   };
 }

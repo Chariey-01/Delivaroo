@@ -136,7 +136,6 @@ export default function ForgotPassword() {
               required
               disabled={submitting}
               {...form.fieldProps('email')}
-              required
             />
             <div style={{ marginTop: '22px', display: 'grid', gap: '10px' }}>
               <Button type="submit" full size="lg" disabled={submitting} icon={submitting ? undefined : 'send'}>

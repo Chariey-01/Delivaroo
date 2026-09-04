@@ -1,7 +1,10 @@
 import axios from "axios";
+import { API_BASE_URL } from "../api/viteEnv";
+import { getAccessToken } from "../lib/tokenStorage";
 
-// Use process.env for Jest compatibility (Vite also supports this)
-const API_URL = process.env.VITE_API_URL || "http://localhost:5000/api";
+// Production receives the backend origin through VITE_API_URL; local development
+// leaves it blank and lets Vite proxy the relative /api path.
+const API_URL = `${API_BASE_URL}/api`;
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,7 +12,7 @@ const api = axios.create({
 
 // Attach token if present
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
