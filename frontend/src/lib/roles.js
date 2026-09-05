@@ -53,6 +53,7 @@ export const PERMISSION = {
   VIEW_REPORTS: 'VIEW_REPORTS',
   VIEW_AUDIT: 'VIEW_AUDIT',
   VIEW_NOTIFICATIONS: 'VIEW_NOTIFICATIONS',
+  MODERATE_REVIEWS: 'MODERATE_REVIEWS',
   /** Pause bookings, post a notice, clear the demo data. */
   MANAGE_SETTINGS: 'MANAGE_SETTINGS'
 };

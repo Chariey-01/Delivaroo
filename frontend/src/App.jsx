@@ -19,6 +19,7 @@ import AdminCapacity from "./routes/admin/AdminCapacity";
 import AdminAccounts from "./routes/admin/AdminAccounts";
 import AdminReports from "./routes/admin/AdminReports";
 import AdminNotifications from "./routes/admin/AdminNotifications";
+import AdminReviews from "./routes/admin/AdminReviews";
 import AdminAudit from "./routes/admin/AdminAudit";
 import AdminSettings from "./routes/admin/AdminSettings";
 import NotFound from "./routes/NotFound";
@@ -71,6 +72,7 @@ export function AppRoutes() {
             <Route path="accounts" element={<AdminAccounts />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="reviews" element={<AdminReviews />} />
             <Route path="audit" element={<AdminAudit />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>

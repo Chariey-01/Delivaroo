@@ -1,4 +1,4 @@
-import { color, eyebrow, radius, shadow } from '../../theme';
+import { color, eyebrow, glass, radius } from '../../theme';
 
 /**
  * The portal's one card. Every section is a stack of these, so the surface, the
@@ -9,9 +9,10 @@ export default function Panel({ title, note, action, children, style }) {
     <section
       style={{
         borderRadius: radius.card,
-        border: `1px solid ${color.border}`,
-        background: color.card,
-        boxShadow: shadow.card,
+        border: `1px solid ${glass.border}`,
+        background: glass.background,
+        backdropFilter: `blur(${glass.blur})`,
+        boxShadow: glass.shadow,
         padding: 'clamp(18px,2.2vw,26px)',
         ...style
       }}

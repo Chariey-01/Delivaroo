@@ -74,6 +74,13 @@ export const shadow = {
   raised: '0 18px 44px rgba(30,40,40,.1)'
 };
 
+export const glass = {
+  background: 'rgba(250,250,248,.82)',
+  border: 'rgba(255,255,255,.66)',
+  blur: '14px',
+  shadow: '0 18px 48px rgba(15,26,23,.09)'
+};
+
 // Hover style objects, shared by several sections. Every one of them is the same
 // gesture at a different weight: rise 2px, deepen the shadow, nothing else.
 export const hover = {

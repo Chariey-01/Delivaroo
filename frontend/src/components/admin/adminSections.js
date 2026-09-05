@@ -68,6 +68,16 @@ export const SECTIONS = [
     permission: PERMISSION.VIEW_REPORTS
   },
   {
+    id: 'reviews',
+    path: 'reviews',
+    to: `${ADMIN_ROOT}/reviews`,
+    label: 'Reviews',
+    icon: 'reviews',
+    title: 'Delivery reviews',
+    blurb: 'Moderate verified feedback before it appears publicly.',
+    permission: PERMISSION.MODERATE_REVIEWS
+  },
+  {
     id: 'notifications',
     path: 'notifications',
     to: `${ADMIN_ROOT}/notifications`,
