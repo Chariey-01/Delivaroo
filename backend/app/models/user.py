@@ -51,6 +51,8 @@ class User(db.Model):
         onupdate=db.func.now(),
     )
 
+    profile = db.relationship("Profile", uselist=False)
+
     @validates("email")
     def validate_email(self, key, email):
         if not email:

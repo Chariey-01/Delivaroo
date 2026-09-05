@@ -50,6 +50,10 @@ def _event_content(event_type, parcel=None, metadata=None):
         return "Destination updated", f"The destination for parcel {tracking_number} has been updated."
     if event_type == "PARCEL_AGENT_ASSIGNED":
         return "Delivery agent assigned", f"A delivery agent has been assigned to parcel {tracking_number}."
+    if event_type == "REVIEW_APPROVED":
+        return "Review approved", "Thank you. Your delivery review is now visible in customer feedback."
+    if event_type == "REVIEW_REJECTED":
+        return "Review update", "Your delivery review was not published."
     return "Delivaroo update", "There is an update on your Delivaroo account."
 
 

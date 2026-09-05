@@ -13,6 +13,7 @@ from app.models.notification_delivery import NotificationDelivery
 from app.models.notification_preference import NotificationPreference
 from app.models.platform_setting import PlatformSetting
 from app.models.transport_availability import TransportAvailability
+from app.models.review import Review
 
 __all__ = [
     "User",
@@ -30,4 +31,5 @@ __all__ = [
     "NotificationPreference",
     "PlatformSetting",
     "TransportAvailability",
+    "Review",
 ]

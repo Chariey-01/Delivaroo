@@ -117,6 +117,7 @@ class Parcel(db.Model):
         cascade="all, delete-orphan",
         order_by="StatusHistory.created_at",
     )
+    review = db.relationship("Review", back_populates="parcel", uselist=False, cascade="all, delete-orphan")
     delivery_agent = db.relationship("DeliveryAgent", back_populates="parcels")
     @validates("transport_mode")
     def validate_transport_mode(self, key, transport_mode):

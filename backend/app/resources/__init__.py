@@ -13,6 +13,7 @@ from app.resources.auth import (
     ResetPasswordResource,
 )
 from app.resources.admin_parcel import AdminParcelListResource
+from app.resources.admin_dashboard import AdminDashboardResource
 from app.resources.admin_location import AdminParcelLocationResource
 from app.resources.admin_status import AdminParcelStatusResource
 from app.resources.admin_delivery_agent import AdminParcelDeliveryAgentResource
@@ -49,6 +50,14 @@ from app.resources.notification import (
     NotificationReadAllResource,
     NotificationReadResource,
     NotificationUnreadCountResource,
+)
+from app.resources.review import (
+    ReviewListResource,
+    MyReviewListResource,
+    PublicReviewListResource,
+    AdminReviewListResource,
+    AdminReviewResource,
+    AdminReviewModerationResource,
 )
 
 
@@ -109,6 +118,7 @@ def init_resources(app):
     )
 
     api.add_resource(AdminParcelListResource, "/admin/parcels", "/api/admin/parcels")
+    api.add_resource(AdminDashboardResource, "/admin/dashboard", "/api/admin/dashboard")
     api.add_resource(
         AdminParcelStatusResource,
         "/admin/parcels/<uuid:parcel_id>/status",
@@ -183,6 +193,16 @@ def init_resources(app):
     api.add_resource(NotificationReadAllResource, "/api/notifications/read-all")
     api.add_resource(NotificationReadResource, "/api/notifications/<uuid:notification_id>/read")
     api.add_resource(NotificationPreferenceResource, "/api/notification-preferences")
+    api.add_resource(ReviewListResource, "/reviews", "/api/reviews")
+    api.add_resource(MyReviewListResource, "/reviews/me", "/api/reviews/me")
+    api.add_resource(PublicReviewListResource, "/reviews/public", "/api/reviews/public")
+    api.add_resource(AdminReviewListResource, "/admin/reviews", "/api/admin/reviews")
+    api.add_resource(AdminReviewResource, "/admin/reviews/<uuid:review_id>", "/api/admin/reviews/<uuid:review_id>")
+    api.add_resource(
+        AdminReviewModerationResource,
+        "/admin/reviews/<uuid:review_id>/<string:decision>",
+        "/api/admin/reviews/<uuid:review_id>/<string:decision>",
+    )
     api.add_resource(GeocodeResource, "/api/maps/geocode")
     api.add_resource(ReverseGeocodeResource, "/api/maps/reverse-geocode")
     api.add_resource(RouteResource, "/api/maps/route")
