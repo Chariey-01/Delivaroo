@@ -29,6 +29,7 @@ import StatusPill from '../components/orders/StatusPill';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
+import ReviewForm from '../components/reviews/ReviewForm';
 
 const detailRow = (index) => ({
   display: 'flex',
@@ -218,6 +219,10 @@ export default function OrderDetails() {
               </div>
             ))}
           </Section>
+
+          {order.status === 'DELIVERED' && owned && (
+            <Section title="Review this delivery"><ReviewForm parcelId={order.id} /></Section>
+          )}
 
           {/* §16 / §17 — both actions state why they're unavailable rather than just greying out. */}
           <div style={{ marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>

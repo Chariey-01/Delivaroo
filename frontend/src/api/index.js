@@ -25,6 +25,7 @@ const asOrder = (parcel) => {
   const durationSeconds = Number(parcel.duration || 0) * 60;
   return {
     id: parcel.id,
+    userId: parcel.userId,
     trackingNumber: parcel.trackingNumber,
     status: parcel.status,
     sender: { name: ownerEmail || 'Customer', email: ownerEmail },
@@ -122,6 +123,7 @@ const http = {
     api(`/admin/couriers/${id}/shift`, { method: 'PATCH', body: { onShift } }),
   listAuditLog: () => api('/admin/audit'),
   listNotifications: () => api('/admin/notifications'),
+  getDashboard: () => api('/admin/dashboard'),
   getSettings: () => api('/settings'),
   updateSettings: (patch) => api('/admin/settings', { method: 'PATCH', body: patch }),
   // Demo-only: there is nothing to re-seed on a real database, and a button that
@@ -167,6 +169,7 @@ export const listCouriers = (...args) => impl.listCouriers(...args);
 export const setCourierShift = (...args) => impl.setCourierShift(...args);
 export const listAuditLog = (...args) => impl.listAuditLog(...args);
 export const listNotifications = (...args) => impl.listNotifications(...args);
+export const getDashboard = (...args) => impl.getDashboard ? impl.getDashboard(...args) : Promise.resolve(null);
 export const getSettings = (...args) => impl.getSettings(...args);
 export const updateSettings = (...args) => impl.updateSettings(...args);
 export const resetDemoData = (...args) => impl.resetDemoData(...args);

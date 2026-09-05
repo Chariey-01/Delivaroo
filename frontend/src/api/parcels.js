@@ -14,6 +14,7 @@ export function normalizeParcel(raw) {
 
   return {
     id: raw.id,
+    userId: raw.user_id ?? raw.userId,
     trackingNumber: raw.tracking_number ?? raw.trackingNumber,
     status: raw.status,
     transportMode: raw.transport_mode ?? raw.transportMode,
